@@ -4,6 +4,7 @@ import game.ai.MinimaxAI;
 import game.ai.Move;
 import game.model.Board;
 import game.model.Piece;
+import game.network.NetworkManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,11 +18,10 @@ import java.util.List;
  * - Quân Đen (Piece.X) và Quân Trắng (Piece.O) dạng hình tròn đặc.
  * - Bàn cờ màu gỗ ấm, viền đổ bóng.
  * - Hover preview khi rê chuột.
+ * - Hỗ trợ 3 chế độ: PvP (cùng máy), PvAI, Online (qua LAN Socket).
  */
 public class BoardPanel extends JPanel {
-    // Khoảng cách giữa 2 giao điểm liên tiếp (pixel)
     public static final int CELL_SIZE = 38;
-    // Lề từ mép panel đến đường kẻ đầu tiên/cuối cùng
     public static final int OFFSET = 32;
 
     // Màu bàn cờ gỗ
@@ -37,7 +37,6 @@ public class BoardPanel extends JPanel {
     private static final Color WHITE_BORDER     = new Color(160, 155, 145);
     private static final Color LAST_MARKER      = new Color(230, 60, 60);
 
-    // Bán kính quân cờ
     private static final int STONE_RADIUS = CELL_SIZE / 2 - 3;
 
     // =========================================================================
@@ -47,6 +46,9 @@ public class BoardPanel extends JPanel {
         },
         PV_AI {
             @Override public String toString() { return Lang.pvAI(); }
+        },
+        ONLINE {
+            @Override public String toString() { return Lang.online(); }
         }
     }
 
@@ -61,6 +63,10 @@ public class BoardPanel extends JPanel {
     private final List<Move> moveHistory = new ArrayList<>();
     private GameMode gameMode = GameMode.PV_AI;
     private final MinimaxAI ai;
+
+    // Quản lý chế độ Online
+    private NetworkManager networkManager;
+    private Piece myPiece = Piece.X; // Host là X (Đen), Client là O (Trắng)
 
     // =========================================================================
     public interface GameStateListener {
@@ -77,25 +83,27 @@ public class BoardPanel extends JPanel {
         this.board = board;
         this.ai    = new MinimaxAI(Piece.O, MinimaxAI.Difficulty.MEDIUM);
 
-        // Kích thước: 2 lề + 14 khoảng cách (15 giao điểm)
         int panelSize = OFFSET * 2 + (Board.SIZE - 1) * CELL_SIZE;
         setPreferredSize(new Dimension(panelSize, panelSize));
-        setBackground(new Color(200, 155, 75)); // Màu nền ngoài bàn cờ
+        setBackground(new Color(200, 155, 75));
 
-        // Mouse click — snap về giao điểm gần nhất
+        // Click chuột
         addMouseListener(new MouseAdapter() {
             @Override public void mouseClicked(MouseEvent e) { handleClick(e.getX(), e.getY()); }
             @Override public void mouseExited(MouseEvent e)  { clearHover(); }
         });
 
-        // Mouse hover
+        // Hover chuột
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
+                if (isGameOver || isAiThinking) { clearHover(); return; }
+                // Ở chế độ Online, nếu chưa đến lượt của mình thì không cho hover
+                if (gameMode == GameMode.ONLINE && currentTurn != myPiece) { clearHover(); return; }
+
                 int col = Math.round((float)(e.getX() - OFFSET) / CELL_SIZE);
                 int row = Math.round((float)(e.getY() - OFFSET) / CELL_SIZE);
-                if (board.isInBounds(row, col) && board.getPiece(row, col) == Piece.NONE
-                        && !isGameOver && !isAiThinking) {
+                if (board.isInBounds(row, col) && board.getPiece(row, col) == Piece.NONE) {
                     if (hoverRow != row || hoverCol != col) {
                         hoverRow = row; hoverCol = col; repaint();
                     }
@@ -114,9 +122,30 @@ public class BoardPanel extends JPanel {
         if (l != null) { l.onTurnChanged(currentTurn, false); l.onHistoryChanged(false); }
     }
 
-    public void setGameMode(GameMode mode)             { this.gameMode = mode; resetGame(); }
-    public void setAiDifficulty(MinimaxAI.Difficulty d){ ai.setDifficulty(d); }
-    public boolean canUndo()                           { return !isAiThinking && !moveHistory.isEmpty(); }
+    public void setGameMode(GameMode mode) {
+        this.gameMode = mode;
+        resetGame();
+    }
+
+    public GameMode getGameMode() { return gameMode; }
+
+    public void setAiDifficulty(MinimaxAI.Difficulty d) { ai.setDifficulty(d); }
+
+    public boolean canUndo() {
+        // Trong chế độ Online không cho phép Undo 1 phía
+        if (gameMode == GameMode.ONLINE) return false;
+        return !isAiThinking && !moveHistory.isEmpty();
+    }
+
+    public void setupOnlineGame(NetworkManager nm, boolean isHost) {
+        this.networkManager = nm;
+        this.myPiece = isHost ? Piece.X : Piece.O;
+        this.gameMode = GameMode.ONLINE;
+        resetGame();
+    }
+
+    public Piece getMyPiece() { return myPiece; }
+    public Piece getCurrentTurn() { return currentTurn; }
 
     // =========================================================================
     public void resetGame() {
@@ -142,8 +171,7 @@ public class BoardPanel extends JPanel {
             board.undoMove(m.row, m.col);
             currentTurn = currentTurn.opposite();
             isGameOver = false;
-        } else {
-            // PvAI: rút lại 2 nước (máy + người)
+        } else if (gameMode == GameMode.PV_AI) {
             isGameOver = false;
             int toUndo = Math.min(2, moveHistory.size());
             for (int i = 0; i < toUndo; i++) {
@@ -169,12 +197,36 @@ public class BoardPanel extends JPanel {
     // =========================================================================
     private void handleClick(int px, int py) {
         if (isGameOver || isAiThinking) return;
-        // Snap về giao điểm gần nhất
+
+        // Ở chế độ Online: Không được đánh nếu chưa đến lượt của mình
+        if (gameMode == GameMode.ONLINE && currentTurn != myPiece) return;
+
         int col = Math.round((float)(px - OFFSET) / CELL_SIZE);
         int row = Math.round((float)(py - OFFSET) / CELL_SIZE);
         if (!board.isValidMove(row, col)) return;
+
         executeMove(row, col, currentTurn);
-        if (!isGameOver && gameMode == GameMode.PV_AI && currentTurn == Piece.O) triggerAI();
+
+        // Gửi nước đi sang máy đối thủ nếu đang chơi Online
+        if (gameMode == GameMode.ONLINE && networkManager != null) {
+            networkManager.sendMove(row, col);
+        }
+
+        // Kích hoạt AI nếu chơi với máy
+        if (!isGameOver && gameMode == GameMode.PV_AI && currentTurn == Piece.O) {
+            triggerAI();
+        }
+    }
+
+    /**
+     * Nhận nước đi từ mạng do đối thủ gửi tới.
+     */
+    public void applyOpponentMove(int row, int col) {
+        SwingUtilities.invokeLater(() -> {
+            if (!isGameOver && board.isValidMove(row, col)) {
+                executeMove(row, col, currentTurn);
+            }
+        });
     }
 
     private void executeMove(int row, int col, Piece piece) {
@@ -215,7 +267,9 @@ public class BoardPanel extends JPanel {
     }
 
     private String buildWinMessage(Piece winner) {
-        if (gameMode == GameMode.PV_AI) {
+        if (gameMode == GameMode.ONLINE) {
+            return (winner == myPiece) ? Lang.youWin() : Lang.youLose();
+        } else if (gameMode == GameMode.PV_AI) {
             return (winner == Piece.X) ? Lang.youWin() : Lang.aiWins();
         } else {
             return (winner == Piece.X) ? Lang.p1Wins() : Lang.p2Wins();
@@ -263,27 +317,22 @@ public class BoardPanel extends JPanel {
         drawStones(g2);
     }
 
-    /** Vẽ nền bàn cờ gỗ với viền và bóng đổ nhẹ. */
     private void drawBoard(Graphics2D g2) {
         int boardPx  = (Board.SIZE - 1) * CELL_SIZE;
         int x0 = OFFSET - 8, y0 = OFFSET - 8;
         int bw = boardPx + 16, bh = boardPx + 16;
 
-        // Bóng đổ
         g2.setColor(new Color(0, 0, 0, 40));
         g2.fillRoundRect(x0 + 4, y0 + 4, bw, bh, 10, 10);
 
-        // Nền bàn cờ gỗ
         g2.setColor(BOARD_COLOR);
         g2.fillRoundRect(x0, y0, bw, bh, 10, 10);
 
-        // Viền ngoài bàn cờ
         g2.setColor(BOARD_DARK);
         g2.setStroke(new BasicStroke(2.5f));
         g2.drawRoundRect(x0, y0, bw, bh, 10, 10);
     }
 
-    /** Vẽ các đường kẻ ngang và dọc của bàn cờ. */
     private void drawGrid(Graphics2D g2) {
         g2.setColor(LINE_COLOR);
         g2.setStroke(new BasicStroke(1.2f));
@@ -292,18 +341,14 @@ public class BoardPanel extends JPanel {
         for (int i = 0; i < Board.SIZE; i++) {
             int x = OFFSET + i * CELL_SIZE;
             int y = OFFSET + i * CELL_SIZE;
-            // Dọc
             g2.drawLine(x, OFFSET, x, OFFSET + end);
-            // Ngang
             g2.drawLine(OFFSET, y, OFFSET + end, y);
         }
 
-        // Đường biên ngoài đậm hơn
         g2.setStroke(new BasicStroke(2.0f));
         g2.drawRect(OFFSET, OFFSET, end, end);
     }
 
-    /** Vẽ 9 điểm sao định vị (star points) chuẩn Gomoku. */
     private void drawStarPoints(Graphics2D g2) {
         g2.setColor(STAR_COLOR);
         int[] pts = {3, 7, 11};
@@ -316,7 +361,6 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    /** Vẽ preview quân cờ mờ khi rê chuột qua giao điểm trống. */
     private void drawHover(Graphics2D g2) {
         if (hoverRow < 0 || hoverCol < 0 || isGameOver || isAiThinking) return;
         Composite old = g2.getComposite();
@@ -325,14 +369,12 @@ public class BoardPanel extends JPanel {
         g2.setComposite(old);
     }
 
-    /** Vẽ toàn bộ quân cờ trên bàn. */
     private void drawStones(Graphics2D g2) {
         for (int r = 0; r < Board.SIZE; r++) {
             for (int c = 0; c < Board.SIZE; c++) {
                 Piece p = board.getPiece(r, c);
                 if (p != Piece.NONE) {
                     drawSingleStone(g2, r, c, p);
-                    // Chấm đỏ nhỏ đánh dấu nước đi mới nhất
                     if (r == lastMoveRow && c == lastMoveCol) {
                         int cx = OFFSET + c * CELL_SIZE;
                         int cy = OFFSET + r * CELL_SIZE;
@@ -344,29 +386,23 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    /** Vẽ một quân cờ tại giao điểm (row, col). */
     private void drawSingleStone(Graphics2D g2, int row, int col, Piece piece) {
         int cx = OFFSET + col * CELL_SIZE;
         int cy = OFFSET + row * CELL_SIZE;
         int r  = STONE_RADIUS;
 
         if (piece == Piece.X) {
-            // Quân Đen
             g2.setColor(BLACK_STONE);
             g2.fillOval(cx - r, cy - r, r * 2, r * 2);
-            // Highlight nhỏ góc trên-trái để tạo cảm giác 3D
             g2.setColor(BLACK_HIGHLIGHT);
             g2.setStroke(new BasicStroke(1.5f));
             g2.drawArc(cx - r + 3, cy - r + 3, r, r, 45, 120);
         } else {
-            // Quân Trắng
             g2.setColor(WHITE_STONE);
             g2.fillOval(cx - r, cy - r, r * 2, r * 2);
-            // Viền xám
             g2.setColor(WHITE_BORDER);
             g2.setStroke(new BasicStroke(1.5f));
             g2.drawOval(cx - r, cy - r, r * 2, r * 2);
-            // Highlight nhỏ
             g2.setColor(new Color(230, 230, 230, 180));
             g2.setStroke(new BasicStroke(2.0f));
             g2.drawArc(cx - r + 4, cy - r + 4, r, r, 50, 100);

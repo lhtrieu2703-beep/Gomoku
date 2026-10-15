@@ -36,8 +36,9 @@ public class Lang {
     public static String sound()      { return isVI() ? "Âm thanh" : "Sound"; }
 
     // Chế độ chơi
-    public static String pvp()  { return isVI() ? "Người vs Người" : "Human vs Human"; }
-    public static String pvAI() { return isVI() ? "Người vs Máy"   : "Human vs AI"; }
+    public static String pvp()    { return isVI() ? "Người vs Người"  : "Human vs Human"; }
+    public static String pvAI()   { return isVI() ? "Người vs Máy"    : "Human vs AI"; }
+    public static String online() { return isVI() ? "Chơi Online (LAN)" : "Online (LAN)"; }
 
     // Độ khó
     public static String easy()   { return isVI() ? "Dễ"         : "Easy"; }
@@ -57,8 +58,17 @@ public class Lang {
     public static String p1Turn()      { return isVI() ? "Lượt: Người chơi 1 (Quân Đen)"  : "Turn: Player 1 (Black)"; }
     public static String p2Turn()      { return isVI() ? "Lượt: Người chơi 2 (Quân Trắng)": "Turn: Player 2 (White)"; }
 
+    // Online specific strings
+    public static String onlineWaiting()       { return isVI() ? "Đang chờ đối thủ kết nối..."      : "Waiting for opponent..."; }
+    public static String onlineConnectedHost() { return isVI() ? "Đã kết nối! Bạn: Quân Đen (Đi trước)" : "Connected! You: Black (First)"; }
+    public static String onlineConnectedClient(){ return isVI() ? "Đã kết nối! Bạn: Quân Trắng (Đi sau)" : "Connected! You: White (Second)"; }
+    public static String onlineYourTurn()      { return isVI() ? "Lượt của bạn! Hãy đi cờ."         : "Your turn! Make a move."; }
+    public static String onlineOpponentTurn()  { return isVI() ? "Lượt đối thủ đang suy nghĩ..."   : "Opponent's turn..."; }
+    public static String opponentDisconnected(){ return isVI() ? "Đối thủ đã ngắt kết nối!"        : "Opponent disconnected!"; }
+
     // Kết thúc ván
-    public static String youWin()  { return isVI() ? "Bạn (Quân Đen) đã CHIẾN THẮNG!"         : "You (Black) WIN!"; }
+    public static String youWin()  { return isVI() ? "Bạn đã CHIẾN THẮNG!"                     : "You WIN!"; }
+    public static String youLose() { return isVI() ? "Bạn đã THUA cuộc!"                       : "You LOSE!"; }
     public static String aiWins()  { return isVI() ? "Máy (Quân Trắng) đã CHIẾN THẮNG!"        : "AI (White) WINS!"; }
     public static String p1Wins()  { return isVI() ? "Người chơi 1 (Quân Đen) CHIẾN THẮNG!"    : "Player 1 (Black) WINS!"; }
     public static String p2Wins()  { return isVI() ? "Người chơi 2 (Quân Trắng) CHIẾN THẮNG!"  : "Player 2 (White) WINS!"; }

@@ -3,15 +3,18 @@ package game.view;
 import game.ai.MinimaxAI;
 import game.model.Board;
 import game.model.Piece;
+import game.network.NetworkManager;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 /**
  * Cửa sổ chính "Gomoku":
  * - Hỗ trợ 2 ngôn ngữ (Tiếng Việt có dấu / English) với nút chuyển ngôn ngữ.
+ * - Hỗ trợ 3 chế độ: Người vs Người, Người vs Máy (AI), Chơi Online (qua LAN Socket).
  * - Bảng thành tích (Scoreboard) hiển thị Thắng / Thua / Hòa.
  * - Giao diện hiện đại tối (dark header) + bàn cờ gỗ.
  */
@@ -19,12 +22,12 @@ public class MainFrame extends JFrame {
     private final Board board;
     private final BoardPanel boardPanel;
 
-    // === Components cần cập nhật khi đổi ngôn ngữ ===
-    private final JLabel  lblMode, lblDiff, turnLabel;
+    // === Components điều khiển ===
+    private final JLabel lblMode, lblDiff, turnLabel;
     private final JButton btnNewGame, btnUndo, btnLang;
     private final JCheckBox chkSound;
-    private final JComboBox<BoardPanel.GameMode>   modeCombo;
-    private final JComboBox<MinimaxAI.Difficulty>  diffCombo;
+    private final JComboBox<BoardPanel.GameMode> modeCombo;
+    private final JComboBox<MinimaxAI.Difficulty> diffCombo;
 
     // === Scoreboard ===
     private JLabel lblWinVal, lblLossVal, lblDrawVal;
@@ -33,7 +36,10 @@ public class MainFrame extends JFrame {
 
     private int humanWins = 0, aiWins = 0, draws = 0;
 
-    // =========================================================================
+    // === Chế độ chơi Online ===
+    private NetworkManager networkManager;
+    private NetworkDialog networkDialog;
+
     public MainFrame() {
         this.board = new Board();
         this.boardPanel = new BoardPanel(board);
@@ -43,14 +49,26 @@ public class MainFrame extends JFrame {
         setResizable(false);
         setLayout(new BorderLayout(0, 0));
 
+        // Khởi tạo NetworkManager với các listener sự kiện
+        initNetworkManager();
+
+        // Đảm bảo ngắt socket khi tắt ứng dụng
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if (networkManager != null) {
+                    networkManager.disconnect();
+                }
+            }
+        });
+
         // =====================================================================
-        // 1. HEADER TỐI (điều khiển chính)
+        // 1. HEADER TỐI (Điều khiển chính)
         // =====================================================================
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(34, 36, 40));
         header.setBorder(new EmptyBorder(10, 14, 10, 14));
 
-        // --- Hàng điều khiển ---
         JPanel ctrlRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         ctrlRow.setOpaque(false);
 
@@ -64,7 +82,6 @@ public class MainFrame extends JFrame {
         diffCombo = new JComboBox<>();
         for (MinimaxAI.Difficulty d : MinimaxAI.Difficulty.values()) diffCombo.addItem(d);
         diffCombo.setSelectedItem(MinimaxAI.Difficulty.MEDIUM);
-        // Renderer cho Difficulty (gọi Lang.xxx())
         diffCombo.setRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list, Object value,
@@ -92,7 +109,6 @@ public class MainFrame extends JFrame {
         chkSound.setOpaque(false);
         chkSound.setFocusPainted(false);
 
-        // Nút chuyển ngôn ngữ — nổi bật ở góc phải
         btnLang = makeDarkBtn(Lang.langBtnLabel(), new Color(100, 65, 165), Color.WHITE);
         btnLang.setFont(new Font("Segoe UI", Font.BOLD, 12));
         btnLang.setToolTipText(Lang.langBtnTooltip());
@@ -118,7 +134,7 @@ public class MainFrame extends JFrame {
         JPanel scoreBar = buildScoreBar();
 
         // =====================================================================
-        // 3. THANH LƯỢT CHƠI (ngay trên bàn cờ)
+        // 3. THANH LƯỢT CHƠI
         // =====================================================================
         JPanel turnBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 8));
         turnBar.setBackground(new Color(245, 241, 232));
@@ -129,7 +145,6 @@ public class MainFrame extends JFrame {
         turnLabel.setForeground(new Color(30, 30, 30));
         turnBar.add(turnLabel);
 
-        // Gom các dải phía trên
         JPanel north = new JPanel(new BorderLayout());
         north.add(header, BorderLayout.NORTH);
         north.add(scoreBar, BorderLayout.CENTER);
@@ -141,13 +156,30 @@ public class MainFrame extends JFrame {
         modeCombo.addActionListener(e -> {
             BoardPanel.GameMode sel = (BoardPanel.GameMode) modeCombo.getSelectedItem();
             diffCombo.setEnabled(sel == BoardPanel.GameMode.PV_AI);
-            boardPanel.setGameMode(sel);
+
+            if (sel == BoardPanel.GameMode.ONLINE) {
+                btnUndo.setEnabled(false);
+                openNetworkDialog();
+            } else {
+                if (networkManager != null && networkManager.isConnected()) {
+                    networkManager.disconnect();
+                }
+                boardPanel.setGameMode(sel);
+            }
         });
 
         diffCombo.addActionListener(e ->
             boardPanel.setAiDifficulty((MinimaxAI.Difficulty) diffCombo.getSelectedItem()));
 
-        btnNewGame.addActionListener(e -> boardPanel.resetGame());
+        btnNewGame.addActionListener(e -> {
+            if (boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
+                if (networkManager != null && networkManager.isConnected()) {
+                    networkManager.sendRestart();
+                }
+            }
+            boardPanel.resetGame();
+        });
+
         btnUndo.addActionListener(e -> boardPanel.undoMove());
         chkSound.addActionListener(e -> SoundManager.setSoundEnabled(chkSound.isSelected()));
 
@@ -156,12 +188,18 @@ public class MainFrame extends JFrame {
             updateLanguage();
         });
 
-        // Lắng nghe trạng thái từ BoardPanel
         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
             @Override
             public void onTurnChanged(Piece currentTurn, boolean isAiThinking) {
-                BoardPanel.GameMode mode = (BoardPanel.GameMode) modeCombo.getSelectedItem();
-                if (isAiThinking) {
+                BoardPanel.GameMode mode = boardPanel.getGameMode();
+                if (mode == BoardPanel.GameMode.ONLINE) {
+                    Piece myP = boardPanel.getMyPiece();
+                    if (currentTurn == myP) {
+                        setTurnLabel(Lang.onlineYourTurn(), new Color(20, 120, 50));
+                    } else {
+                        setTurnLabel(Lang.onlineOpponentTurn(), new Color(200, 100, 20));
+                    }
+                } else if (isAiThinking) {
                     setTurnLabel(Lang.aiThinking(), new Color(200, 100, 20));
                 } else if (mode == BoardPanel.GameMode.PV_AI) {
                     if (currentTurn == Piece.X) setTurnLabel(Lang.yourTurn(),  new Color(20, 80, 170));
@@ -174,21 +212,36 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onGameOver(String message, Piece winner) {
-                if (winner == Piece.X)        { humanWins++; setTurnLabel(message, new Color(30, 130, 50)); }
-                else if (winner == Piece.O)   { aiWins++;    setTurnLabel(message, new Color(160, 30, 30)); }
-                else                          { draws++;     setTurnLabel(message, new Color(120, 80, 20)); }
+                BoardPanel.GameMode mode = boardPanel.getGameMode();
+                if (mode == BoardPanel.GameMode.ONLINE) {
+                    if (winner == boardPanel.getMyPiece()) {
+                        humanWins++;
+                        setTurnLabel(message, new Color(30, 130, 50));
+                    } else if (winner == Piece.NONE) {
+                        draws++;
+                        setTurnLabel(message, new Color(120, 80, 20));
+                    } else {
+                        aiWins++; // Tính là 1 trận thua
+                        setTurnLabel(message, new Color(160, 30, 30));
+                    }
+                } else {
+                    if (winner == Piece.X)        { humanWins++; setTurnLabel(message, new Color(30, 130, 50)); }
+                    else if (winner == Piece.O)   { aiWins++;    setTurnLabel(message, new Color(160, 30, 30)); }
+                    else                          { draws++;     setTurnLabel(message, new Color(120, 80, 20)); }
+                }
                 refreshScores();
                 JOptionPane.showMessageDialog(MainFrame.this, message, Lang.gameOverTitle(), JOptionPane.INFORMATION_MESSAGE);
             }
 
             @Override
-            public void onAiStatsUpdated(long t, long n, long p) { /* ẩn */ }
+            public void onAiStatsUpdated(long t, long n, long p) {}
 
             @Override
-            public void onHistoryChanged(boolean canUndo) { btnUndo.setEnabled(canUndo); }
+            public void onHistoryChanged(boolean canUndo) {
+                btnUndo.setEnabled(canUndo);
+            }
         });
 
-        // Lắng nghe thay đổi ngôn ngữ (để cập nhật turnLabel sau khi reset)
         Lang.addChangeListener(this::updateLanguage);
 
         // =====================================================================
@@ -201,9 +254,64 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    // =========================================================================
-    // Cập nhật toàn bộ text khi đổi ngôn ngữ
-    // =========================================================================
+    private void initNetworkManager() {
+        this.networkManager = new NetworkManager(new NetworkManager.NetworkListener() {
+            @Override
+            public void onConnected(boolean isHost) {
+                SwingUtilities.invokeLater(() -> {
+                    if (networkDialog != null) networkDialog.onConnectionSuccess();
+                    boardPanel.setupOnlineGame(networkManager, isHost);
+
+                    String msg = isHost ? Lang.onlineConnectedHost() : Lang.onlineConnectedClient();
+                    JOptionPane.showMessageDialog(MainFrame.this, msg,
+                            Lang.isVI() ? "Kết nối thành công" : "Connected Successfully",
+                            JOptionPane.INFORMATION_MESSAGE);
+                });
+            }
+
+            @Override
+            public void onMoveReceived(int row, int col) {
+                boardPanel.applyOpponentMove(row, col);
+            }
+
+            @Override
+            public void onRestartRequested() {
+                SwingUtilities.invokeLater(() -> {
+                    boardPanel.resetGame();
+                    JOptionPane.showMessageDialog(MainFrame.this,
+                            Lang.isVI() ? "Đối thủ đã bắt đầu ván mới!" : "Opponent restarted the game!",
+                            Lang.isVI() ? "Ván mới" : "New Game",
+                            JOptionPane.INFORMATION_MESSAGE);
+                });
+            }
+
+            @Override
+            public void onOpponentDisconnected() {
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(MainFrame.this,
+                            Lang.opponentDisconnected(),
+                            Lang.isVI() ? "Mất kết nối" : "Disconnected",
+                            JOptionPane.WARNING_MESSAGE);
+                    modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
+                });
+            }
+
+            @Override
+            public void onError(String message) {
+                if (networkDialog != null) {
+                    networkDialog.onConnectionFailed(message);
+                }
+            }
+        });
+    }
+
+    private void openNetworkDialog() {
+        networkDialog = new NetworkDialog(this, networkManager, () -> {
+            // Khi kết nối thành công, không cần làm gì thêm vì callback onConnected đã lo
+        });
+        networkDialog.setVisible(true);
+    }
+
     private void updateLanguage() {
         setTitle("Gomoku");
         lblMode.setText(Lang.mode());
@@ -214,59 +322,43 @@ public class MainFrame extends JFrame {
         btnLang.setText(Lang.langBtnLabel());
         btnLang.setToolTipText(Lang.langBtnTooltip());
 
-        // Cập nhật combo GameMode (toString() của enum gọi Lang.xxx())
         modeCombo.repaint();
-
-        // Cập nhật combo Difficulty (renderer gọi Lang.xxx())
         diffCombo.repaint();
 
-        // Cập nhật Scoreboard labels
         lblScoreTitle.setText(Lang.scoreboard());
         lblWinTxt.setText(Lang.wins());
         lblLossTxt.setText(Lang.losses());
         lblDrawTxt.setText(Lang.draws());
 
-        // Cập nhật lượt chơi hiện tại (gọi lại với cùng màu)
-        String cur = turnLabel.getText();
-        // Reset lại text theo ngôn ngữ mới — gọi lại sự kiện onTurnChanged một cách đơn giản
         boardPanel.resetGame();
-
         revalidate();
         repaint();
     }
 
-    // =========================================================================
-    // Xây dựng bảng thành tích
-    // =========================================================================
     private JPanel buildScoreBar() {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.CENTER, 28, 7));
         bar.setBackground(new Color(44, 47, 55));
         bar.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(100, 75, 165)));
 
-        // Tiêu đề
         lblScoreTitle = new JLabel(Lang.scoreboard());
         lblScoreTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
         lblScoreTitle.setForeground(new Color(180, 155, 230));
         bar.add(lblScoreTitle);
 
-        // Ngăn cách
         bar.add(makeSep());
 
-        // Thắng (Xanh lá)
         lblWinTxt = makeScoreLabel(Lang.wins(), new Color(100, 200, 120), false);
         lblWinVal = makeScoreLabel("0", new Color(100, 200, 120), true);
         bar.add(lblWinTxt); bar.add(lblWinVal);
 
         bar.add(makeSep());
 
-        // Thua (Đỏ)
         lblLossTxt = makeScoreLabel(Lang.losses(), new Color(220, 100, 100), false);
         lblLossVal = makeScoreLabel("0", new Color(220, 100, 100), true);
         bar.add(lblLossTxt); bar.add(lblLossVal);
 
         bar.add(makeSep());
 
-        // Hòa (Vàng)
         lblDrawTxt = makeScoreLabel(Lang.draws(), new Color(220, 185, 80), false);
         lblDrawVal = makeScoreLabel("0", new Color(220, 185, 80), true);
         bar.add(lblDrawTxt); bar.add(lblDrawVal);
@@ -280,9 +372,6 @@ public class MainFrame extends JFrame {
         lblDrawVal.setText(String.valueOf(draws));
     }
 
-    // =========================================================================
-    // Helpers
-    // =========================================================================
     private void setTurnLabel(String text, Color color) {
         turnLabel.setText(text);
         turnLabel.setForeground(color);
