@@ -3,6 +3,7 @@ package game.view;
 import game.ai.MinimaxAI;
 import game.model.Board;
 import game.model.Piece;
+import game.model.ScoreTracker;
 import game.network.NetworkManager;
 
 import javax.swing.*;
@@ -34,6 +35,7 @@ public class MainFrame extends JFrame {
     private JLabel lblWinTxt, lblLossTxt, lblDrawTxt;
     private JLabel lblScoreTitle;
 
+    private final ScoreTracker scoreTracker = new ScoreTracker();
     private int humanWins = 0, aiWins = 0, draws = 0;
 
     // === Chế độ chơi Online ===
@@ -177,6 +179,7 @@ public class MainFrame extends JFrame {
                     networkManager.sendRestart();
                 }
             }
+            scoreTracker.newGame();
             boardPanel.resetGame();
         });
 
@@ -212,24 +215,29 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onGameOver(String message, Piece winner) {
+                onGameOver(boardPanel.getGameId(), message, winner);
+            }
+
+            @Override
+            public void onGameOver(int gameId, String message, Piece winner) {
                 BoardPanel.GameMode mode = boardPanel.getGameMode();
-                if (mode == BoardPanel.GameMode.ONLINE) {
-                    if (winner == boardPanel.getMyPiece()) {
-                        humanWins++;
-                        setTurnLabel(message, new Color(30, 130, 50));
-                    } else if (winner == Piece.NONE) {
-                        draws++;
-                        setTurnLabel(message, new Color(120, 80, 20));
-                    } else {
-                        aiWins++; // Tính là 1 trận thua
-                        setTurnLabel(message, new Color(160, 30, 30));
-                    }
-                } else {
-                    if (winner == Piece.X)        { humanWins++; setTurnLabel(message, new Color(30, 130, 50)); }
-                    else if (winner == Piece.O)   { aiWins++;    setTurnLabel(message, new Color(160, 30, 30)); }
-                    else                          { draws++;     setTurnLabel(message, new Color(120, 80, 20)); }
+                Piece humanPiece = (mode == BoardPanel.GameMode.ONLINE) ? boardPanel.getMyPiece() : Piece.X;
+                boolean isNewRecord = scoreTracker.recordResult(gameId, winner, humanPiece);
+                if (isNewRecord) {
+                    humanWins = scoreTracker.getHumanWins();
+                    aiWins = scoreTracker.getAiWins();
+                    draws = scoreTracker.getDraws();
+                    refreshScores();
                 }
-                refreshScores();
+
+                if (winner == Piece.NONE) {
+                    setTurnLabel(message, new Color(120, 80, 20));
+                } else if (winner == humanPiece) {
+                    setTurnLabel(message, new Color(30, 130, 50));
+                } else {
+                    setTurnLabel(message, new Color(160, 30, 30));
+                }
+
                 JOptionPane.showMessageDialog(MainFrame.this, message, Lang.gameOverTitle(), JOptionPane.INFORMATION_MESSAGE);
             }
 
@@ -277,6 +285,7 @@ public class MainFrame extends JFrame {
             @Override
             public void onRestartRequested() {
                 SwingUtilities.invokeLater(() -> {
+                    scoreTracker.newGame();
                     boardPanel.resetGame();
                     JOptionPane.showMessageDialog(MainFrame.this,
                             Lang.isVI() ? "Đối thủ đã bắt đầu ván mới!" : "Opponent restarted the game!",
@@ -415,5 +424,13 @@ public class MainFrame extends JFrame {
         c.setBackground(new Color(55, 58, 65));
         c.setForeground(Color.WHITE);
         c.setFocusable(false);
+    }
+
+    public ScoreTracker getScoreTracker() {
+        return scoreTracker;
+    }
+
+    public BoardPanel getBoardPanel() {
+        return boardPanel;
     }
 }
