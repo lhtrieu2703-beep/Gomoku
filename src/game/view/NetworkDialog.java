@@ -8,6 +8,8 @@ import java.awt.*;
 
 /**
  * Hộp thoại thiết lập kết nối Chơi Online (Host / Join).
+ * Dialog là MODAL — mọi chuỗi được đọc từ Lang.*() tại thời điểm tạo.
+ * Không đăng ký Lang.addChangeListener (thừa với modal).
  */
 public class NetworkDialog extends JDialog {
     private final NetworkManager networkManager;
@@ -20,7 +22,7 @@ public class NetworkDialog extends JDialog {
     private JButton btnJoin;
 
     public NetworkDialog(JFrame parent, NetworkManager networkManager, Runnable onConnectedCallback) {
-        super(parent, Lang.isVI() ? "Kết nối chơi Online (LAN)" : "Online Connection (LAN)", true);
+        super(parent, Lang.networkDialogTitle(), true);
         this.networkManager = networkManager;
         this.onConnectedCallback = onConnectedCallback;
 
@@ -34,7 +36,7 @@ public class NetworkDialog extends JDialog {
         content.setOpaque(false);
 
         // Tiêu đề hướng dẫn
-        JLabel lblTitle = new JLabel(Lang.isVI() ? "CHỌN CÁCH THỨC KẾT NỐI" : "CHOOSE CONNECTION MODE");
+        JLabel lblTitle = new JLabel(Lang.networkDialogHeader());
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
         lblTitle.setForeground(new Color(40, 45, 55));
@@ -45,11 +47,11 @@ public class NetworkDialog extends JDialog {
         JPanel formPanel = new JPanel(new GridLayout(2, 2, 8, 8));
         formPanel.setOpaque(false);
 
-        JLabel lblIpText = new JLabel(Lang.isVI() ? "Địa chỉ IP đối thủ:" : "Opponent IP:");
-        txtIp = new JTextField("127.0.0.1"); // Mặc định localhost cho dễ test
+        JLabel lblIpText   = new JLabel(Lang.ipLabel());
+        txtIp = new JTextField("127.0.0.1");
         txtIp.setFont(new Font("Consolas", Font.PLAIN, 13));
 
-        JLabel lblPortText = new JLabel(Lang.isVI() ? "Cổng (Port):" : "Port:");
+        JLabel lblPortText = new JLabel(Lang.portLabel());
         txtPort = new JTextField(String.valueOf(NetworkManager.DEFAULT_PORT));
         txtPort.setFont(new Font("Consolas", Font.PLAIN, 13));
 
@@ -59,22 +61,22 @@ public class NetworkDialog extends JDialog {
         formPanel.add(txtPort);
         content.add(formPanel);
 
-        // Hiển thị IP máy của chính mình để đưa cho bạn bè
-        JLabel lblMyIp = new JLabel((Lang.isVI() ? "IP máy của bạn: " : "Your local IP: ") + NetworkManager.getLocalIP());
+        // IP máy mình
+        JLabel lblMyIp = new JLabel(Lang.myIpLabel() + NetworkManager.getLocalIP());
         lblMyIp.setFont(new Font("Segoe UI", Font.ITALIC, 11));
         lblMyIp.setForeground(new Color(100, 100, 110));
         lblMyIp.setAlignmentX(Component.CENTER_ALIGNMENT);
         content.add(Box.createVerticalStrut(8));
         content.add(lblMyIp);
 
-        // Nút bấm Hành động
+        // Nút bấm
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
         btnPanel.setOpaque(false);
 
-        btnHost = new JButton(Lang.isVI() ? "Tạo Phòng (Host - Quân Đen)" : "Create Room (Host - Black)");
+        btnHost = new JButton(Lang.hostBtn());
         styleButton(btnHost, new Color(46, 160, 67), Color.WHITE);
 
-        btnJoin = new JButton(Lang.isVI() ? "Vào Phòng (Join - Quân Trắng)" : "Join Room (White)");
+        btnJoin = new JButton(Lang.joinBtn());
         styleButton(btnJoin, new Color(33, 113, 195), Color.WHITE);
 
         btnPanel.add(btnHost);
@@ -96,7 +98,7 @@ public class NetworkDialog extends JDialog {
         btnHost.addActionListener(e -> {
             int port = parsePort();
             if (port <= 0) return;
-            setLoadingState(true, Lang.isVI() ? "Đang mở phòng & chờ đối thủ kết nối..." : "Hosting & waiting for player...");
+            setLoadingState(true, Lang.hostingMsg());
             networkManager.hostGame(port);
         });
 
@@ -105,7 +107,7 @@ public class NetworkDialog extends JDialog {
             String ip = txtIp.getText().trim();
             int port = parsePort();
             if (ip.isEmpty() || port <= 0) return;
-            setLoadingState(true, Lang.isVI() ? "Đang kết nối tới " + ip + "..." : "Connecting to " + ip + "...");
+            setLoadingState(true, Lang.connectingMsg(ip));
             networkManager.joinGame(ip, port);
         });
 
@@ -117,7 +119,7 @@ public class NetworkDialog extends JDialog {
         try {
             return Integer.parseInt(txtPort.getText().trim());
         } catch (Exception ex) {
-            lblStatus.setText(Lang.isVI() ? "Cổng (Port) không hợp lệ!" : "Invalid port number!");
+            lblStatus.setText(Lang.invalidPort());
             lblStatus.setForeground(Color.RED);
             return -1;
         }
@@ -134,9 +136,7 @@ public class NetworkDialog extends JDialog {
 
     public void onConnectionSuccess() {
         SwingUtilities.invokeLater(() -> {
-            if (onConnectedCallback != null) {
-                onConnectedCallback.run();
-            }
+            if (onConnectedCallback != null) onConnectedCallback.run();
             dispose();
         });
     }
