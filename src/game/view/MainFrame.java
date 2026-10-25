@@ -14,10 +14,12 @@ import java.awt.event.WindowEvent;
 
 /**
  * Cửa sổ chính "Gomoku":
- * - Hỗ trợ 2 ngôn ngữ (Tiếng Việt có dấu / English) với nút chuyển ngôn ngữ.
+ * - Hỗ trợ 3 ngôn ngữ (Tiếng Việt / English / Português) với JComboBox chọn ngôn ngữ.
  * - Hỗ trợ 3 chế độ: Người vs Người, Người vs Máy (AI), Chơi Online (qua LAN Socket).
  * - Bảng thành tích (Scoreboard) hiển thị Thắng / Thua / Hòa.
  * - Giao diện hiện đại tối (dark header) + bàn cờ gỗ.
+ * - Nút âm thanh dạng icon Java2D (loa bật/tắt).
+ * - Lưu cài đặt ngôn ngữ & âm thanh qua AppSettings (java.util.prefs.Preferences).
  */
 public class MainFrame extends JFrame {
     private final Board board;
@@ -25,8 +27,13 @@ public class MainFrame extends JFrame {
 
     // === Components điều khiển ===
     private final JLabel lblMode, lblDiff, turnLabel;
-    private final JButton btnNewGame, btnUndo, btnLang;
-    private final JCheckBox chkSound;
+    private final JButton btnNewGame, btnUndo;
+    // Nút âm thanh icon (thay JCheckBox cũ)
+    private JButton btnSound;
+    // Combo chọn ngôn ngữ (thay btnLang cũ)
+    private JComboBox<Lang.Language> langCombo;
+    private boolean langComboUpdating = false; // tránh listener loop
+
     private final JComboBox<BoardPanel.GameMode> modeCombo;
     private final JComboBox<MinimaxAI.Difficulty> diffCombo;
 
@@ -42,30 +49,41 @@ public class MainFrame extends JFrame {
     private NetworkManager networkManager;
     private NetworkDialog networkDialog;
 
+    // === Cài đặt ===
+    private final AppSettings appSettings;
+
     public MainFrame() {
+        this(new AppSettings());
+    }
+
+    /** Constructor có thể inject AppSettings — dùng cho test. */
+    public MainFrame(AppSettings settings) {
+        this.appSettings = settings;
         this.board = new Board();
         this.boardPanel = new BoardPanel(board);
+
+        // Load cài đặt TRƯỚC khi dựng UI
+        Lang.set(appSettings.loadLang());
+        SoundManager.setSoundEnabled(appSettings.loadSound());
 
         setTitle("Gomoku");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout(0, 0));
 
-        // Khởi tạo NetworkManager với các listener sự kiện
+        // Khởi tạo NetworkManager
         initNetworkManager();
 
         // Đảm bảo ngắt socket khi tắt ứng dụng
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if (networkManager != null) {
-                    networkManager.disconnect();
-                }
+                if (networkManager != null) networkManager.disconnect();
             }
         });
 
         // =====================================================================
-        // 1. HEADER TỐI (Điều khiển chính)
+        // 1. HEADER TỐI
         // =====================================================================
         JPanel header = new JPanel(new BorderLayout());
         header.setBackground(new Color(34, 36, 40));
@@ -84,36 +102,18 @@ public class MainFrame extends JFrame {
         diffCombo = new JComboBox<>();
         for (MinimaxAI.Difficulty d : MinimaxAI.Difficulty.values()) diffCombo.addItem(d);
         diffCombo.setSelectedItem(MinimaxAI.Difficulty.MEDIUM);
-        diffCombo.setRenderer(new DefaultListCellRenderer() {
-            @Override
-            public Component getListCellRendererComponent(JList<?> list, Object value,
-                    int index, boolean isSelected, boolean cellHasFocus) {
-                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (value instanceof MinimaxAI.Difficulty d) {
-                    setText(switch (d) {
-                        case EASY   -> Lang.easy();
-                        case MEDIUM -> Lang.medium();
-                        case HARD   -> Lang.hard();
-                    });
-                }
-                return this;
-            }
-        });
+        diffCombo.setRenderer(makeDiffRenderer());
         styleCombo(diffCombo);
 
         btnNewGame = makeDarkBtn(Lang.newGame(), new Color(46, 160, 67), Color.WHITE);
         btnUndo    = makeDarkBtn(Lang.undo(),    new Color(33, 113, 195), Color.WHITE);
         btnUndo.setEnabled(false);
 
-        chkSound = new JCheckBox(Lang.sound(), true);
-        chkSound.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        chkSound.setForeground(new Color(210, 210, 215));
-        chkSound.setOpaque(false);
-        chkSound.setFocusPainted(false);
+        // Nút âm thanh — icon Java2D
+        btnSound = makeSoundButton();
 
-        btnLang = makeDarkBtn(Lang.langBtnLabel(), new Color(100, 65, 165), Color.WHITE);
-        btnLang.setFont(new Font("Segoe UI", Font.BOLD, 12));
-        btnLang.setToolTipText(Lang.langBtnTooltip());
+        // Combo ngôn ngữ
+        langCombo = makeLangCombo();
 
         ctrlRow.add(lblMode); ctrlRow.add(modeCombo);
         ctrlRow.add(Box.createHorizontalStrut(6));
@@ -121,17 +121,17 @@ public class MainFrame extends JFrame {
         ctrlRow.add(Box.createHorizontalStrut(10));
         ctrlRow.add(btnNewGame); ctrlRow.add(btnUndo);
         ctrlRow.add(Box.createHorizontalStrut(6));
-        ctrlRow.add(chkSound);
+        ctrlRow.add(btnSound);
 
         JPanel rightRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         rightRow.setOpaque(false);
-        rightRow.add(btnLang);
+        rightRow.add(langCombo);
 
         header.add(ctrlRow, BorderLayout.CENTER);
         header.add(rightRow, BorderLayout.EAST);
 
         // =====================================================================
-        // 2. BẢNG THÀNH TÍCH (SCOREBOARD)
+        // 2. BẢNG THÀNH TÍCH
         // =====================================================================
         JPanel scoreBar = buildScoreBar();
 
@@ -184,11 +184,22 @@ public class MainFrame extends JFrame {
         });
 
         btnUndo.addActionListener(e -> boardPanel.undoMove());
-        chkSound.addActionListener(e -> SoundManager.setSoundEnabled(chkSound.isSelected()));
 
-        btnLang.addActionListener(e -> {
-            Lang.toggle();
-            updateLanguage();
+        // Listener nút âm thanh
+        btnSound.addActionListener(e -> {
+            SoundManager.setSoundEnabled(!SoundManager.isSoundEnabled());
+            appSettings.saveSound(SoundManager.isSoundEnabled());
+            updateSoundButton();
+        });
+
+        // Listener langCombo
+        langCombo.addActionListener(e -> {
+            if (langComboUpdating) return;
+            Lang.Language sel = (Lang.Language) langCombo.getSelectedItem();
+            if (sel != null && sel != Lang.get()) {
+                Lang.set(sel);
+                appSettings.saveLang(Lang.get());
+            }
         });
 
         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
@@ -225,8 +236,8 @@ public class MainFrame extends JFrame {
                 boolean isNewRecord = scoreTracker.recordResult(gameId, winner, humanPiece);
                 if (isNewRecord) {
                     humanWins = scoreTracker.getHumanWins();
-                    aiWins = scoreTracker.getAiWins();
-                    draws = scoreTracker.getDraws();
+                    aiWins    = scoreTracker.getAiWins();
+                    draws     = scoreTracker.getDraws();
                     refreshScores();
                 }
 
@@ -238,7 +249,8 @@ public class MainFrame extends JFrame {
                     setTurnLabel(message, new Color(160, 30, 30));
                 }
 
-                JOptionPane.showMessageDialog(MainFrame.this, message, Lang.gameOverTitle(), JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(MainFrame.this, message,
+                        Lang.gameOverTitle(), JOptionPane.INFORMATION_MESSAGE);
             }
 
             @Override
@@ -250,6 +262,7 @@ public class MainFrame extends JFrame {
             }
         });
 
+        // Lang listener — cập nhật toàn bộ UI khi ngôn ngữ thay đổi
         Lang.addChangeListener(this::updateLanguage);
 
         // =====================================================================
@@ -262,6 +275,188 @@ public class MainFrame extends JFrame {
         setLocationRelativeTo(null);
     }
 
+    // =========================================================================
+    // TẠO NÚT ÂM THANH
+    // =========================================================================
+    private JButton makeSoundButton() {
+        SpeakerIcon icon = new SpeakerIcon(18);
+        JButton btn = new JButton(icon);
+        btn.setOpaque(true);
+        btn.setBackground(new Color(55, 58, 65));
+        btn.setBorderPainted(false);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(new EmptyBorder(5, 10, 5, 10));
+        btn.setToolTipText(SoundManager.isSoundEnabled() ? Lang.soundTooltipOn() : Lang.soundTooltipOff());
+        return btn;
+    }
+
+    private void updateSoundButton() {
+        boolean on = SoundManager.isSoundEnabled();
+        btnSound.setToolTipText(on ? Lang.soundTooltipOn() : Lang.soundTooltipOff());
+        btnSound.repaint();
+    }
+
+    // =========================================================================
+    // TẠO COMBO NGÔN NGỮ
+    // =========================================================================
+    private JComboBox<Lang.Language> makeLangCombo() {
+        JComboBox<Lang.Language> cb = new JComboBox<>(Lang.Language.values());
+        cb.setSelectedItem(Lang.get());
+        cb.setFocusable(false);
+        cb.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        cb.setToolTipText(Lang.langComboTooltip());
+        cb.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel lbl = (JLabel) super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Lang.Language lang) {
+                    lbl.setText(Lang.langName(lang));
+                }
+                // Luôn đặt màu rõ ràng
+                lbl.setOpaque(true);
+                if (isSelected) {
+                    lbl.setBackground(new Color(80, 60, 140));
+                    lbl.setForeground(Color.WHITE);
+                } else {
+                    lbl.setBackground(new Color(55, 58, 65));
+                    lbl.setForeground(Color.WHITE);
+                }
+                return lbl;
+            }
+        });
+        applyDarkComboUI(cb);
+        return cb;
+    }
+
+    // =========================================================================
+    // STYLE COMBO (sửa để luôn tự vẽ màu — tránh Windows L&F override field)
+    // =========================================================================
+    private void styleCombo(JComboBox<?> c) {
+        c.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        c.setFocusable(false);
+        // Không gọi setBackground/setForeground trực tiếp — để renderer lo
+        applyDarkComboUI(c);
+    }
+
+    /**
+     * Thay WindowsComboBoxUI bằng BasicComboBoxUI tùy biến:
+     * vẽ nền ô display + nút mũi tên đúng màu tối, chữ trắng.
+     */
+    private void applyDarkComboUI(JComboBox<?> c) {
+        final Color bgColor  = new Color(55, 58, 65);
+        final Color fgColor  = Color.WHITE;
+        final Color selBg    = new Color(80, 60, 140);
+        final Color arrowBg  = new Color(70, 74, 82);
+        final Color borderC  = new Color(90, 95, 105);
+
+        c.setUI(new javax.swing.plaf.basic.BasicComboBoxUI() {
+            @Override
+            protected JButton createArrowButton() {
+                JButton btn = new JButton("▾");
+                btn.setFont(new Font("Segoe UI", Font.PLAIN, 10));
+                btn.setBackground(arrowBg);
+                btn.setForeground(fgColor);
+                btn.setOpaque(true);
+                btn.setBorderPainted(false);
+                btn.setFocusPainted(false);
+                btn.setContentAreaFilled(true);
+                return btn;
+            }
+
+            @Override
+            public void paintCurrentValueBackground(Graphics g, Rectangle bounds, boolean hasFocus) {
+                g.setColor(bgColor);
+                g.fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
+            }
+
+            @Override
+            public void paintCurrentValue(Graphics g, Rectangle bounds, boolean hasFocus) {
+                // Lấy item hiển thị
+                Object item = comboBox.getSelectedItem();
+                if (item == null) return;
+                ListCellRenderer renderer = comboBox.getRenderer();
+                Component rc = renderer.getListCellRendererComponent(
+                        listBox, item, -1, false, false);
+                // Đảm bảo màu
+                rc.setBackground(bgColor);
+                rc.setForeground(fgColor);
+                if (rc instanceof JComponent jc) jc.setOpaque(true);
+
+                currentValuePane.paintComponent(g, rc, comboBox,
+                        bounds.x, bounds.y, bounds.width, bounds.height, true);
+            }
+
+            @Override
+            protected void installDefaults() {
+                super.installDefaults();
+                comboBox.setBackground(bgColor);
+                comboBox.setForeground(fgColor);
+                comboBox.setBorder(BorderFactory.createLineBorder(borderC));
+            }
+        });
+
+        // Renderer mặc định cho item trong popup
+        if (!(c.getRenderer() instanceof DefaultListCellRenderer r &&
+              r.getClass().getEnclosingClass() == MainFrame.class)) {
+            // Chỉ đặt renderer mặc định nếu chưa có renderer tùy biến
+            if (c.getRenderer() == null || c.getRenderer().getClass().getName().contains("Windows")) {
+                c.setRenderer(new DefaultListCellRenderer() {
+                    @Override
+                    public Component getListCellRendererComponent(JList<?> list, Object value,
+                            int index, boolean isSelected, boolean cellHasFocus) {
+                        JLabel lbl = (JLabel) super.getListCellRendererComponent(
+                                list, value, index, isSelected, cellHasFocus);
+                        lbl.setOpaque(true);
+                        if (isSelected) {
+                            lbl.setBackground(selBg);
+                            lbl.setForeground(fgColor);
+                        } else {
+                            lbl.setBackground(bgColor);
+                            lbl.setForeground(fgColor);
+                        }
+                        return lbl;
+                    }
+                });
+            }
+        }
+    }
+
+    // =========================================================================
+    // RENDERER CHO diffCombo
+    // =========================================================================
+    private ListCellRenderer<Object> makeDiffRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                JLabel lbl = (JLabel) super.getListCellRendererComponent(
+                        list, value, index, isSelected, cellHasFocus);
+                if (value instanceof MinimaxAI.Difficulty d) {
+                    lbl.setText(switch (d) {
+                        case EASY   -> Lang.easy();
+                        case MEDIUM -> Lang.medium();
+                        case HARD   -> Lang.hard();
+                    });
+                }
+                lbl.setOpaque(true);
+                if (isSelected) {
+                    lbl.setBackground(new Color(80, 60, 140));
+                    lbl.setForeground(Color.WHITE);
+                } else {
+                    lbl.setBackground(new Color(55, 58, 65));
+                    lbl.setForeground(Color.WHITE);
+                }
+                return lbl;
+            }
+        };
+    }
+
+    // =========================================================================
+    // NETWORK
+    // =========================================================================
     private void initNetworkManager() {
         this.networkManager = new NetworkManager(new NetworkManager.NetworkListener() {
             @Override
@@ -272,8 +467,7 @@ public class MainFrame extends JFrame {
 
                     String msg = isHost ? Lang.onlineConnectedHost() : Lang.onlineConnectedClient();
                     JOptionPane.showMessageDialog(MainFrame.this, msg,
-                            Lang.isVI() ? "Kết nối thành công" : "Connected Successfully",
-                            JOptionPane.INFORMATION_MESSAGE);
+                            Lang.connectedTitle(), JOptionPane.INFORMATION_MESSAGE);
                 });
             }
 
@@ -288,8 +482,7 @@ public class MainFrame extends JFrame {
                     scoreTracker.newGame();
                     boardPanel.resetGame();
                     JOptionPane.showMessageDialog(MainFrame.this,
-                            Lang.isVI() ? "Đối thủ đã bắt đầu ván mới!" : "Opponent restarted the game!",
-                            Lang.isVI() ? "Ván mới" : "New Game",
+                            Lang.restartedMsg(), Lang.newGameTitle(),
                             JOptionPane.INFORMATION_MESSAGE);
                 });
             }
@@ -298,8 +491,7 @@ public class MainFrame extends JFrame {
             public void onOpponentDisconnected() {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(MainFrame.this,
-                            Lang.opponentDisconnected(),
-                            Lang.isVI() ? "Mất kết nối" : "Disconnected",
+                            Lang.opponentDisconnected(), Lang.disconnectedTitle(),
                             JOptionPane.WARNING_MESSAGE);
                     modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
                 });
@@ -307,30 +499,36 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onError(String message) {
-                if (networkDialog != null) {
-                    networkDialog.onConnectionFailed(message);
-                }
+                if (networkDialog != null) networkDialog.onConnectionFailed(message);
             }
         });
     }
 
     private void openNetworkDialog() {
-        networkDialog = new NetworkDialog(this, networkManager, () -> {
-            // Khi kết nối thành công, không cần làm gì thêm vì callback onConnected đã lo
-        });
+        networkDialog = new NetworkDialog(this, networkManager, () -> {});
         networkDialog.setVisible(true);
     }
 
+    // =========================================================================
+    // CẬP NHẬT NGÔN NGỮ
+    // =========================================================================
     private void updateLanguage() {
         setTitle("Gomoku");
         lblMode.setText(Lang.mode());
         lblDiff.setText(Lang.difficulty());
         btnNewGame.setText(Lang.newGame());
         btnUndo.setText(Lang.undo());
-        chkSound.setText(Lang.sound());
-        btnLang.setText(Lang.langBtnLabel());
-        btnLang.setToolTipText(Lang.langBtnTooltip());
 
+        // Cập nhật langCombo mà không kích hoạt listener
+        langComboUpdating = true;
+        langCombo.setSelectedItem(Lang.get());
+        langCombo.setToolTipText(Lang.langComboTooltip());
+        langComboUpdating = false;
+
+        // Cập nhật tooltip âm thanh
+        updateSoundButton();
+
+        // Repaint combo để toString() cập nhật
         modeCombo.repaint();
         diffCombo.repaint();
 
@@ -344,6 +542,9 @@ public class MainFrame extends JFrame {
         repaint();
     }
 
+    // =========================================================================
+    // SCOREBOARD
+    // =========================================================================
     private JPanel buildScoreBar() {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.CENTER, 28, 7));
         bar.setBackground(new Color(44, 47, 55));
@@ -356,20 +557,20 @@ public class MainFrame extends JFrame {
 
         bar.add(makeSep());
 
-        lblWinTxt = makeScoreLabel(Lang.wins(), new Color(100, 200, 120), false);
-        lblWinVal = makeScoreLabel("0", new Color(100, 200, 120), true);
+        lblWinTxt = makeScoreLabel(Lang.wins(),   new Color(100, 200, 120), false);
+        lblWinVal = makeScoreLabel("0",            new Color(100, 200, 120), true);
         bar.add(lblWinTxt); bar.add(lblWinVal);
 
         bar.add(makeSep());
 
         lblLossTxt = makeScoreLabel(Lang.losses(), new Color(220, 100, 100), false);
-        lblLossVal = makeScoreLabel("0", new Color(220, 100, 100), true);
+        lblLossVal = makeScoreLabel("0",            new Color(220, 100, 100), true);
         bar.add(lblLossTxt); bar.add(lblLossVal);
 
         bar.add(makeSep());
 
-        lblDrawTxt = makeScoreLabel(Lang.draws(), new Color(220, 185, 80), false);
-        lblDrawVal = makeScoreLabel("0", new Color(220, 185, 80), true);
+        lblDrawTxt = makeScoreLabel(Lang.draws(),  new Color(220, 185, 80), false);
+        lblDrawVal = makeScoreLabel("0",            new Color(220, 185, 80), true);
         bar.add(lblDrawTxt); bar.add(lblDrawVal);
 
         return bar;
@@ -386,6 +587,9 @@ public class MainFrame extends JFrame {
         turnLabel.setForeground(color);
     }
 
+    // =========================================================================
+    // FACTORY HELPERS
+    // =========================================================================
     private JLabel makeHeaderLabel(String text) {
         JLabel l = new JLabel(text);
         l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
@@ -419,18 +623,24 @@ public class MainFrame extends JFrame {
         return b;
     }
 
-    private void styleCombo(JComboBox<?> c) {
-        c.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        c.setBackground(new Color(55, 58, 65));
-        c.setForeground(Color.WHITE);
-        c.setFocusable(false);
-    }
+    // =========================================================================
+    // GETTERS (cho test)
+    // =========================================================================
+    public ScoreTracker getScoreTracker() { return scoreTracker; }
+    public BoardPanel getBoardPanel()     { return boardPanel; }
 
-    public ScoreTracker getScoreTracker() {
-        return scoreTracker;
-    }
+    /** Trả về modeCombo để test kiểm tra renderer/màu. */
+    public JComboBox<BoardPanel.GameMode> getModeCombo() { return modeCombo; }
 
-    public BoardPanel getBoardPanel() {
-        return boardPanel;
-    }
+    /** Trả về diffCombo để test kiểm tra renderer/màu. */
+    public JComboBox<MinimaxAI.Difficulty> getDiffCombo() { return diffCombo; }
+
+    /** Trả về btnSound để test kiểm tra tooltip/trạng thái. */
+    public JButton getBtnSound() { return btnSound; }
+
+    /** Trả về langCombo để test kiểm tra selected item. */
+    public JComboBox<Lang.Language> getLangCombo() { return langCombo; }
+
+    /** Trả về lblMode để test kiểm tra updateLanguage. */
+    public JLabel getLblMode() { return lblMode; }
 }
