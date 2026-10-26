@@ -1,0 +1,9 @@
+FINAL_MOVE_SENDS_AT_GAMEOVER=5 (expected 5 to notify opponent before popup)
+FINAL_MOVE_SENDS_AFTER_CALLBACK=5
+OLD_MOVE_AFTER_RESTART=NONE moveCount=0 (expected NONE / 0)
+BLOCKED_SIX win=false heuristic=0
+SINGLE_THREE heuristic=128300
+UI_VI frame=java.awt.Dimension[width=730,height=755]
+UI_EN frame=java.awt.Dimension[width=734,height=755]
+UI_PT frame=java.awt.Dimension[width=782,height=755]
+AFTER_VI_TO_PT java.awt.Dimension[width=782,height=755]

@@ -146,6 +146,7 @@ class P2LifecycleTest {
             Lang.set(Lang.Language.PT); String pt = Lang.networkError(error);
             assertNotEquals(vi, en); assertNotEquals(en, pt); assertNotEquals(vi, pt);
             assertTrue(en.chars().allMatch(c -> c < 128));
+            for (char viChar : LangPurityTest.VI_ONLY_CHARS.toCharArray()) assertTrue(pt.indexOf(viChar) < 0);
             assertFalse(vi.contains("diagnostic"));
             if (type == NetworkManager.ErrorType.HOST || type == NetworkManager.ErrorType.JOIN) {
                 assertTrue(vi.contains("1234")); assertTrue(en.contains("1234")); assertTrue(pt.contains("1234"));

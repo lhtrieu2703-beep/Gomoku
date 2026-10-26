@@ -8,6 +8,13 @@
 - F2: apply board/history, send MOVE, then notify UI/result popup. A gameId records/presents its result once; a callback returning from an old modal cannot update new-round history controls. Win/draw ordering regression added.
 - F3: score terminal wins from complete runs with RULE_A/B and actual blocked endpoints; deduplicate overlapping patterns by the stones' bit mask per line; cap nonterminal evaluation below FIVE. Depth/difficulty/rules unchanged. Corpus covers both colors and rules: blocked/open six, single/cross double-three, open-four, edge five, and many simultaneous threats.
 - F4: recompute combo text widths and pack after locale changes; board remains 596x596 preferred size with unchanged rendering/hit coordinates. Bounds checks cover direct VI/EN/PT startup, all locale transitions, VI->PT and VI->EN->PT. Current renders are in docs/task35-render/.
+- F5: T53 invokes real PvP playMove after a win; T54 invokes real online playMove twice without an opponent turn. T55 (resign), T56 (clock/timeout), T57 (console integration end-order scenario) are PENDING, excluded from PASS. Console now runs 54 scenarios / 77 assertions, with 3 pending. AIBenchmarkTest prints measurements only.
+- Final clean validation 2026-10-27: deleted bin/bin_test, rebuilt all src/test/tools/audit; JUnit 175/175 (0 skipped/failed), RuleAndDrawTest 17/17, console 54 scenarios / 77 assertions / 3 PENDING. Raw output: docs/task35-results/. Production Preferences /game/view remained {soundEnabled=true}; UUID test nodes were removed. No PreferencesFactory bypass or skipped Registry tests; Registry/socket tests ran outside the sandbox with permission.
+- JUnit delta from baseline: 123 -> 175 (+52): F1ProtocolTest 13 invocations (both same-base restart orderings), two additional network error enum cases, one stale-audio case, F2MoveOrderTest 2, F3HeuristicTest 28, F4LayoutTest 6. These are product regression tests; CurrentAuditProbe remains a separate diagnostic tool, not counted as JUnit PASS.
+- Final probe: OLD_MOVE_AFTER_RESTART=NONE / moveCount=0; FINAL_MOVE_SENDS_AT_GAMEOVER=5; blocked six=0 < FIVE=100000000; single three=128300 < DOUBLE_THREE=2000000. No OUTSIDE_PARENT. Native UI renders and direct/transition renders: docs/task35-render/.
+- Read-only Minimax audit: no plain/unpruned Minimax implementation or pruning toggle. MinimaxAI.java:243 is alpha-beta; cutoffs at 233/278/302. Tactical early returns precede it at 118-197; Easy 95-110 uses probabilistic blocking/random top-3. No dedicated tactical toggle. No depth/difficulty/rule changes in Task 3.5.
+
+The dated entries near the end are historical records. Current protocol, validation counts and remaining manual checks are recorded above and in sections 7-8.
 
 ## 1. Cấu trúc thư mục và vai trò các lớp chính
 - `src/game/model/Board.java`: Ma trận bàn cờ 15x15, đếm nước, đặt/hủy cờ, kiểm tra thắng (RULE_A/B) và hòa.
@@ -19,25 +26,22 @@
 - `src/game/view/BoardPanel.java`: Vẽ bàn cờ gỗ, xử lý tương tác chuột, quản lý lịch sử nước, Undo, kích hoạt AI.
 - `src/game/view/MainFrame.java`: Cửa sổ Swing chính, thanh điều khiển, hiển thị bảng điểm, ngôn ngữ và mạng.
 - `src/game/view/NetworkDialog.java`: Dialog Swing chọn tạo phòng (Host) hoặc vào phòng (Join IP).
-- `src/game/view/Lang.java`: Quản lý đa ngôn ngữ (Tiếng Việt / English).
+- `src/game/view/Lang.java`: Quản lý đa ngôn ngữ (Tiếng Việt / English / Português).
 - `src/game/view/SoundManager.java`: Phát âm thanh hiệu ứng (đặt quân, chiến thắng) qua luồng âm thanh Java Sound.
 - `src/game/Main.java`: Điểm khởi chạy ứng dụng GUI chính (`MainFrame`).
 - `test/game/BoardWinTest.java`: Bộ test JUnit 5 kiểm thử chuyên sâu luật RULE_B (55 ca).
 - `src/game/RuleAndDrawTest.java`: Kiểm thử luật chặn 2 đầu và bàn cờ kín 225 ô (17 ca).
-- `src/game/FullGomokuTestSuite.java`: Bộ kiểm thử toàn diện luật RULE_A và RULE_B (57 ca / 80 assertions).
+- `src/game/FullGomokuTestSuite.java`: 57 tình huống khai báo; 54 chạy thật / 77 assertions, 3 PENDING không tính PASS.
 - `src/game/ConsoleTest.java` & `src/game/AIBenchmarkTest.java`: Test nhanh console và đo benchmark AI.
 - `lib/junit-platform-console-standalone-1.10.2.jar`: Thư viện chạy độc lập bộ test JUnit 5 từ console.
 - `run.bat`: Script Windows tự động biên dịch và chạy ứng dụng GUI.
 
 ## 2. Luồng xử lý một nước đi
-- **Click chuột**: `BoardPanel.handleClick(px, py)` (BoardPanel.java:198) tính row/col -> kiểm tra `board.isValidMove(row, col)` (Board.java:54).
-- **Thực thi nước đi**: Gọi `BoardPanel.executeMove(row, col, piece)` (BoardPanel.java:232):
-  - Gọi `board.makeMove(row, col, piece)` (Board.java:62), thêm vào `moveHistory` (BoardPanel.java:234).
-  - Kiểm tra thắng: `board.checkWin(row, col)` (Board.java:122) -> nếu true: gán `isGameOver = true`, báo `stateListener.onGameOver(msg, piece)` (BoardPanel.java:246).
-  - Kiểm tra hòa: `board.isFull()` (Board.java:115) -> nếu true: gán `isGameOver = true`, báo hòa (BoardPanel.java:255).
-  - Nếu chưa kết thúc: Đổi lượt `currentTurn = currentTurn.opposite()`, báo `stateListener.onTurnChanged` (BoardPanel.java:261-265).
-- **Luồng AI**: Sau khi người đi ở PvAI, `BoardPanel.handleClick` gọi `triggerAI()` (BoardPanel.java:217). `SwingWorker` gọi `ai.findBestMove(snap)` chạy nền (BoardPanel.java:286), hàm `done()` gọi `executeMove(best.row, best.col, Piece.O)` (BoardPanel.java:294).
-- **Luồng Mạng**: Click của người chơi gửi `networkManager.sendMove(row, col)` (BoardPanel.java:212). Bên nhận tại `NetworkManager.listenForMessages` (NetworkManager.java:109) đọc `MOVE r c`, gọi `listener.onMoveReceived`, `MainFrame:274` đẩy sang `BoardPanel.applyOpponentMove` (BoardPanel.java:224) rồi gọi `executeMove`.
+- **Click chuột**: `BoardPanel.playMove` kiểm tra kết thúc, chờ restart, lượt và ô hợp lệ trước khi gọi `executeMove`.
+- **Thực thi nước đi** (`BoardPanel.java:327`): cập nhật bàn/lịch sử, gửi MOVE của người chơi online, sau đó cập nhật UI và báo kết quả. Popup modal không chặn lần gửi nước thắng/hòa.
+- **Kết quả**: kiểm tra thắng trước hòa; `MainFrame.onGameOver` kiểm tra gameId và `ScoreTracker.recordResult` để ghi điểm/hiện kết quả một lần. Reset đóng popup cũ; callback cũ không ghi điểm hay hiện lại popup.
+- **Luồng AI**: `triggerAI` chạy tìm kiếm trên bản sao bàn cờ trong SwingWorker; `done` kiểm tra token, gameId và số nước trước khi áp dụng kết quả.
+- **Luồng Mạng**: `NetworkManager.processLine` đọc `MOVE <roundId> <ply> <row> <col>`; callback mang nguyên roundId/ply tới `BoardPanel.applyOpponentMove` (`BoardPanel.java:295`) để kiểm tra lại tại EDT, kể cả sau reset.
 
 ## 3. Luật thắng hiện đang áp dụng
 - **Cấu hình**: `Board.winRule` mặc định là `WinRule.RULE_B` (Board.java:17). `WinRule.RULE_A`: đúng 5 quân, 6+ không tính; `WinRule.RULE_B`: từ 5 quân trở lên đều thắng (Board.java:10-13).
@@ -67,19 +71,22 @@
 - **Lưu trữ RAM**: Điểm số (`humanWins`, `aiWins`, `draws`) chỉ lưu trong bộ nhớ RAM, dùng chung cho cả 3 chế độ (PvP/PvAI/Online) và mất toàn bộ khi tắt ứng dụng.
 
 ## 7. Giao thức mạng (Network Protocol)
-Hiện tại `NetworkManager.java:109-125` chỉ hỗ trợ đúng 3 loại gói tin văn bản qua Socket TCP:
-- `MOVE <row> <col>`: Gửi tọa độ nước cờ vừa đánh sang máy đối thủ.
-- `RESTART`: Gửi tín hiệu yêu cầu chơi lại ván mới.
-- `DISCONNECT`: Thông báo ngắt kết nối chủ động trước khi đóng Socket.
+Giao thức v2 qua Socket TCP (chi tiết và sơ đồ: TASK35_PROTOCOL.md):
+- `START 2 <roundId>`: host cấp UUID chung; client chờ tối đa 5 giây và kiểm tra phiên bản.
+- `MOVE <roundId> <ply> <row> <col>`: chỉ nhận đúng ván, số thứ tự kế tiếp, màu/lượt và ô hợp lệ. Host/X đi trước.
+- `RESTART_REQUEST <base>`: client gửi một lần trong lúc chờ; khóa nước đi và hiện chuỗi chờ qua Lang.
+- `RESTART <base> <new>`: host cấp UUID mới; client chỉ nhận khi base khớp ván hiện tại. Cùng base chỉ reset một lần.
+- Ngắt kết nối bằng EOF, không gửi gói DISCONNECT. Không có bước đồng ý hai bên trong Task 3.5; request/commit được tách để Task 5 mở rộng.
+- UI không chọn luật lúc chạy, Board mặc định RULE_B; START không mang ruleId. Hai đầu phải dùng cùng phiên bản và luật cấu hình.
 
 ## 8. Biên dịch và kiểm thử
 - **Lệnh biên dịch**:
   - Mã nguồn: `javac -encoding UTF-8 -d bin src/game/model/*.java src/game/ai/*.java src/game/network/*.java src/game/view/*.java src/game/*.java`
   - Test JUnit: `javac -encoding UTF-8 -cp "lib/*;bin" -d bin_test test/game/*.java`
 - **Lệnh chạy test và số ca kiểm thử**:
-  - `java -jar lib/junit-platform-console-standalone-1.10.2.jar --class-path "bin_test;bin" --scan-class-path`: Chạy toàn bộ 72 ca kiểm thử JUnit 5 (55 ca `BoardWinTest` + 11 ca `UndoScoreTest` + 6 ca `UndoParityTest`).
+  - `java -jar lib/junit-platform-console-standalone-1.10.2.jar execute --class-path "bin_test;bin;src" --scan-class-path --details summary`: 175/175 JUnit, 0 skipped/failed. src nằm trong classpath để getResource đọc tài nguyên.
   - `java -cp bin game.RuleAndDrawTest`: Chạy `src/game/RuleAndDrawTest.java` (17 ca: 8 chặn hai đầu + 9 hòa/kín bàn cờ).
-  - `java -cp bin game.FullGomokuTestSuite`: Chạy `src/game/FullGomokuTestSuite.java` (57 ca / 80 assertions so sánh RULE_A và RULE_B).
+  - `java -cp "bin;src" game.FullGomokuTestSuite`: 54 tình huống / 77 assertions, 3 PENDING (T55-T57) không tính PASS; thất bại trả exit code khác 0.
   - `java -cp bin game.ConsoleTest`: Kiểm thử trực quan console cơ bản.
   - `java -cp bin game.AIBenchmarkTest`: Đo lường thời gian, nodes duyệt và cắt tỉa của AI.
 
@@ -88,7 +95,7 @@ Hiện tại `NetworkManager.java:109-125` chỉ hỗ trợ đúng 3 loại gói
 - **[ĐÃ SỬA] Race Condition luồng AI Worker**: Đã quản lý `aiWorker`, token `aiExecutionToken`, `capturedGameId`, `capturedMoveCount` trong `BoardPanel.java:335-350`; hủy và loại bỏ triệt để nước đi trễ khi `resetGame()` hoặc `undoMove()`.
 - **[ĐÃ SỬA] Parity Undo PvAI**: Đã sửa nhánh PvAI trong `BoardPanel.undoMove()` (BoardPanel.java:204-213); phân biệt quân cuối là O (rút 2 nước) hay X (rút 1 nước), ngăn chặn lỗi người chơi đi 2 nước liên tiếp.
 - **Gán cứng lượt chơi khi Undo PvAI**: Dòng 214 `BoardPanel.java` gán cố định `currentTurn = Piece.X`, sẽ lỗi nếu sau này mở rộng cho AI đi trước.
-- **Chế độ Online thiếu đồng bộ trạng thái & gói tin trễ**: Giao thức không có gói tin Undo. Ngoài ra, giao thức mạng không mang `gameId`, nên gói `MOVE` đến trễ sau gói `RESTART` có thể lọt vào ván mới nếu ô cờ đó hợp lệ (giới hạn còn lại).
+- **[ĐÃ SỬA F1] Gói tin ván cũ**: MOVE mang roundId chung và ply, kiểm tra tại EDT. Callback xếp hàng trước restart không lọt vào ván mới. Undo online và xác nhận restart hai bên vẫn dành cho Task 5.
 - **Thành tích gộp chung và mất khi thoát**: Điểm số dùng chung cho cả 3 mode (PvP/AI/Online) và mất toàn bộ khi tắt app do chỉ lưu trong RAM.
 
 ## 10. Tiến độ

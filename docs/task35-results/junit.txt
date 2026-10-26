@@ -1,0 +1,59 @@
+[C1] Tổng hàm String không tham số: 50
+[C1] Allowlist methods (PT có thể == EN): [online]
+[C1] PASS — 50 methods × 3 languages
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[C1b] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[C2] modeCombo renderer class: javax.swing.plaf.basic.BasicComboBoxRenderer$UIResource
+[C2] modeCombo painted field avg pixel: RGB(104,101,104)
+[C2] modeCombo selected: bg=RGB(184,207,229) fg=RGB(51,51,51)
+[C2] modeCombo contrast ratio selected: 7.88
+[C2] diffCombo renderer class: game.view.MainFrame$5
+[C2] diffCombo painted field avg pixel: RGB(125,130,135)
+[C2] diffCombo selected: bg=RGB(80,60,140) fg=RGB(255,255,255)
+[C2] diffCombo contrast ratio selected: 8.88
+[C2] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[B2] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[B3] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[C3] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[D1] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[D2] prod path: /game/view
+[D2] test path: /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267
+[D2] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[I2] PASS
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[Preferences] /test/task3/uiLangSound-a5c4d610-5886-48e9-8902-f550d28d3267 removed; production /game/view unchanged: {soundEnabled=true}
+[A] Kiểm 50 methods với bản PT
+[A] PASS – không có ký tự VI trong bản PT
+[Preferences] /test/task3/langPurity-67fd793f-a057-42e9-b55e-256de8bd12e8 removed; production /game/view unchanged: {soundEnabled=true}
+[B] Kiểm 50 methods với bản EN
+[B] PASS – toàn bộ EN là ASCII thuần
+[Preferences] /test/task3/langPurity-67fd793f-a057-42e9-b55e-256de8bd12e8 removed; production /game/view unchanged: {soundEnabled=true}
+[C] bg=RGB(55,58,65) fg=WHITE → contrast ratio = 11.39
+[C] selBg=RGB(80,60,140) fg=WHITE → contrast ratio selected = 8.88
+[C] PASS
+[Preferences] /test/task3/langPurity-67fd793f-a057-42e9-b55e-256de8bd12e8 removed; production /game/view unchanged: {soundEnabled=true}
+[Preferences] /test/task3/langPurity-67fd793f-a057-42e9-b55e-256de8bd12e8 removed; production /game/view unchanged: {soundEnabled=true}
+[I1a] PASS – Không còn Lang.isVI() trong view/*.java (trừ Lang.java)
+[I1b] PASS – Không còn string literal tiếng Việt có dấu trong view/*.java
+
+Test run finished after 7180 ms
+[        35 containers found      ]
+[         0 containers skipped    ]
+[        35 containers started    ]
+[         0 containers aborted    ]
+[        35 containers successful ]
+[         0 containers failed     ]
+[       175 tests found           ]
+[         0 tests skipped         ]
+[       175 tests started         ]
+[         0 tests aborted         ]
+[       175 tests successful      ]
+[         0 tests failed          ]
+

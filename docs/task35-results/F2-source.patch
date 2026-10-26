@@ -1,0 +1,124 @@
+diff --git a/src/game/view/BoardPanel.java b/src/game/view/BoardPanel.java
+index 545d1f6..6eb4c30 100644
+--- a/src/game/view/BoardPanel.java
++++ b/src/game/view/BoardPanel.java
+@@ -270,12 +270,7 @@ public class BoardPanel extends JPanel {
+ 
+         if (!board.isValidMove(row, col)) return false;
+ 
+-        executeMove(row, col, currentTurn);
+-
+-        // Gửi nước đi sang máy đối thủ nếu đang chơi Online
+-        if (gameMode == GameMode.ONLINE && networkManager != null) {
+-            networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
+-        }
++        executeMove(row, col, currentTurn, true);
+ 
+         // Kích hoạt AI nếu chơi với máy
+         if (!isGameOver && gameMode == GameMode.PV_AI && currentTurn == Piece.O) {
+@@ -326,11 +321,19 @@ public class BoardPanel extends JPanel {
+     }
+ 
+     private void executeMove(int row, int col, Piece piece) {
++        executeMove(row, col, piece, false);
++    }
++
++    private void executeMove(int row, int col, Piece piece, boolean publishOnline) {
+         board.makeMove(row, col, piece);
+         moveHistory.add(new Move(row, col));
+         lastMoveRow = row; lastMoveCol = col;
+         hoverRow = hoverCol = -1;
+ 
++        // Publish the applied move before any UI listener can enter a modal loop.
++        if (publishOnline && gameMode == GameMode.ONLINE && networkManager != null)
++            networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
++
+         SoundManager.playPlacePieceSound();
+ 
+         if (board.checkWin(row, col)) {
+@@ -342,7 +345,7 @@ public class BoardPanel extends JPanel {
+             if (stateListener != null) {
+                 String msg = buildWinMessage(piece);
+                 stateListener.onGameOver(gameId, msg, piece);
+-                stateListener.onHistoryChanged(canUndo());
++                if (resultGameId == gameId) stateListener.onHistoryChanged(canUndo());
+             }
+             return;
+         }
+@@ -351,8 +354,9 @@ public class BoardPanel extends JPanel {
+             winner = Piece.NONE;
+             repaint();
+             if (stateListener != null) {
++                int resultGameId = gameId;
+                 stateListener.onGameOver(gameId, Lang.drawGame(), Piece.NONE);
+-                stateListener.onHistoryChanged(canUndo());
++                if (resultGameId == gameId) stateListener.onHistoryChanged(canUndo());
+             }
+             return;
+         }
+diff --git a/src/game/view/MainFrame.java b/src/game/view/MainFrame.java
+index c0117d1..393f814 100644
+--- a/src/game/view/MainFrame.java
++++ b/src/game/view/MainFrame.java
+@@ -223,6 +223,7 @@ public class MainFrame extends JFrame {
+ 
+                 refreshGameStatus();
+ 
++                if (!isNewRecord) return; // a gameId presents its result at most once
+                 closeResultDialog();
+                 JDialog dialog = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE)
+                         .createDialog(MainFrame.this, Lang.gameOverTitle());
+diff --git a/test/game/F2MoveOrderTest.java b/test/game/F2MoveOrderTest.java
+new file mode 100644
+index 0000000..a372fc2
+--- /dev/null
++++ b/test/game/F2MoveOrderTest.java
+@@ -0,0 +1,48 @@
++package game;
++
++import game.model.*;
++import game.network.NetworkManager;
++import game.view.*;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.ValueSource;
++import javax.swing.*;
++import java.util.*;
++import static org.junit.jupiter.api.Assertions.*;
++
++class F2MoveOrderTest {
++    @ParameterizedTest @ValueSource(booleans = {false, true})
++    void finalMoveIsSentBeforeResultAndResultIsProcessedOnce(boolean draw) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            SoundManager.setSoundEnabled(false);
++            List<String> order = new ArrayList<>();
++            NetworkManager manager = new NetworkManager(null) {
++                @Override public void sendMove(String id, int ply, int r, int c) { order.add("send"); }
++            };
++            Board board = new Board(); BoardPanel panel = new BoardPanel(board); ScoreTracker score = new ScoreTracker();
++            panel.setupOnlineGame(manager, true);
++            if (draw) {
++                for (int r = 0; r < 15; r++) for (int c = 0; c < 15; c++) {
++                    if (r == 14 && c == 14) continue;
++                    board.makeMove(r, c, (c + (r % 2 == 0 ? 0 : 2)) % 4 < 2 ? Piece.X : Piece.O);
++                }
++            } else {
++                for (int c = 0; c < 4; c++) { panel.playMove(7, c); panel.applyOpponentMove(0, c * 2); }
++            }
++            panel.setGameStateListener(new BoardPanel.GameStateListener() {
++                public void onTurnChanged(Piece p, boolean thinking) {}
++                public void onGameOver(String message, Piece winner) {
++                    order.add("result"); score.recordResult(panel.getGameId(), winner);
++                    assertEquals(List.of("send", "result"), order); // modal UI may only open here
++                }
++                public void onAiStatsUpdated(long t, long n, long p) {}
++                public void onHistoryChanged(boolean b) {}
++            });
++            order.clear();
++            assertTrue(panel.playMove(draw ? 14 : 7, draw ? 14 : 4));
++            assertTrue(panel.isGameOver());
++            assertFalse(panel.playMove(3, 3));
++            assertEquals(List.of("send", "result"), order);
++            assertEquals(1, draw ? score.getDraws() : score.getHumanWins());
++        });
++    }
++}

@@ -59,17 +59,24 @@ class F1ProtocolTest {
             }
         } finally { manager.disconnect(); }
     }
-    @Test void simultaneousSameBaseRestartAndStaleRequestResetOnce() throws Exception {
+    @ParameterizedTest @ValueSource(booleans = {false, true})
+    void simultaneousSameBaseRestartAndStaleRequestResetOnce(boolean hostFirst) throws Exception {
         NetworkStabilityTest.Events events = new NetworkStabilityTest.Events(); NetworkManager host = new NetworkManager(events);
         try {
             host.hostGame(0); Integer port = events.ports.poll(3, TimeUnit.SECONDS); assertNotNull(port);
             try (Socket client = new Socket("127.0.0.1", port)) {
                 client.setSoTimeout(3000); BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
                 String base = in.readLine().split(" ")[2]; assertEquals("connected:true", events.next());
-                assertTrue(host.requestRestart(base));
-                writer(client).println("RESTART_REQUEST " + base);
+                if (hostFirst) {
+                    assertTrue(host.requestRestart(base));
+                    writer(client).println("RESTART_REQUEST " + base);
+                } else {
+                    writer(client).println("RESTART_REQUEST " + base);
+                    assertEquals("restart", events.next());
+                    assertFalse(host.requestRestart(base));
+                }
                 assertTrue(in.readLine().startsWith("RESTART " + base + " "));
-                assertEquals("restart", events.next());
+                if (hostFirst) assertEquals("restart", events.next());
                 assertFalse(host.requestRestart(base));
                 writer(client).println("RESTART_REQUEST " + base);
                 // A valid subsequent MOVE is a FIFO barrier after both stale requests.

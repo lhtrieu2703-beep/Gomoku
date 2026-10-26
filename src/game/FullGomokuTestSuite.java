@@ -2,6 +2,11 @@ package game;
 
 import game.model.Board;
 import game.model.Piece;
+import game.view.BoardPanel;
+import game.view.SoundManager;
+import javax.swing.SwingUtilities;
+import java.util.Set;
+import java.util.LinkedHashSet;
 
 /**
  * File kiểm thử đơn vị độc lập toàn diện 57 ca kiểm thử theo đúng đặc tả luật.
@@ -9,8 +14,11 @@ import game.model.Piece;
 public class FullGomokuTestSuite {
     private static int passCount = 0;
     private static int totalCount = 0;
+    private static int pendingCount;
+    private static final Set<String> scenarios = new LinkedHashSet<>();
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
+        passCount = totalCount = pendingCount = 0; scenarios.clear(); SoundManager.setSoundEnabled(false);
         System.out.println("======================================================================");
         System.out.println("              BẮT ĐẦU CHẠY BỘ KIỂM THỬ TOÀN DIỆN 57 CA");
         System.out.println("======================================================================\n");
@@ -26,16 +34,19 @@ public class FullGomokuTestSuite {
         runGroup9();
 
         System.out.println("\n======================================================================");
-        System.out.printf("KẾT QUẢ TỔNG THỂ: %d / %d CA ĐẠT (PASS)!\n", passCount, totalCount);
+        System.out.printf("KẾT QUẢ ASSERTIONS: %d / %d ĐẠT (PASS)!\n", passCount, totalCount);
+        System.out.printf("ĐÃ CHẠY: %d tình huống, %d assertions; PENDING: %d.%n", scenarios.size(), totalCount, pendingCount);
         if (passCount == totalCount) {
-            System.out.println(">>> CHÍNH XÁC 100%! TẤT CẢ CÁC CA ĐỀU VƯỢT QUA KIỂM THỬ. <<<");
+            System.out.println(">>> TẤT CẢ ASSERTIONS ĐÃ CHẠY ĐỀU PASS; PENDING KHÔNG TÍNH VÀO PASS. <<<");
         } else {
             System.out.println(">>> CÓ CA THẤT BẠI. CẦN KIỂM TRA LẠI. <<<");
         }
         System.out.println("======================================================================");
+        if (passCount != totalCount) throw new AssertionError("Console assertions failed");
     }
 
     private static void check(String id, String rule, boolean expectedWin, boolean actualWin, String desc) {
+        scenarios.add(id);
         totalCount++;
         boolean pass = (expectedWin == actualWin);
         if (pass) passCount++;
@@ -47,6 +58,7 @@ public class FullGomokuTestSuite {
     }
 
     private static void checkRaw(String id, String rule, String expected, String actual, String desc) {
+        scenarios.add(id);
         totalCount++;
         boolean pass = expected.equals(actual);
         if (pass) passCount++;
@@ -359,7 +371,7 @@ public class FullGomokuTestSuite {
     }
 
     // Nhóm 9: Kết thúc ván và tính hợp lệ
-    private static void runGroup9() {
+    private static void runGroup9() throws Exception {
         Board b49 = new Board();
         for (int r = 0; r < Board.SIZE; r++) {
             for (int c = 0; c < Board.SIZE; c++) {
@@ -399,19 +411,30 @@ public class FullGomokuTestSuite {
         boolean rejectOutOfBounds = !b52.makeMove(15, 0, Piece.X) && !b52.makeMove(-1, 0, Piece.X);
         checkRaw("T52", "A/B", "TỪ CHỐI", rejectOutOfBounds ? "TỪ CHỐI" : "CHẤP NHẬN", "Đánh ngoài bàn cờ");
 
-        Board b53 = new Board();
-        for (int c = 0; c < 5; c++) b53.makeMove(0, c, Piece.X);
-        boolean isOver = b53.checkWin(0, 4);
-        boolean rejectAfterWin = isOver && true;
-        checkRaw("T53", "A/B", "TỪ CHỐI", rejectAfterWin ? "TỪ CHỐI" : "CHẤP NHẬN", "Khóa click khi game kết thúc");
+        SwingUtilities.invokeAndWait(() -> {
+            Board b53 = new Board(); BoardPanel panel53 = new BoardPanel(b53);
+            panel53.setGameMode(BoardPanel.GameMode.PVP);
+            for (int c = 0; c < 4; c++) { panel53.playMove(7, c); panel53.playMove(0, c * 2); }
+            panel53.playMove(7, 4);
+            int moves = b53.getMoveCount();
+            boolean rejectAfterWin = panel53.isGameOver() && !panel53.playMove(3, 3)
+                    && b53.getMoveCount() == moves && b53.getPiece(3, 3) == Piece.NONE;
+            checkRaw("T53", "A/B", "TỪ CHỐI", rejectAfterWin ? "TỪ CHỐI" : "CHẤP NHẬN", "Nước đi thật sau khi thắng bị từ chối");
 
-        Piece currentTurn = Piece.X;
-        currentTurn = currentTurn.opposite();
-        boolean turnEnforced = (currentTurn == Piece.O);
-        checkRaw("T54", "A/B", "TỪ CHỐI", turnEnforced ? "TỪ CHỐI" : "CHẤP NHẬN", "Cùng người không đi 2 nước liên tiếp");
+            Board b54 = new Board(); BoardPanel panel54 = new BoardPanel(b54);
+            panel54.setupOnlineGame(null, true);
+            boolean turnEnforced = panel54.playMove(7, 7) && !panel54.playMove(7, 8)
+                    && b54.getMoveCount() == 1 && panel54.getCurrentTurn() == Piece.O
+                    && b54.getPiece(7, 8) == Piece.NONE;
+            checkRaw("T54", "A/B", "TỪ CHỐI", turnEnforced ? "TỪ CHỐI" : "CHẤP NHẬN", "Người chơi online không đi hai nước liên tiếp");
+        });
+        pending("T55", "Đầu hàng: chưa có chức năng sản phẩm");
+        pending("T56", "Hết giờ: chưa có đồng hồ sản phẩm");
+        pending("T57", "Thứ tự kết thúc tích hợp: chưa có kịch bản console tương ứng");
+    }
 
-        checkRaw("T55", "A/B", "X THẮNG", "X THẮNG", "O đầu hàng thì X thắng");
-        checkRaw("T56", "A/B", "X THẮNG", "X THẮNG", "O hết giờ thì X thắng");
-        checkRaw("T57", "A/B", "KẾT THÚC NGAY", "KẾT THÚC NGAY", "Game kết thúc ngay lập tức khi checkWin = true");
+    private static void pending(String id, String reason) {
+        pendingCount++;
+        System.out.println("[PENDING] " + id + " | " + reason);
     }
 }
