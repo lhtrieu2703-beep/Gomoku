@@ -253,7 +253,7 @@ public class MainFrame extends JFrame {
         add(north, BorderLayout.NORTH);
         add(boardPanel, BorderLayout.CENTER);
 
-        pack();
+        resizeTranslatedControls();
         setLocationRelativeTo(null);
     }
 
@@ -572,7 +572,30 @@ public class MainFrame extends JFrame {
 
         refreshGameStatus();
         revalidate();
+        resizeTranslatedControls();
         repaint();
+    }
+
+    /** Recompute text widths; BasicComboBoxUI caches sizes across locale changes. */
+    private void resizeTranslatedControls() {
+        resizeCombo(modeCombo, java.util.Arrays.stream(BoardPanel.GameMode.values()).map(Object::toString).toArray(String[]::new));
+        resizeCombo(diffCombo, new String[]{Lang.easy(), Lang.medium(), Lang.hard()});
+        resizeCombo(langCombo, java.util.Arrays.stream(Lang.Language.values()).map(Lang::langName).toArray(String[]::new));
+        invalidateLayoutTree(getContentPane());
+        invalidate();
+        pack();
+    }
+
+    private void invalidateLayoutTree(Container container) {
+        for (Component child : container.getComponents())
+            if (child instanceof Container nested) invalidateLayoutTree(nested);
+        container.invalidate();
+    }
+
+    private void resizeCombo(JComboBox<?> combo, String[] texts) {
+        FontMetrics metrics = combo.getFontMetrics(combo.getFont());
+        int width = java.util.Arrays.stream(texts).mapToInt(metrics::stringWidth).max().orElse(0);
+        combo.setPreferredSize(new Dimension(width + 40, 28));
     }
 
     // =========================================================================

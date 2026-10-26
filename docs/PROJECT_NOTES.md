@@ -7,6 +7,7 @@
 - F1 popup policy: dispose the old result dialog before reset; reject late result callbacks and gate victory playback by gameId. Preserve points already earned before reset. Protocol diagram and details: TASK35_PROTOCOL.md.
 - F2: apply board/history, send MOVE, then notify UI/result popup. A gameId records/presents its result once; a callback returning from an old modal cannot update new-round history controls. Win/draw ordering regression added.
 - F3: score terminal wins from complete runs with RULE_A/B and actual blocked endpoints; deduplicate overlapping patterns by the stones' bit mask per line; cap nonterminal evaluation below FIVE. Depth/difficulty/rules unchanged. Corpus covers both colors and rules: blocked/open six, single/cross double-three, open-four, edge five, and many simultaneous threats.
+- F4: recompute combo text widths and pack after locale changes; board remains 596x596 preferred size with unchanged rendering/hit coordinates. Bounds checks cover direct VI/EN/PT startup, all locale transitions, VI->PT and VI->EN->PT. Current renders are in docs/task35-render/.
 
 ## 1. Cấu trúc thư mục và vai trò các lớp chính
 - `src/game/model/Board.java`: Ma trận bàn cờ 15x15, đếm nước, đặt/hủy cờ, kiểm tra thắng (RULE_A/B) và hòa.
