@@ -9,7 +9,7 @@ import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NetworkStabilityTest {
-    static final class Events implements NetworkManager.NetworkListener {
+    static class Events implements NetworkManager.NetworkListener {
         final BlockingQueue<String> events = new LinkedBlockingQueue<>();
         final BlockingQueue<Integer> ports = new LinkedBlockingQueue<>();
         public void onHosting(int port) { ports.add(port); }
@@ -51,11 +51,12 @@ class NetworkStabilityTest {
             client.joinGame("127.0.0.1", port);
             assertEquals("connected:true", hostEvents.next());
             assertEquals("connected:false", clientEvents.next());
-            host.sendMove(7, 7);
+            host.sendMove(host.getRoundId(), 1, 7, 7);
             assertEquals("move:7:7", clientEvents.next());
-            client.sendMove(6, 6);
+            client.sendMove(client.getRoundId(), 2, 6, 6);
             assertEquals("move:6:6", hostEvents.next());
-            host.sendRestart();
+            host.requestRestart(host.getRoundId());
+            assertEquals("restart", hostEvents.next());
             assertEquals("restart", clientEvents.next());
             client.disconnect();
             assertEquals("disconnected", hostEvents.next());
@@ -71,13 +72,16 @@ class NetworkStabilityTest {
             server.setSoTimeout(3000);
             manager.joinGame("127.0.0.1", server.getLocalPort());
             try (Socket peer = server.accept()) {
+                new PrintWriter(peer.getOutputStream(), true).println("START 2 " + java.util.UUID.randomUUID());
                 assertEquals("connected:false", events.next());
                 PrintWriter out = new PrintWriter(peer.getOutputStream(), true, StandardCharsets.UTF_8);
                 out.println("MOVE nope 4");
                 out.println("MOVE 1 2 3");
-                out.println("MOVE 4 5");
-                out.println("RESTART");
-                out.println("MOVE   6   7");
+                String base = manager.getRoundId();
+                String next = java.util.UUID.randomUUID().toString();
+                out.println("MOVE " + base + " 1 4 5");
+                out.println("RESTART " + base + " " + next);
+                out.println("MOVE   " + next + "   1   6   7");
                 assertEquals("move:4:5", events.next());
                 assertEquals("restart", events.next());
                 assertEquals("move:6:7", events.next());
@@ -95,9 +99,11 @@ class NetworkStabilityTest {
             server.setSoTimeout(3000);
             manager.joinGame("127.0.0.1", server.getLocalPort());
             try (Socket peer = server.accept()) {
+                String round = java.util.UUID.randomUUID().toString();
+                new PrintWriter(peer.getOutputStream(), true).println("START 2 " + round);
                 Runnable connected = callbacks.poll(3, TimeUnit.SECONDS);
                 assertNotNull(connected);
-                new PrintWriter(peer.getOutputStream(), true).println("MOVE 1 2");
+                new PrintWriter(peer.getOutputStream(), true).println("MOVE " + round + " 1 1 2");
                 Runnable move = callbacks.poll(3, TimeUnit.SECONDS);
                 assertNotNull(move);
                 manager.disconnect();
@@ -117,17 +123,20 @@ class NetworkStabilityTest {
             first.setSoTimeout(3000); second.setSoTimeout(3000);
             manager.joinGame("127.0.0.1", first.getLocalPort());
             try (Socket oldPeer = first.accept()) {
+                new PrintWriter(oldPeer.getOutputStream(), true).println("START 2 " + java.util.UUID.randomUUID());
                 Runnable oldConnected = callbacks.poll(3, TimeUnit.SECONDS);
                 assertNotNull(oldConnected);
                 manager.joinGame("127.0.0.1", second.getLocalPort());
                 try (Socket newPeer = second.accept()) {
+                    String round = java.util.UUID.randomUUID().toString();
+                    new PrintWriter(newPeer.getOutputStream(), true).println("START 2 " + round);
                     Runnable newConnected = callbacks.poll(3, TimeUnit.SECONDS);
                     assertNotNull(newConnected);
                     oldConnected.run(); newConnected.run();
                     assertEquals("connected:false", events.next());
                     oldPeer.setSoTimeout(3000);
                     assertEquals(-1, oldPeer.getInputStream().read());
-                    new PrintWriter(newPeer.getOutputStream(), true).println("MOVE 8 9");
+                    new PrintWriter(newPeer.getOutputStream(), true).println("MOVE " + round + " 1 8 9");
                     Runnable move = callbacks.poll(3, TimeUnit.SECONDS);
                     assertNotNull(move);
                     move.run();
@@ -151,6 +160,7 @@ class NetworkStabilityTest {
             assertNotNull(error);
             manager.joinGame("127.0.0.1", next.getLocalPort());
             try (Socket peer = next.accept()) {
+                new PrintWriter(peer.getOutputStream(), true).println("START 2 " + java.util.UUID.randomUUID());
                 Runnable connected = callbacks.poll(3, TimeUnit.SECONDS);
                 assertNotNull(connected);
                 error.run(); connected.run();

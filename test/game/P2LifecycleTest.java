@@ -87,6 +87,7 @@ class P2LifecycleTest {
             server.setSoTimeout(3000);
             manager.joinGame("127.0.0.1", server.getLocalPort());
             try (Socket peer = server.accept()) {
+                new java.io.PrintWriter(peer.getOutputStream(), true).println("START 2 " + UUID.randomUUID());
                 assertEquals("connected:false", events.next());
                 SwingUtilities.invokeAndWait(() -> {
                     NetworkDialog dialog = new NetworkDialog(null, manager, () -> {});
@@ -146,7 +147,7 @@ class P2LifecycleTest {
             assertNotEquals(vi, en); assertNotEquals(en, pt); assertNotEquals(vi, pt);
             assertTrue(en.chars().allMatch(c -> c < 128));
             assertFalse(vi.contains("diagnostic"));
-            if (type != NetworkManager.ErrorType.CHANNEL) {
+            if (type == NetworkManager.ErrorType.HOST || type == NetworkManager.ErrorType.JOIN) {
                 assertTrue(vi.contains("1234")); assertTrue(en.contains("1234")); assertTrue(pt.contains("1234"));
             }
         });

@@ -3,6 +3,7 @@ package game.view;
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
 import java.util.concurrent.*;
+import java.util.function.BooleanSupplier;
 
 /**
  * Trình quản lý âm thanh cho game Caro:
@@ -60,10 +61,14 @@ public class SoundManager {
      * Phát âm thanh chuông reo vui vẻ khi người chơi chiến thắng.
      */
     public static void playVictorySound() {
+        playVictorySound(() -> true);
+    }
+
+    public static void playVictorySound(BooleanSupplier currentResult) {
         if (!soundEnabled) return;
 
         PLAYBACK.execute(() -> {
-            if (!soundEnabled) return;
+            if (!soundEnabled || !currentResult.getAsBoolean()) return;
             try {
                 float sampleRate = 44100;
                 int durationMs = 400;
@@ -80,7 +85,10 @@ public class SoundManager {
                     buffer[i] = (byte) (sample * decay * 110);
                 }
 
-                playBuffer(buffer, sampleRate);
+                if (currentResult.getAsBoolean()) {
+                    try { playClip(AudioSystem.getClip(), buffer, sampleRate, currentResult); }
+                    catch (Exception ignored) {}
+                }
             } catch (Exception ignored) {
             }
         });
@@ -95,6 +103,10 @@ public class SoundManager {
 
     /** Package-visible to verify cleanup without requiring an audio device. */
     static void playClip(Clip clip, byte[] buffer, float sampleRate) throws Exception {
+        playClip(clip, buffer, sampleRate, () -> true);
+    }
+
+    static void playClip(Clip clip, byte[] buffer, float sampleRate, BooleanSupplier currentResult) throws Exception {
         CountDownLatch stopped = new CountDownLatch(1);
         AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
         try (AudioInputStream stream = new AudioInputStream(
@@ -103,9 +115,12 @@ public class SoundManager {
                 if (event.getType() == LineEvent.Type.STOP) stopped.countDown();
             });
             clip.open(stream);
+            if (!currentResult.getAsBoolean()) return;
             clip.start();
             long durationMs = (long) (1000.0 * buffer.length / sampleRate);
-            stopped.await(durationMs + 1000, TimeUnit.MILLISECONDS);
+            long deadline = System.nanoTime() + (durationMs + 1000) * 1_000_000L;
+            while (currentResult.getAsBoolean() && System.nanoTime() < deadline)
+                if (stopped.await(10, TimeUnit.MILLISECONDS)) break;
         } finally {
             clip.close();
         }

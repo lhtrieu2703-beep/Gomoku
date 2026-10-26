@@ -49,6 +49,7 @@ public class MainFrame extends JFrame {
     private boolean modeComboUpdating;
     private boolean disposed;
     private final Runnable languageListener = this::updateLanguage;
+    private JDialog resultDialog;
 
     // === Cài đặt ===
     private final AppSettings appSettings;
@@ -157,6 +158,7 @@ public class MainFrame extends JFrame {
                 btnUndo.setEnabled(false);
                 openNetworkDialog();
             } else {
+                closeResultDialog();
                 networkManager.disconnect();
                 boardPanel.setGameMode(sel);
             }
@@ -167,10 +169,11 @@ public class MainFrame extends JFrame {
 
         btnNewGame.addActionListener(e -> {
             if (boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
-                if (networkManager != null && networkManager.isConnected()) {
-                    networkManager.sendRestart();
-                }
+                if (networkManager.requestRestart(boardPanel.getNetworkRoundId()) && !networkManager.isHost())
+                    boardPanel.setRestartWaiting(true);
+                return;
             }
+            closeResultDialog();
             scoreTracker.newGame();
             boardPanel.resetGame();
         });
@@ -207,6 +210,7 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onGameOver(int gameId, String message, Piece winner) {
+                if (disposed || gameId != boardPanel.getGameId() || !boardPanel.isGameOver()) return;
                 BoardPanel.GameMode mode = boardPanel.getGameMode();
                 Piece humanPiece = (mode == BoardPanel.GameMode.ONLINE) ? boardPanel.getMyPiece() : Piece.X;
                 boolean isNewRecord = scoreTracker.recordResult(gameId, winner, humanPiece);
@@ -219,8 +223,15 @@ public class MainFrame extends JFrame {
 
                 refreshGameStatus();
 
-                JOptionPane.showMessageDialog(MainFrame.this, message,
-                        Lang.gameOverTitle(), JOptionPane.INFORMATION_MESSAGE);
+                closeResultDialog();
+                JDialog dialog = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE)
+                        .createDialog(MainFrame.this, Lang.gameOverTitle());
+                resultDialog = dialog;
+                try { dialog.setVisible(true); }
+                finally {
+                    if (resultDialog == dialog) resultDialog = null;
+                    dialog.dispose();
+                }
             }
 
             @Override
@@ -433,9 +444,14 @@ public class MainFrame extends JFrame {
         this.networkManager = new NetworkManager(new NetworkManager.NetworkListener() {
             @Override
             public void onConnected(boolean isHost) {
+                onConnected(isHost, networkManager.getRoundId());
+            }
+
+            @Override
+            public void onConnected(boolean isHost, String roundId) {
                 if (!disposed) {
                     if (networkDialog != null) networkDialog.onConnectionSuccess();
-                    boardPanel.setupOnlineGame(networkManager, isHost);
+                    boardPanel.setupOnlineGame(networkManager, isHost, roundId);
 
                     String msg = isHost ? Lang.onlineConnectedHost() : Lang.onlineConnectedClient();
                     JOptionPane.showMessageDialog(MainFrame.this, msg,
@@ -449,19 +465,35 @@ public class MainFrame extends JFrame {
             }
 
             @Override
+            public void onMoveReceived(String roundId, int ply, int row, int col) {
+                boardPanel.applyOpponentMove(roundId, ply, row, col);
+            }
+
+            @Override
             public void onRestartRequested() {
-                if (!disposed && boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
+                // Restart decisions are handled by requestRestart / onRoundStarted.
+            }
+
+            @Override
+            public void onRoundStarted(String base, String next) {
+                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId())) {
+                    closeResultDialog();
                     scoreTracker.newGame();
-                    boardPanel.resetGame();
-                    JOptionPane.showMessageDialog(MainFrame.this,
-                            Lang.restartedMsg(), Lang.newGameTitle(),
-                            JOptionPane.INFORMATION_MESSAGE);
+                    boardPanel.startOnlineRound(base, next);
                 }
+            }
+
+            @Override
+            public void onRestartWaiting(String base) {
+                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId()))
+                    boardPanel.setRestartWaiting(true);
             }
 
             @Override
             public void onOpponentDisconnected() {
                 if (!disposed) {
+                    closeResultDialog();
+                    boardPanel.setRestartWaiting(false);
                     modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
                     JOptionPane.showMessageDialog(MainFrame.this,
                             Lang.opponentDisconnected(), Lang.disconnectedTitle(),
@@ -497,11 +529,16 @@ public class MainFrame extends JFrame {
     @Override
     public void dispose() {
         disposed = true;
+        closeResultDialog();
         Lang.removeChangeListener(languageListener);
         if (networkManager != null) networkManager.disconnect();
         if (networkDialog != null) networkDialog.dispose();
         if (boardPanel != null) boardPanel.cancelAiComputation();
         super.dispose();
+    }
+
+    private void closeResultDialog() {
+        if (resultDialog != null) { JDialog old = resultDialog; resultDialog = null; old.dispose(); }
     }
 
     // =========================================================================
@@ -586,7 +623,9 @@ public class MainFrame extends JFrame {
     private void refreshGameStatus() {
         BoardPanel.GameMode mode = boardPanel.getGameMode();
         Piece turn = boardPanel.getCurrentTurn();
-        if (boardPanel.isGameOver()) {
+        if (boardPanel.isRestartWaiting()) {
+            setTurnLabel(Lang.restartWaiting(), new Color(200, 100, 20));
+        } else if (boardPanel.isGameOver()) {
             Piece winner = boardPanel.getWinner();
             Piece local = mode == BoardPanel.GameMode.ONLINE ? boardPanel.getMyPiece() : Piece.X;
             Color color = winner == Piece.NONE ? new Color(120, 80, 20)

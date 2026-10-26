@@ -73,6 +73,8 @@ public class BoardPanel extends JPanel {
     // Quản lý chế độ Online
     private NetworkManager networkManager;
     private Piece myPiece = Piece.X; // Host là X (Đen), Client là O (Trắng)
+    private String networkRoundId;
+    private boolean restartWaiting;
 
     // =========================================================================
     public interface GameStateListener {
@@ -147,10 +149,30 @@ public class BoardPanel extends JPanel {
     }
 
     public void setupOnlineGame(NetworkManager nm, boolean isHost) {
+        setupOnlineGame(nm, isHost, nm != null && nm.getRoundId() != null
+                ? nm.getRoundId() : java.util.UUID.randomUUID().toString());
+    }
+
+    public void setupOnlineGame(NetworkManager nm, boolean isHost, String roundId) {
         this.networkManager = nm;
         this.myPiece = isHost ? Piece.X : Piece.O;
         this.gameMode = GameMode.ONLINE;
+        this.networkRoundId = java.util.Objects.requireNonNull(roundId);
         resetGame();
+    }
+
+    public String getNetworkRoundId() { return networkRoundId; }
+    public boolean isRestartWaiting() { return restartWaiting; }
+    public void setRestartWaiting(boolean waiting) {
+        restartWaiting = waiting;
+        if (stateListener != null) stateListener.onTurnChanged(currentTurn, isAiThinking);
+    }
+    public boolean startOnlineRound(String base, String next) {
+        if (gameMode != GameMode.ONLINE || !java.util.Objects.equals(base, networkRoundId)
+                || java.util.Objects.equals(base, next)) return false;
+        networkRoundId = next;
+        resetGame();
+        return true;
     }
 
     public Piece getMyPiece() { return myPiece; }
@@ -180,6 +202,7 @@ public class BoardPanel extends JPanel {
         currentTurn = Piece.X;
         isGameOver = isAiThinking = false;
         winner = Piece.NONE;
+        restartWaiting = false;
         lastMoveRow = lastMoveCol = hoverRow = hoverCol = -1;
         setCursor(Cursor.getDefaultCursor());
         if (stateListener != null) {
@@ -240,7 +263,7 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     public boolean playMove(int row, int col) {
-        if (isGameOver || isAiThinking) return false;
+        if (isGameOver || isAiThinking || restartWaiting) return false;
 
         // Ở chế độ Online: Không được đánh nếu chưa đến lượt của mình
         if (gameMode == GameMode.ONLINE && currentTurn != myPiece) return false;
@@ -251,7 +274,7 @@ public class BoardPanel extends JPanel {
 
         // Gửi nước đi sang máy đối thủ nếu đang chơi Online
         if (gameMode == GameMode.ONLINE && networkManager != null) {
-            networkManager.sendMove(row, col);
+            networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
         }
 
         // Kích hoạt AI nếu chơi với máy
@@ -271,10 +294,17 @@ public class BoardPanel extends JPanel {
      * Nhận nước đi từ mạng do đối thủ gửi tới.
      */
     public void applyOpponentMove(int row, int col) {
+        applyOpponentMove(networkRoundId, board.getMoveCount() + 1, row, col);
+    }
+
+    public void applyOpponentMove(String roundId, int ply, int row, int col) {
         final int receivedGameId = gameId;
         Runnable apply = () -> {
+            Piece wirePiece = ply % 2 == 1 ? Piece.X : Piece.O;
             if (receivedGameId != gameId || gameMode != GameMode.ONLINE
-                    || isGameOver || currentTurn != myPiece.opposite()) {
+                    || !java.util.Objects.equals(roundId, networkRoundId)
+                    || ply != board.getMoveCount() + 1 || wirePiece != myPiece.opposite()
+                    || isGameOver || restartWaiting || currentTurn != wirePiece) {
                 // Reject callbacks queued for an old game, wrong mode or local turn.
                 return;
             }
@@ -306,7 +336,8 @@ public class BoardPanel extends JPanel {
         if (board.checkWin(row, col)) {
             isGameOver = true;
             winner = piece;
-            SoundManager.playVictorySound();
+            final int resultGameId = gameId;
+            SoundManager.playVictorySound(() -> resultGameId == gameId);
             repaint();
             if (stateListener != null) {
                 String msg = buildWinMessage(piece);

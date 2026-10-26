@@ -1,5 +1,11 @@
 # GOMOKU PROJECT NOTES
 
+## Task 3.5 decision log
+- Baseline local commit 8cdbdc6 on task3-stabilize from origin/main 14bdbfe; 123 JUnit, 17 rule checks, console output 80 assertions before fixing empty checks.
+- F1: protocol v2 START 2 UUID, MOVE UUID ply row col, client RESTART_REQUEST base, host RESTART base next. Host owns UUIDs, local gameId remains score-only. X/host still starts; no runtime rule selector, no ruleId sent. EOF only; no DISCONNECT write and no ACK/consent (Task 5).
+- Restart request and host commit are separate phases. Same-base requests reset once; stale base is ignored. Client locks moves and sends once while awaiting the host. Version mismatch/5-second START timeout report translated errors. Invalid/overlong lines are ignored.
+- F1 popup policy: dispose the old result dialog before reset; reject late result callbacks and gate victory playback by gameId. Preserve points already earned before reset. Protocol diagram and details: TASK35_PROTOCOL.md.
+
 ## 1. Cấu trúc thư mục và vai trò các lớp chính
 - `src/game/model/Board.java`: Ma trận bàn cờ 15x15, đếm nước, đặt/hủy cờ, kiểm tra thắng (RULE_A/B) và hòa.
 - `src/game/model/Piece.java`: Enum quân cờ (`NONE`, `X`, `O`) và hàm lấy quân đối thủ `opposite()`.

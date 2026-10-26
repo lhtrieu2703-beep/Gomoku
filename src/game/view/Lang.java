@@ -355,6 +355,24 @@ public class Lang {
                 case EN -> "Cannot set up the connection. Please try again.";
                 case PT -> "Não foi possível estabelecer a conexão. Tente novamente.";
             };
+            case START_TIMEOUT -> switch (current) {
+                case VI -> "Hết thời gian chờ bắt đầu ván. Hãy kết nối lại.";
+                case EN -> "Timed out waiting for the game to start. Please reconnect.";
+                case PT -> "O tempo de espera para iniciar a partida terminou. Conecte-se novamente.";
+            };
+            case VERSION -> switch (current) {
+                case VI -> "Phiên bản kết nối không tương thích. Hai máy cần cùng phiên bản game.";
+                case EN -> "Incompatible protocol version. Both players need the same game version.";
+                case PT -> "Versão de protocolo incompatível. Os dois jogadores precisam da mesma versão do jogo.";
+            };
+        };
+    }
+
+    public static String restartWaiting() {
+        return switch (current) {
+            case VI -> "Đang chờ chủ phòng bắt đầu ván mới...";
+            case EN -> "Waiting for the host to start a new game...";
+            case PT -> "Aguardando o anfitrião iniciar uma nova partida...";
         };
     }
 

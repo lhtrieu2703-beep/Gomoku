@@ -24,11 +24,12 @@ public class CurrentAuditProbe {
     static class Recorder extends NetworkManager {
         int sent;
         Recorder(){super(null);}
-        @Override public void sendMove(int r,int c){sent++;}
+        @Override public void sendMove(String id,int ply,int r,int c){sent++;}
     }
     static NetworkManager.NetworkListener listener(BoardPanel panel) {
         return new NetworkManager.NetworkListener() {
             public void onConnected(boolean host){} public void onMoveReceived(int r,int c){panel.applyOpponentMove(r,c);}
+            public void onMoveReceived(String id,int ply,int r,int c){panel.applyOpponentMove(id,ply,r,c);}
             public void onRestartRequested(){panel.resetGame();} public void onOpponentDisconnected(){}
             public void onError(NetworkManager.NetworkError error){System.out.println("AUDIT NETWORK ERROR "+error);}
         };
@@ -55,11 +56,13 @@ public class CurrentAuditProbe {
         try(ServerSocket server=new ServerSocket(0)){
             server.setSoTimeout(3000);manager.joinGame("127.0.0.1",server.getLocalPort());
             try(Socket peer=server.accept()){
+                String base = panel[0].getNetworkRoundId();
+                new PrintWriter(peer.getOutputStream(),true).println("START 2 " + base);
                 Runnable connected=queue.poll(3,TimeUnit.SECONDS); if(connected==null)throw new AssertionError("connect timeout");
                 SwingUtilities.invokeAndWait(connected);
-                new PrintWriter(peer.getOutputStream(),true).println("MOVE 4 4");
+                new PrintWriter(peer.getOutputStream(),true).println("MOVE " + base + " 1 4 4");
                 Runnable oldMove=queue.poll(3,TimeUnit.SECONDS);if(oldMove==null)throw new AssertionError("move timeout");
-                SwingUtilities.invokeAndWait(()->{panel[0].resetGame();oldMove.run();System.out.println("OLD_MOVE_AFTER_RESTART="+board.getPiece(4,4)+" moveCount="+board.getMoveCount()+" (expected NONE / 0)");});
+                SwingUtilities.invokeAndWait(()->{panel[0].startOnlineRound(base,UUID.randomUUID().toString());oldMove.run();System.out.println("OLD_MOVE_AFTER_RESTART="+board.getPiece(4,4).name()+" moveCount="+board.getMoveCount()+" (expected NONE / 0)");});
             }
         }finally{manager.disconnect();}
         Board six=new Board();six.makeMove(7,2,Piece.O);for(int c=3;c<=8;c++)six.makeMove(7,c,Piece.X);six.makeMove(7,9,Piece.O);
