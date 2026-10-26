@@ -270,12 +270,7 @@ public class BoardPanel extends JPanel {
 
         if (!board.isValidMove(row, col)) return false;
 
-        executeMove(row, col, currentTurn);
-
-        // Gửi nước đi sang máy đối thủ nếu đang chơi Online
-        if (gameMode == GameMode.ONLINE && networkManager != null) {
-            networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
-        }
+        executeMove(row, col, currentTurn, true);
 
         // Kích hoạt AI nếu chơi với máy
         if (!isGameOver && gameMode == GameMode.PV_AI && currentTurn == Piece.O) {
@@ -326,10 +321,18 @@ public class BoardPanel extends JPanel {
     }
 
     private void executeMove(int row, int col, Piece piece) {
+        executeMove(row, col, piece, false);
+    }
+
+    private void executeMove(int row, int col, Piece piece, boolean publishOnline) {
         board.makeMove(row, col, piece);
         moveHistory.add(new Move(row, col));
         lastMoveRow = row; lastMoveCol = col;
         hoverRow = hoverCol = -1;
+
+        // Publish the applied move before any UI listener can enter a modal loop.
+        if (publishOnline && gameMode == GameMode.ONLINE && networkManager != null)
+            networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
 
         SoundManager.playPlacePieceSound();
 
@@ -342,7 +345,7 @@ public class BoardPanel extends JPanel {
             if (stateListener != null) {
                 String msg = buildWinMessage(piece);
                 stateListener.onGameOver(gameId, msg, piece);
-                stateListener.onHistoryChanged(canUndo());
+                if (resultGameId == gameId) stateListener.onHistoryChanged(canUndo());
             }
             return;
         }
@@ -351,8 +354,9 @@ public class BoardPanel extends JPanel {
             winner = Piece.NONE;
             repaint();
             if (stateListener != null) {
+                int resultGameId = gameId;
                 stateListener.onGameOver(gameId, Lang.drawGame(), Piece.NONE);
-                stateListener.onHistoryChanged(canUndo());
+                if (resultGameId == gameId) stateListener.onHistoryChanged(canUndo());
             }
             return;
         }

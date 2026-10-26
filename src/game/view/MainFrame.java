@@ -223,6 +223,7 @@ public class MainFrame extends JFrame {
 
                 refreshGameStatus();
 
+                if (!isNewRecord) return; // a gameId presents its result at most once
                 closeResultDialog();
                 JDialog dialog = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE)
                         .createDialog(MainFrame.this, Lang.gameOverTitle());
