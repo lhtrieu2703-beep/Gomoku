@@ -20,11 +20,14 @@ public class NetworkDialog extends JDialog {
     private JLabel lblStatus;
     private JButton btnHost;
     private JButton btnJoin;
+    private boolean finished;
+    private boolean connected;
 
     public NetworkDialog(JFrame parent, NetworkManager networkManager, Runnable onConnectedCallback) {
         super(parent, Lang.networkDialogTitle(), true);
         this.networkManager = networkManager;
         this.onConnectedCallback = onConnectedCallback;
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
         setLayout(new BorderLayout());
         setResizable(false);
@@ -117,7 +120,9 @@ public class NetworkDialog extends JDialog {
 
     private int parsePort() {
         try {
-            return Integer.parseInt(txtPort.getText().trim());
+            int port = Integer.parseInt(txtPort.getText().trim());
+            if (port < 1 || port > 65535) throw new NumberFormatException();
+            return port;
         } catch (Exception ex) {
             lblStatus.setText(Lang.invalidPort());
             lblStatus.setForeground(Color.RED);
@@ -135,17 +140,36 @@ public class NetworkDialog extends JDialog {
     }
 
     public void onConnectionSuccess() {
-        SwingUtilities.invokeLater(() -> {
+        runOnEdt(() -> {
+            if (finished) return;
+            connected = true;
             if (onConnectedCallback != null) onConnectedCallback.run();
             dispose();
         });
     }
 
     public void onConnectionFailed(String error) {
-        SwingUtilities.invokeLater(() -> {
+        runOnEdt(() -> {
+            if (finished) return;
             setLoadingState(false, error);
             lblStatus.setForeground(new Color(200, 40, 40));
         });
+    }
+
+    public boolean wasConnected() { return connected; }
+
+    @Override
+    public void dispose() {
+        if (!finished) {
+            finished = true;
+            if (!connected) networkManager.disconnect();
+        }
+        super.dispose();
+    }
+
+    private static void runOnEdt(Runnable task) {
+        if (SwingUtilities.isEventDispatchThread()) task.run();
+        else SwingUtilities.invokeLater(task);
     }
 
     private void styleButton(JButton btn, Color bg, Color fg) {

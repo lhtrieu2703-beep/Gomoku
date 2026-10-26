@@ -2,6 +2,7 @@ package game.view;
 
 import javax.sound.sampled.*;
 import java.io.ByteArrayInputStream;
+import java.util.concurrent.*;
 
 /**
  * Trình quản lý âm thanh cho game Caro:
@@ -9,7 +10,14 @@ import java.io.ByteArrayInputStream;
  * mà không cần file ngoài, đảm bảo 100% chạy mượt trên mọi máy tính.
  */
 public class SoundManager {
-    private static boolean soundEnabled = true;
+    private static volatile boolean soundEnabled = true;
+    private static final ThreadPoolExecutor PLAYBACK = new ThreadPoolExecutor(
+            2, 2, 30, TimeUnit.SECONDS, new ArrayBlockingQueue<>(8), task -> {
+                Thread thread = new Thread(task, "gomoku-audio");
+                thread.setDaemon(true);
+                return thread;
+            }, new ThreadPoolExecutor.DiscardOldestPolicy());
+    static { PLAYBACK.allowCoreThreadTimeOut(true); }
 
     public static void setSoundEnabled(boolean enabled) {
         soundEnabled = enabled;
@@ -25,7 +33,8 @@ public class SoundManager {
     public static void playPlacePieceSound() {
         if (!soundEnabled) return;
 
-        new Thread(() -> {
+        PLAYBACK.execute(() -> {
+            if (!soundEnabled) return;
             try {
                 float sampleRate = 44100;
                 int durationMs = 60;
@@ -44,7 +53,7 @@ public class SoundManager {
                 playBuffer(buffer, sampleRate);
             } catch (Exception ignored) {
             }
-        }).start();
+        });
     }
 
     /**
@@ -53,7 +62,8 @@ public class SoundManager {
     public static void playVictorySound() {
         if (!soundEnabled) return;
 
-        new Thread(() -> {
+        PLAYBACK.execute(() -> {
+            if (!soundEnabled) return;
             try {
                 float sampleRate = 44100;
                 int durationMs = 400;
@@ -73,17 +83,31 @@ public class SoundManager {
                 playBuffer(buffer, sampleRate);
             } catch (Exception ignored) {
             }
-        }).start();
+        });
     }
 
     private static void playBuffer(byte[] buffer, float sampleRate) {
         try {
-            AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
-            AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(buffer), format, buffer.length);
-            Clip clip = AudioSystem.getClip();
-            clip.open(ais);
-            clip.start();
+            playClip(AudioSystem.getClip(), buffer, sampleRate);
         } catch (Exception ignored) {
+        }
+    }
+
+    /** Package-visible to verify cleanup without requiring an audio device. */
+    static void playClip(Clip clip, byte[] buffer, float sampleRate) throws Exception {
+        CountDownLatch stopped = new CountDownLatch(1);
+        AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
+        try (AudioInputStream stream = new AudioInputStream(
+                new ByteArrayInputStream(buffer), format, buffer.length)) {
+            clip.addLineListener(event -> {
+                if (event.getType() == LineEvent.Type.STOP) stopped.countDown();
+            });
+            clip.open(stream);
+            clip.start();
+            long durationMs = (long) (1000.0 * buffer.length / sampleRate);
+            stopped.await(durationMs + 1000, TimeUnit.MILLISECONDS);
+        } finally {
+            clip.close();
         }
     }
 }

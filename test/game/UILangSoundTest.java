@@ -26,31 +26,30 @@ public class UILangSoundTest {
     // Lưu trạng thái gốc để khôi phục sau mỗi test
     private static Lang.Language origLang;
     private static boolean origSound;
+    private static java.util.Map<String, String> productionBefore;
 
     // Node Preferences riêng cho test — KHÔNG phải node thật
-    static final String TEST_PREF_NODE = "/test/task3/uiLangSound";
+    static final String TEST_PREF_NODE = "/test/task3/uiLangSound-" + java.util.UUID.randomUUID();
 
     @BeforeAll
     static void setup() throws Exception {
         System.setProperty("java.awt.headless", "false");
+        productionBefore = PreferencesIsolation.snapshot();
         origLang  = Lang.get();
         origSound = SoundManager.isSoundEnabled();
     }
 
     @AfterEach
-    void restore() {
+    void restore() throws Exception {
         // Khôi phục trạng thái tĩnh sau mỗi test
         Lang.set(origLang);
         SoundManager.setSoundEnabled(origSound);
+        PreferencesIsolation.cleanup(TEST_PREF_NODE, productionBefore);
     }
 
     @AfterAll
     static void cleanup() throws Exception {
-        // Xóa Preferences test node
-        try {
-            Preferences testNode = Preferences.userRoot().node(TEST_PREF_NODE);
-            testNode.removeNode();
-        } catch (Exception ignored) {}
+        PreferencesIsolation.cleanup(TEST_PREF_NODE, productionBefore);
         // Khôi phục lần cuối
         Lang.set(origLang);
         SoundManager.setSoundEnabled(origSound);
@@ -63,14 +62,12 @@ public class UILangSoundTest {
     @Order(1)
     @DisplayName("C1 – Lang: mọi key VI/EN/PT không null, không rỗng, PT khác EN (trừ allowlist)")
     void c1_langAllKeysNotNullNotEmpty() throws Exception {
-        // allowlistValues: nếu EN chứa một trong các từ này thì cho phép PT==EN
-        Set<String> allowlistValues = Set.of("Online (LAN)", "LAN", "Host");
         // allowlistMethods: tên method được phép PT==EN
+        // Chỉ còn "online" — "Online (LAN)" là thuật ngữ quốc tế, PT==EN là đúng
+        // hostBtn: "Criar Sala (Host - Preto)" != "Create Room (Host - Black)" → không allowlist
+        // joinBtn: "Entrar na Sala (Join - Branco)" != "Join Room (Join - White)" → không allowlist
         Set<String> allowlistMethods = Set.of(
-            "online",              // "Online (LAN)" — từ quốc tế
-            "networkDialogTitle",  // chứa "LAN"
-            "networkDialogHeader", // CHOOSE/ESCOLHA — khác nhau
-            "hostBtn"              // "Criar Sala (Host)" — "Host" là thuật ngữ kỹ thuật
+            "online"   // "Online (LAN)" — từ quốc tế, PT==VI==EN
         );
 
         List<Method> stringMethods = new ArrayList<>();
@@ -168,6 +165,7 @@ public class UILangSoundTest {
         dummyList.setBackground(new Color(55, 58, 65));
         dummyList.setForeground(Color.WHITE);
         Object item = combo.getItemAt(0);
+        @SuppressWarnings({"unchecked", "rawtypes"})
         ListCellRenderer renderer = combo.getRenderer();
         System.out.printf("[C2] %s renderer class: %s%n", name, renderer.getClass().getName());
 
@@ -196,7 +194,8 @@ public class UILangSoundTest {
             name + " display field bg không đủ tối (painted): RGB(" + avgR+","+avgG+","+avgB+")");
 
         // index=0, isSelected=true: popup selected — kiểm qua renderer
-        Component cSel = renderer.getListCellRendererComponent(dummyList, item, 0, true, false);
+        @SuppressWarnings({"unchecked", "rawtypes"})
+        Component cSel = ((ListCellRenderer)renderer).getListCellRendererComponent(dummyList, item, 0, true, false);
         Color bgS = cSel.getBackground();
         Color fgS = cSel.getForeground();
         System.out.printf("[C2] %s selected: bg=RGB(%d,%d,%d) fg=RGB(%d,%d,%d)%n",

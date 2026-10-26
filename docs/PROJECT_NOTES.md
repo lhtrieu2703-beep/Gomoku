@@ -66,9 +66,9 @@ Hiện tại `NetworkManager.java:109-125` chỉ hỗ trợ đúng 3 loại gói
 ## 8. Biên dịch và kiểm thử
 - **Lệnh biên dịch**:
   - Mã nguồn: `javac -encoding UTF-8 -d bin src/game/model/*.java src/game/ai/*.java src/game/network/*.java src/game/view/*.java src/game/*.java`
-  - Test JUnit: `javac -encoding UTF-8 -cp "lib/*;bin" -d bin_test test/game/BoardWinTest.java test/game/UndoScoreTest.java test/game/UndoParityTest.java`
+  - Test JUnit: `javac -encoding UTF-8 -cp "lib/*;bin" -d bin_test test/game/*.java`
 - **Lệnh chạy test và số ca kiểm thử**:
-  - `java -jar lib/junit-platform-console-standalone-1.10.2.jar --class-path "bin;bin_test" --scan-class-path`: Chạy toàn bộ 72 ca kiểm thử JUnit 5 (55 ca `BoardWinTest` + 11 ca `UndoScoreTest` + 6 ca `UndoParityTest`).
+  - `java -jar lib/junit-platform-console-standalone-1.10.2.jar --class-path "bin_test;bin" --scan-class-path`: Chạy toàn bộ 72 ca kiểm thử JUnit 5 (55 ca `BoardWinTest` + 11 ca `UndoScoreTest` + 6 ca `UndoParityTest`).
   - `java -cp bin game.RuleAndDrawTest`: Chạy `src/game/RuleAndDrawTest.java` (17 ca: 8 chặn hai đầu + 9 hòa/kín bàn cờ).
   - `java -cp bin game.FullGomokuTestSuite`: Chạy `src/game/FullGomokuTestSuite.java` (57 ca / 80 assertions so sánh RULE_A và RULE_B).
   - `java -cp bin game.ConsoleTest`: Kiểm thử trực quan console cơ bản.
@@ -94,3 +94,37 @@ Hiện tại `NetworkManager.java:109-125` chỉ hỗ trợ đúng 3 loại gói
 ### Backlog tồn đọng:
 1. Lỗi AI chỉ đánh quanh quân góc đầu tiên, bỏ qua thế cờ ở giữa bàn.
 2. Ô Chế độ (Game Mode) và Độ khó (Difficulty) hiển thị trống trên giao diện khi khởi động.
+
+### Kiểm chứng Task 3 — 2026-10-26
+- Task 3 hoàn thành triển khai UI, âm thanh và VI/EN/PT; chưa commit lần 2, chưa push.
+- JUnit: 86/86 PASS, 0 skipped, 0 failed; RuleAndDrawTest: 17/17; FullGomokuTestSuite: 80/80 assertions (57 tình huống).
+- Chạy JUnit với bin_test đứng trước bin để tránh class test cũ còn trong bin che bản mới.
+- Sandbox hiện tại: 79/86 PASS, 7 lỗi SecurityException do Windows Registry. Chạy ngoài sandbox bằng quyền được cấp; không bỏ test, không dùng PreferencesFactory giả.
+- AppSettings đã hỗ trợ inject Preferences. Hai bộ test UI dùng node có UUID; @AfterEach removeNode, flush, xác nhận node test bị xóa và so sánh toàn bộ key/value node /game/view với snapshot trước test. Kết quả node thật trước/sau: {soundEnabled=true}, key language không tồn tại và vẫn không tồn tại.
+- NetworkDialog là modal, tiêu đề lấy qua Lang tại constructor; không cập nhật trực tiếp khi Lang đổi trong lúc dialog còn mở. Mở lại dialog sẽ lấy ngôn ngữ hiện tại.
+- LangPurityTest C kiểm tra tỷ lệ tương phản từ các màu khai báo trong test; chưa chứng minh màu thực tế của ô combo bằng kiểm tra pixel.
+
+### Bản vá ba lỗi P1 sau review — 2026-10-26
+- Đổi ngôn ngữ giữ nguyên bàn cờ, lịch sử, lượt, gameId, điểm và AI đang suy nghĩ; trạng thái thắng/hòa được dịch lại qua Lang.
+- Undo PvP lấy quân vừa rút để khôi phục đúng lượt, kể cả sau X/O thắng hoặc hòa.
+- Nhận MOVE kiểm tra ONLINE, lượt đối thủ, ô hợp lệ, trạng thái kết thúc và gameId của callback đã xếp hàng trước reset. Chưa thay giao thức mạng hay vòng đời kết nối P2.
+- Thêm P1RegressionTest: 16 ca; tổng JUnit hiện tại 102/102 PASS (0 skipped/failed). 12 ca hồi quy ban đầu đã xác nhận FAIL trên code cũ rồi PASS sau bản vá.
+- RuleAndDrawTest 17/17; FullGomokuTestSuite output 80/80, nhưng T55–T57 so sánh chuỗi hằng nên chưa chứng minh hành vi thực tế. Xem CODE_REVIEW_TASK3.md để biết các giới hạn và P2 còn mở.
+- Node Preferences thật /game/view trước/sau không đổi: {soundEnabled=true}. Chưa commit/push bản vá.
+
+### Bản vá ổn định P2 — 2026-10-26
+- LAN: mỗi phiên sở hữu socket riêng; hủy cả bind/connect/accept đang chờ, bỏ callback phiên cũ tại EDT, timeout JOIN 5 giây, giữ thứ tự MOVE/RESTART và bỏ gói MOVE hỏng định dạng.
+- Dialog hủy trả về chế độ trước và giữ ván; kết nối thành công đóng dialog mà giữ socket. Port hợp lệ là 1–65535. Lỗi kết nối được dịch VI/EN/PT qua Lang.
+- Dispose MainFrame gỡ listener ngôn ngữ, hủy AI và đóng LAN; không giữ frame cũ trong danh sách listener static.
+- Audio dùng tối đa 2 luồng daemon/8 tác vụ chờ; luôn đóng Clip sau phát, timeout hoặc lỗi open/start.
+- AI nhận interrupt và hoàn tác nước đang duyệt khi hủy; mỗi worker dùng MinimaxAI riêng và difficulty cố định cho lần tìm kiếm đó. Chưa sửa heuristic chiến thuật.
+- Bỏ đường dẫn ổ C gán cứng trong I18nSourceScanTest; chạy test từ thư mục gốc repo.
+- Thêm 21 test: 7 LAN socket localhost thật, 11 lifecycle/AI/ngôn ngữ, 3 audio proxy. JUnit toàn bộ 123/123 PASS, 0 skipped/failed; RuleAndDrawTest 17/17; FullGomokuTestSuite output 80/80 (giới hạn T53–T57 còn ghi trong báo cáo review).
+- Node Preferences thật /game/view không đổi: {soundEnabled=true}. Chưa kiểm thử hai máy LAN và âm thanh trên thiết bị thật; chưa commit/push.
+
+### Review tổng hợp trước khi chuyển task — 2026-10-26
+- Chạy lại: JUnit 123/123 PASS, không skipped/aborted/failed; RuleAndDrawTest 17/17; output FullGomokuTestSuite 80/80 với giới hạn T53–T57 như đã ghi.
+- Chưa chốt Task 3: probe mới tái hiện MOVE của ván trước được dispatcher giao sau reset lọt vào ván mới; nước thắng được gửi sau callback kết quả/modal; đổi VI → PT cắt mất nút âm thanh khỏi header. Heuristic chấm overline bị chặn và single-three vẫn sai.
+- Đo có giới hạn: Hard 1 quân median 38.30 ms/max 40.82 ms; 10 lượt Hard qua BoardPanel median 35.28 ms/max 109.69 ms; heartbeat EDT max 3.19 ms. Không xem đây là kiểm thử đầy đủ UI/audio/mạng hai máy.
+- Đã khảo sát nguồn RIF, Gomocup 2026, Rapfi, BGA, PlayOK và các sản phẩm có replay/puzzle/study. Đề xuất ưu tiên sửa đúng luật/giao thức/UI, rồi replay/lưu ván, gợi ý có giải thích và iterative deepening.
+- Báo cáo và nguồn: REVIEW_AND_UPGRADE_PLAN.md. Probe tái hiện: tools/audit; ảnh render: docs/audit-2026-10-26. Lượt review này chưa thay logic sản phẩm, chưa commit/push.

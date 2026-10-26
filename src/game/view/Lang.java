@@ -298,17 +298,17 @@ public class Lang {
 
     public static String hostBtn() {
         return switch (current) {
-            case VI -> "Tạo Phòng (Host)";
-            case EN -> "Create Room (Host)";
-            case PT -> "Criar Sala (Host)";
+            case VI -> "Tạo Phòng (Host - Quân Đen)";
+            case EN -> "Create Room (Host - Black)";
+            case PT -> "Criar Sala (Host - Preto)";
         };
     }
 
     public static String joinBtn() {
         return switch (current) {
-            case VI -> "Vào Phòng (Join)";
-            case EN -> "Join Room";
-            case PT -> "Entrar na Sala";
+            case VI -> "Vào Phòng (Join - Quân Trắng)";
+            case EN -> "Join Room (Join - White)";
+            case PT -> "Entrar na Sala (Join - Branco)";
         };
     }
 
@@ -334,6 +334,27 @@ public class Lang {
             case VI -> "Cổng (Port) không hợp lệ!";
             case EN -> "Invalid port number!";
             case PT -> "Número de porta inválido!";
+        };
+    }
+
+    public static String networkError(game.network.NetworkManager.NetworkError error) {
+        String endpoint = error.address() + ":" + error.port();
+        return switch (error.type()) {
+            case HOST -> switch (current) {
+                case VI -> "Không thể tạo phòng tại cổng " + error.port() + ". Hãy thử cổng khác.";
+                case EN -> "Cannot host on port " + error.port() + ". Try another port.";
+                case PT -> "Não foi possível criar a sala na porta " + error.port() + ". Tente outra porta.";
+            };
+            case JOIN -> switch (current) {
+                case VI -> "Không thể kết nối tới " + endpoint + ". Kiểm tra địa chỉ và phòng đang mở.";
+                case EN -> "Cannot connect to " + endpoint + ". Check the address and that the room is open.";
+                case PT -> "Não foi possível conectar a " + endpoint + ". Verifique o endereço e se a sala está aberta.";
+            };
+            case CHANNEL -> switch (current) {
+                case VI -> "Không thể thiết lập kết nối. Hãy thử lại.";
+                case EN -> "Cannot set up the connection. Please try again.";
+                case PT -> "Não foi possível estabelecer a conexão. Tente novamente.";
+            };
         };
     }
 
