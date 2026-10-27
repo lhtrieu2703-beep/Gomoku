@@ -4,6 +4,7 @@ import game.model.Board;
 import game.model.Piece;
 
 import java.util.*;
+import java.util.concurrent.CancellationException;
 
 /**
  * Thuật toán Minimax + Alpha-Beta Pruning phân cấp đồng đều cho 3 cấp độ:
@@ -31,7 +32,7 @@ public class MinimaxAI {
         }
     }
 
-    private Difficulty difficulty;
+    private volatile Difficulty difficulty;
     private final Piece aiPiece;
     private final Random random = new Random();
 
@@ -68,6 +69,8 @@ public class MinimaxAI {
      * Tìm nước đi tối ưu nhất theo từng cấp độ khó.
      */
     public Move findBestMove(Board board) {
+        checkCancelled();
+        final Difficulty level = difficulty;
         long startTime = System.currentTimeMillis();
         nodesEvaluated = 0;
         pruningCount = 0;
@@ -79,7 +82,7 @@ public class MinimaxAI {
         }
 
         Piece humanPiece = aiPiece.opposite();
-        boolean isAdvanced = (difficulty != Difficulty.EASY);
+        boolean isAdvanced = (level != Difficulty.EASY);
         List<Move> candidateMoves = getCandidateMoves(board, aiPiece, isAdvanced);
 
         if (candidateMoves.isEmpty()) {
@@ -89,9 +92,10 @@ public class MinimaxAI {
         // =====================================================================
         // 1. XỬ LÝ RIÊNG CHO MỨC DỄ (EASY)
         // =====================================================================
-        if (difficulty == Difficulty.EASY) {
+        if (level == Difficulty.EASY) {
             // Thỉnh thoảng vẫn biết chặn nếu đối thủ sắp thắng 5 quân (70% tỉ lệ chặn)
             for (Move move : candidateMoves) {
+                checkCancelled();
                 board.makeMove(move.row, move.col, humanPiece);
                 boolean oppWin = board.checkWin(move.row, move.col);
                 board.undoMove(move.row, move.col);
@@ -112,6 +116,7 @@ public class MinimaxAI {
 
         // A. Nếu AI có nước thắng ngay (5 quân) -> Đánh ngay!
         for (Move move : candidateMoves) {
+            checkCancelled();
             board.makeMove(move.row, move.col, aiPiece);
             boolean win = board.checkWin(move.row, move.col);
             board.undoMove(move.row, move.col);
@@ -123,6 +128,7 @@ public class MinimaxAI {
 
         // B. Nếu đối thủ có nước thắng ngay (5 quân) -> BẮT BUỘC CHẶN NGAY!
         for (Move move : candidateMoves) {
+            checkCancelled();
             board.makeMove(move.row, move.col, humanPiece);
             boolean oppWin = board.checkWin(move.row, move.col);
             board.undoMove(move.row, move.col);
@@ -136,6 +142,7 @@ public class MinimaxAI {
         Move blockOpen4 = null;
         int maxOppThreat = 0;
         for (Move move : candidateMoves) {
+            checkCancelled();
             board.makeMove(move.row, move.col, humanPiece);
             int oppScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, humanPiece);
             board.undoMove(move.row, move.col);
@@ -154,6 +161,7 @@ public class MinimaxAI {
 
         // D. Nếu AI có thể tạo ra thế Open 4 -> Đánh ngay để đảm bảo thắng lợi!
         for (Move move : candidateMoves) {
+            checkCancelled();
             board.makeMove(move.row, move.col, aiPiece);
             int myScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, aiPiece);
             board.undoMove(move.row, move.col);
@@ -165,9 +173,10 @@ public class MinimaxAI {
         }
 
         // E. (DÀNH RIÊNG CHO MỨC KHÓ): Nhận diện và chặn Bẫy 3 đôi (Double-Three Fork)
-        if (difficulty == Difficulty.HARD) {
+        if (level == Difficulty.HARD) {
             // AI tạo bẫy 3 đôi nếu có cơ hội
             for (Move move : candidateMoves) {
+                checkCancelled();
                 board.makeMove(move.row, move.col, aiPiece);
                 int myScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, aiPiece);
                 board.undoMove(move.row, move.col);
@@ -178,6 +187,7 @@ public class MinimaxAI {
             }
             // AI chặn đối thủ tạo bẫy 3 đôi
             for (Move move : candidateMoves) {
+                checkCancelled();
                 board.makeMove(move.row, move.col, humanPiece);
                 int oppScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, humanPiece);
                 board.undoMove(move.row, move.col);
@@ -199,16 +209,20 @@ public class MinimaxAI {
         // Phân cấp số lượng nhánh duyệt:
         // Trung bình: 16 nhánh (đủ bao quát, phản hồi ~30ms)
         // Khó: 22 nhánh (sâu và toàn diện, phản hồi ~150ms)
-        int maxCandidates = (difficulty == Difficulty.HARD) ? 22 : 16;
+        int maxCandidates = (level == Difficulty.HARD) ? 22 : 16;
         int branchCount = Math.min(candidateMoves.size(), maxCandidates);
 
         for (int i = 0; i < branchCount; i++) {
+            checkCancelled();
             Move move = candidateMoves.get(i);
             board.makeMove(move.row, move.col, aiPiece);
 
-            int value = minimax(board, difficulty.depth - 1, alpha, beta, false);
-
-            board.undoMove(move.row, move.col);
+            int value;
+            try {
+                value = minimax(board, level.depth - 1, alpha, beta, false, level);
+            } finally {
+                board.undoMove(move.row, move.col);
+            }
 
             if (value > bestValue) {
                 bestValue = value;
@@ -226,7 +240,8 @@ public class MinimaxAI {
         return (bestMove != null) ? bestMove : candidateMoves.get(0);
     }
 
-    private int minimax(Board board, int depth, int alpha, int beta, boolean isMaximizing) {
+    private int minimax(Board board, int depth, int alpha, int beta, boolean isMaximizing, Difficulty level) {
+        checkCancelled();
         nodesEvaluated++;
 
         if (depth == 0 || board.isFull()) {
@@ -240,22 +255,23 @@ public class MinimaxAI {
             return HeuristicEvaluator.evaluateBoardAdvanced(board, aiPiece);
         }
 
-        int maxCandidates = (difficulty == Difficulty.HARD) ? 14 : 10;
+        int maxCandidates = (level == Difficulty.HARD) ? 14 : 10;
         int branchCount = Math.min(candidateMoves.size(), maxCandidates);
 
         if (isMaximizing) {
             int maxEval = Integer.MIN_VALUE;
             for (int i = 0; i < branchCount; i++) {
+                checkCancelled();
                 Move move = candidateMoves.get(i);
                 board.makeMove(move.row, move.col, aiPiece);
 
-                if (board.checkWin(move.row, move.col)) {
+                int eval;
+                try {
+                    if (board.checkWin(move.row, move.col)) return HeuristicEvaluator.FIVE;
+                    eval = minimax(board, depth - 1, alpha, beta, false, level);
+                } finally {
                     board.undoMove(move.row, move.col);
-                    return HeuristicEvaluator.FIVE;
                 }
-
-                int eval = minimax(board, depth - 1, alpha, beta, false);
-                board.undoMove(move.row, move.col);
 
                 maxEval = Math.max(maxEval, eval);
                 alpha = Math.max(alpha, eval);
@@ -269,16 +285,17 @@ public class MinimaxAI {
             int minEval = Integer.MAX_VALUE;
             Piece humanPiece = aiPiece.opposite();
             for (int i = 0; i < branchCount; i++) {
+                checkCancelled();
                 Move move = candidateMoves.get(i);
                 board.makeMove(move.row, move.col, humanPiece);
 
-                if (board.checkWin(move.row, move.col)) {
+                int eval;
+                try {
+                    if (board.checkWin(move.row, move.col)) return -HeuristicEvaluator.FIVE;
+                    eval = minimax(board, depth - 1, alpha, beta, true, level);
+                } finally {
                     board.undoMove(move.row, move.col);
-                    return -HeuristicEvaluator.FIVE;
                 }
-
-                int eval = minimax(board, depth - 1, alpha, beta, true);
-                board.undoMove(move.row, move.col);
 
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(beta, eval);
@@ -296,6 +313,7 @@ public class MinimaxAI {
         List<Move> candidates = new ArrayList<>();
 
         for (int r = 0; r < Board.SIZE; r++) {
+            checkCancelled();
             for (int c = 0; c < Board.SIZE; c++) {
                 if (board.getPiece(r, c) != Piece.NONE) {
                     for (int dr = -2; dr <= 2; dr++) {
@@ -303,6 +321,7 @@ public class MinimaxAI {
                             int nr = r + dr;
                             int nc = c + dc;
                             if (board.isValidMove(nr, nc) && !visited[nr][nc]) {
+                                checkCancelled();
                                 visited[nr][nc] = true;
                                 int score = HeuristicEvaluator.evaluateMove(board, nr, nc, player, advanced);
                                 candidates.add(new Move(nr, nc, score));
@@ -315,5 +334,9 @@ public class MinimaxAI {
 
         Collections.sort(candidates);
         return candidates;
+    }
+
+    private static void checkCancelled() {
+        if (Thread.currentThread().isInterrupted()) throw new CancellationException("AI search cancelled");
     }
 }

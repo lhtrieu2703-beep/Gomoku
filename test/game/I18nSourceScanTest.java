@@ -19,8 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class I18nSourceScanTest {
 
-    static final Path VIEW_DIR = Paths.get(
-        "c:\\VNUK\\Năm 3 - Kì 1 - 2026_2027\\Basic Project\\Gomoku\\src\\game\\view");
+    static final Path VIEW_DIR = Paths.get("src", "game", "view");
 
     // Regex ký tự Unicode tiếng Việt có dấu
     static final Pattern VIET_CHAR = Pattern.compile(

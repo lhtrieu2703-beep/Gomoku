@@ -52,9 +52,5 @@ public class AIBenchmarkTest {
         }
 
         System.out.println("-----------------------------------------------------------------------------------------------");
-        System.out.println("=> KẾT LUẬN THỰC NGHIỆM:");
-        System.out.println("1. Kỹ thuật Alpha-Beta Pruning cắt bỏ hàng trăm đến hàng ngàn trạng thái dư thừa.");
-        System.out.println("2. Thời gian suy nghĩ của AI ở độ sâu 3 chỉ mất vài chục mili-giây trên máy tính.");
-        System.out.println("3. Dữ liệu này có thể đưa ngay vào Bảng số liệu trong Báo cáo Đồ án!");
     }
 }

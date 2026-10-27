@@ -1,0 +1,2436 @@
+diff --git a/src/game/ai/MinimaxAI.java b/src/game/ai/MinimaxAI.java
+index ceeed59..28aaef8 100644
+--- a/src/game/ai/MinimaxAI.java
++++ b/src/game/ai/MinimaxAI.java
+@@ -4,6 +4,7 @@ import game.model.Board;
+ import game.model.Piece;
+ 
+ import java.util.*;
++import java.util.concurrent.CancellationException;
+ 
+ /**
+  * Thuật toán Minimax + Alpha-Beta Pruning phân cấp đồng đều cho 3 cấp độ:
+@@ -31,7 +32,7 @@ public class MinimaxAI {
+         }
+     }
+ 
+-    private Difficulty difficulty;
++    private volatile Difficulty difficulty;
+     private final Piece aiPiece;
+     private final Random random = new Random();
+ 
+@@ -68,6 +69,8 @@ public class MinimaxAI {
+      * Tìm nước đi tối ưu nhất theo từng cấp độ khó.
+      */
+     public Move findBestMove(Board board) {
++        checkCancelled();
++        final Difficulty level = difficulty;
+         long startTime = System.currentTimeMillis();
+         nodesEvaluated = 0;
+         pruningCount = 0;
+@@ -79,7 +82,7 @@ public class MinimaxAI {
+         }
+ 
+         Piece humanPiece = aiPiece.opposite();
+-        boolean isAdvanced = (difficulty != Difficulty.EASY);
++        boolean isAdvanced = (level != Difficulty.EASY);
+         List<Move> candidateMoves = getCandidateMoves(board, aiPiece, isAdvanced);
+ 
+         if (candidateMoves.isEmpty()) {
+@@ -89,9 +92,10 @@ public class MinimaxAI {
+         // =====================================================================
+         // 1. XỬ LÝ RIÊNG CHO MỨC DỄ (EASY)
+         // =====================================================================
+-        if (difficulty == Difficulty.EASY) {
++        if (level == Difficulty.EASY) {
+             // Thỉnh thoảng vẫn biết chặn nếu đối thủ sắp thắng 5 quân (70% tỉ lệ chặn)
+             for (Move move : candidateMoves) {
++                checkCancelled();
+                 board.makeMove(move.row, move.col, humanPiece);
+                 boolean oppWin = board.checkWin(move.row, move.col);
+                 board.undoMove(move.row, move.col);
+@@ -112,6 +116,7 @@ public class MinimaxAI {
+ 
+         // A. Nếu AI có nước thắng ngay (5 quân) -> Đánh ngay!
+         for (Move move : candidateMoves) {
++            checkCancelled();
+             board.makeMove(move.row, move.col, aiPiece);
+             boolean win = board.checkWin(move.row, move.col);
+             board.undoMove(move.row, move.col);
+@@ -123,6 +128,7 @@ public class MinimaxAI {
+ 
+         // B. Nếu đối thủ có nước thắng ngay (5 quân) -> BẮT BUỘC CHẶN NGAY!
+         for (Move move : candidateMoves) {
++            checkCancelled();
+             board.makeMove(move.row, move.col, humanPiece);
+             boolean oppWin = board.checkWin(move.row, move.col);
+             board.undoMove(move.row, move.col);
+@@ -136,6 +142,7 @@ public class MinimaxAI {
+         Move blockOpen4 = null;
+         int maxOppThreat = 0;
+         for (Move move : candidateMoves) {
++            checkCancelled();
+             board.makeMove(move.row, move.col, humanPiece);
+             int oppScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, humanPiece);
+             board.undoMove(move.row, move.col);
+@@ -154,6 +161,7 @@ public class MinimaxAI {
+ 
+         // D. Nếu AI có thể tạo ra thế Open 4 -> Đánh ngay để đảm bảo thắng lợi!
+         for (Move move : candidateMoves) {
++            checkCancelled();
+             board.makeMove(move.row, move.col, aiPiece);
+             int myScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, aiPiece);
+             board.undoMove(move.row, move.col);
+@@ -165,9 +173,10 @@ public class MinimaxAI {
+         }
+ 
+         // E. (DÀNH RIÊNG CHO MỨC KHÓ): Nhận diện và chặn Bẫy 3 đôi (Double-Three Fork)
+-        if (difficulty == Difficulty.HARD) {
++        if (level == Difficulty.HARD) {
+             // AI tạo bẫy 3 đôi nếu có cơ hội
+             for (Move move : candidateMoves) {
++                checkCancelled();
+                 board.makeMove(move.row, move.col, aiPiece);
+                 int myScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, aiPiece);
+                 board.undoMove(move.row, move.col);
+@@ -178,6 +187,7 @@ public class MinimaxAI {
+             }
+             // AI chặn đối thủ tạo bẫy 3 đôi
+             for (Move move : candidateMoves) {
++                checkCancelled();
+                 board.makeMove(move.row, move.col, humanPiece);
+                 int oppScore = HeuristicEvaluator.evaluatePlayerAdvanced(board, humanPiece);
+                 board.undoMove(move.row, move.col);
+@@ -199,16 +209,20 @@ public class MinimaxAI {
+         // Phân cấp số lượng nhánh duyệt:
+         // Trung bình: 16 nhánh (đủ bao quát, phản hồi ~30ms)
+         // Khó: 22 nhánh (sâu và toàn diện, phản hồi ~150ms)
+-        int maxCandidates = (difficulty == Difficulty.HARD) ? 22 : 16;
++        int maxCandidates = (level == Difficulty.HARD) ? 22 : 16;
+         int branchCount = Math.min(candidateMoves.size(), maxCandidates);
+ 
+         for (int i = 0; i < branchCount; i++) {
++            checkCancelled();
+             Move move = candidateMoves.get(i);
+             board.makeMove(move.row, move.col, aiPiece);
+ 
+-            int value = minimax(board, difficulty.depth - 1, alpha, beta, false);
+-
+-            board.undoMove(move.row, move.col);
++            int value;
++            try {
++                value = minimax(board, level.depth - 1, alpha, beta, false, level);
++            } finally {
++                board.undoMove(move.row, move.col);
++            }
+ 
+             if (value > bestValue) {
+                 bestValue = value;
+@@ -226,7 +240,8 @@ public class MinimaxAI {
+         return (bestMove != null) ? bestMove : candidateMoves.get(0);
+     }
+ 
+-    private int minimax(Board board, int depth, int alpha, int beta, boolean isMaximizing) {
++    private int minimax(Board board, int depth, int alpha, int beta, boolean isMaximizing, Difficulty level) {
++        checkCancelled();
+         nodesEvaluated++;
+ 
+         if (depth == 0 || board.isFull()) {
+@@ -240,23 +255,24 @@ public class MinimaxAI {
+             return HeuristicEvaluator.evaluateBoardAdvanced(board, aiPiece);
+         }
+ 
+-        int maxCandidates = (difficulty == Difficulty.HARD) ? 14 : 10;
++        int maxCandidates = (level == Difficulty.HARD) ? 14 : 10;
+         int branchCount = Math.min(candidateMoves.size(), maxCandidates);
+ 
+         if (isMaximizing) {
+             int maxEval = Integer.MIN_VALUE;
+             for (int i = 0; i < branchCount; i++) {
++                checkCancelled();
+                 Move move = candidateMoves.get(i);
+                 board.makeMove(move.row, move.col, aiPiece);
+ 
+-                if (board.checkWin(move.row, move.col)) {
++                int eval;
++                try {
++                    if (board.checkWin(move.row, move.col)) return HeuristicEvaluator.FIVE;
++                    eval = minimax(board, depth - 1, alpha, beta, false, level);
++                } finally {
+                     board.undoMove(move.row, move.col);
+-                    return HeuristicEvaluator.FIVE;
+                 }
+ 
+-                int eval = minimax(board, depth - 1, alpha, beta, false);
+-                board.undoMove(move.row, move.col);
+-
+                 maxEval = Math.max(maxEval, eval);
+                 alpha = Math.max(alpha, eval);
+                 if (beta <= alpha) {
+@@ -269,17 +285,18 @@ public class MinimaxAI {
+             int minEval = Integer.MAX_VALUE;
+             Piece humanPiece = aiPiece.opposite();
+             for (int i = 0; i < branchCount; i++) {
++                checkCancelled();
+                 Move move = candidateMoves.get(i);
+                 board.makeMove(move.row, move.col, humanPiece);
+ 
+-                if (board.checkWin(move.row, move.col)) {
++                int eval;
++                try {
++                    if (board.checkWin(move.row, move.col)) return -HeuristicEvaluator.FIVE;
++                    eval = minimax(board, depth - 1, alpha, beta, true, level);
++                } finally {
+                     board.undoMove(move.row, move.col);
+-                    return -HeuristicEvaluator.FIVE;
+                 }
+ 
+-                int eval = minimax(board, depth - 1, alpha, beta, true);
+-                board.undoMove(move.row, move.col);
+-
+                 minEval = Math.min(minEval, eval);
+                 beta = Math.min(beta, eval);
+                 if (beta <= alpha) {
+@@ -296,6 +313,7 @@ public class MinimaxAI {
+         List<Move> candidates = new ArrayList<>();
+ 
+         for (int r = 0; r < Board.SIZE; r++) {
++            checkCancelled();
+             for (int c = 0; c < Board.SIZE; c++) {
+                 if (board.getPiece(r, c) != Piece.NONE) {
+                     for (int dr = -2; dr <= 2; dr++) {
+@@ -303,6 +321,7 @@ public class MinimaxAI {
+                             int nr = r + dr;
+                             int nc = c + dc;
+                             if (board.isValidMove(nr, nc) && !visited[nr][nc]) {
++                                checkCancelled();
+                                 visited[nr][nc] = true;
+                                 int score = HeuristicEvaluator.evaluateMove(board, nr, nc, player, advanced);
+                                 candidates.add(new Move(nr, nc, score));
+@@ -316,4 +335,8 @@ public class MinimaxAI {
+         Collections.sort(candidates);
+         return candidates;
+     }
++
++    private static void checkCancelled() {
++        if (Thread.currentThread().isInterrupted()) throw new CancellationException("AI search cancelled");
++    }
+ }
+diff --git a/src/game/network/NetworkManager.java b/src/game/network/NetworkManager.java
+index 6fa9803..432d9c3 100644
+--- a/src/game/network/NetworkManager.java
++++ b/src/game/network/NetworkManager.java
+@@ -1,190 +1,168 @@
+ package game.network;
+ 
+-import java.io.BufferedReader;
+-import java.io.InputStreamReader;
+-import java.io.PrintWriter;
+-import java.net.InetAddress;
+-import java.net.ServerSocket;
+-import java.net.Socket;
++import java.io.*;
++import java.net.*;
++import java.nio.charset.StandardCharsets;
++import java.util.Objects;
++import java.util.function.Consumer;
+ 
+-/**
+- * Quản lý kết nối mạng Socket cho chế độ chơi Online qua LAN/Localhost.
+- * Xử lý đa luồng (threading) độc lập để không làm đơ giao diện Swing.
+- */
++/** One session owns its sockets; cancelled sessions cannot notify or close a new one. */
+ public class NetworkManager {
+     public static final int DEFAULT_PORT = 8888;
+-
++    public static final int CONNECT_TIMEOUT_MS = 5000;
++    public enum ErrorType { HOST, JOIN, CHANNEL }
++    public record NetworkError(ErrorType type, String address, int port, Exception cause) {}
+     public interface NetworkListener {
++        default void onHosting(int port) {}
+         void onConnected(boolean isHost);
+         void onMoveReceived(int row, int col);
+         void onRestartRequested();
+         void onOpponentDisconnected();
+-        void onError(String message);
++        void onError(NetworkError error);
+     }
++    private final NetworkListener listener;
++    private final Consumer<Runnable> dispatcher;
++    private volatile Session current;
+ 
+-    private ServerSocket serverSocket;
+-    private Socket socket;
+-    private PrintWriter out;
+-    private BufferedReader in;
+-    private Thread listenThread;
+-
+-    private boolean isHost = false;
+-    private boolean isConnected = false;
+-    private NetworkListener listener;
+-
+-    public NetworkManager(NetworkListener listener) {
++    public NetworkManager(NetworkListener listener) { this(listener, Runnable::run); }
++    /** UI supplies SwingUtilities::invokeLater; validation occurs on that thread. */
++    public NetworkManager(NetworkListener listener, Consumer<Runnable> dispatcher) {
+         this.listener = listener;
++        this.dispatcher = Objects.requireNonNull(dispatcher);
+     }
+-
+-    /**
+-     * Lấy IP nội bộ hiện tại của máy để hiển thị cho Host.
+-     */
+     public static String getLocalIP() {
+-        try {
+-            return InetAddress.getLocalHost().getHostAddress();
+-        } catch (Exception e) {
+-            return "127.0.0.1";
+-        }
++        try { return InetAddress.getLocalHost().getHostAddress(); }
++        catch (Exception e) { return "127.0.0.1"; }
+     }
++    public void hostGame(int port) { start(true, "", port); }
++    public void joinGame(String ip, int port) { start(false, ip, port); }
+ 
+-    /**
+-     * Tạo phòng (Host) - Lắng nghe kết nối từ Client.
+-     */
+-    public void hostGame(int port) {
++    private synchronized void start(boolean host, String ip, int port) {
+         disconnect();
+-        this.isHost = true;
+-        new Thread(() -> {
+-            try {
+-                serverSocket = new ServerSocket(port);
+-                socket = serverSocket.accept();
+-                setupStreams();
+-            } catch (Exception e) {
+-                if (!isConnected) {
+-                    notifyError("Lỗi tạo phòng: " + e.getMessage());
+-                }
+-            }
+-        }).start();
++        Session session = new Session(host, ip, port);
++        current = session;
++        Thread worker = new Thread(() -> connectAndListen(session), "gomoku-lan");
++        worker.setDaemon(true);
++        worker.start();
+     }
+-
+-    /**
+-     * Vào phòng (Join) - Kết nối tới IP của Host.
+-     */
+-    public void joinGame(String ip, int port) {
+-        disconnect();
+-        this.isHost = false;
+-        new Thread(() -> {
+-            try {
+-                socket = new Socket(ip, port);
+-                setupStreams();
+-            } catch (Exception e) {
+-                notifyError("Không thể kết nối đến " + ip + ":" + port + " (" + e.getMessage() + ")");
+-            }
+-        }).start();
+-    }
+-
+-    private void setupStreams() {
++    private void connectAndListen(Session session) {
++        ErrorType stage = session.host ? ErrorType.HOST : ErrorType.JOIN;
++        boolean established = false;
+         try {
+-            out = new PrintWriter(socket.getOutputStream(), true);
+-            in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+-            isConnected = true;
+-
+-            if (listener != null) {
+-                listener.onConnected(isHost);
++            Socket socket;
++            if (session.host) {
++                ServerSocket server = new ServerSocket();
++                if (!session.attach(server)) { server.close(); return; }
++                server.bind(new InetSocketAddress(session.port));
++                dispatch(session, () -> listener.onHosting(server.getLocalPort()));
++                socket = server.accept();
++                if (!session.attach(socket)) { socket.close(); return; }
++                server.close();
++            } else {
++                socket = new Socket();
++                if (!session.attach(socket)) { socket.close(); return; }
++                socket.connect(new InetSocketAddress(session.address, session.port), CONNECT_TIMEOUT_MS);
+             }
+-
+-            // Bắt đầu luồng đọc dữ liệu từ đối thủ
+-            listenThread = new Thread(this::listenForMessages);
+-            listenThread.start();
+-        } catch (Exception e) {
+-            notifyError("Lỗi thiết lập kênh truyền: " + e.getMessage());
+-            disconnect();
+-        }
+-    }
+-
+-    private void listenForMessages() {
+-        try {
++            stage = ErrorType.CHANNEL;
++            PrintWriter out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
++            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
++            synchronized (session) {
++                if (session.closed) return;
++                session.out = out;
++                session.connected = true;
++            }
++            established = true;
++            dispatch(session, () -> listener.onConnected(session.host));
+             String line;
+-            while (isConnected && (line = in.readLine()) != null) {
+-                line = line.trim();
+-                if (line.startsWith("MOVE ")) {
+-                    String[] parts = line.split(" ");
+-                    if (parts.length >= 3) {
+-                        int r = Integer.parseInt(parts[1]);
+-                        int c = Integer.parseInt(parts[2]);
+-                        if (listener != null) {
+-                            listener.onMoveReceived(r, c);
+-                        }
+-                    }
+-                } else if (line.equals("RESTART")) {
+-                    if (listener != null) {
+-                        listener.onRestartRequested();
++            while (!session.closed && (line = in.readLine()) != null) {
++                String[] parts = line.trim().split("\\s+");
++                if (parts.length == 3 && parts[0].equals("MOVE")) {
++                    try {
++                        int row = Integer.parseInt(parts[1]);
++                        int col = Integer.parseInt(parts[2]);
++                        dispatch(session, () -> listener.onMoveReceived(row, col));
++                    } catch (NumberFormatException ignored) {
++                        // Malformed packets do not terminate a healthy session.
+                     }
+-                } else if (line.equals("DISCONNECT")) {
++                } else if (line.trim().equals("RESTART")) {
++                    dispatch(session, () -> listener.onRestartRequested());
++                } else if (line.trim().equals("DISCONNECT")) {
+                     break;
+                 }
+             }
+-        } catch (Exception e) {
+-            // Mất kết nối hoặc socket bị đóng
+-        } finally {
+-            if (isConnected) {
+-                isConnected = false;
+-                if (listener != null) {
+-                    listener.onOpponentDisconnected();
+-                }
++        } catch (Exception error) {
++            if (!session.closed && !established) {
++                ErrorType type = stage;
++                dispatch(session, () -> listener.onError(
++                        new NetworkError(type, session.address, session.port, error)));
+             }
+-            disconnect();
++        } finally {
++            boolean notifyPeerLeft = established && !session.closed;
++            session.close();
++            if (notifyPeerLeft) dispatch(session, () -> listener.onOpponentDisconnected());
+         }
+     }
+-
+-    /**
+-     * Gửi nước đi sang máy đối thủ.
+-     */
+-    public void sendMove(int row, int col) {
+-        if (out != null) {
+-            out.println("MOVE " + row + " " + col);
+-        }
++    private void dispatch(Session session, Runnable callback) {
++        if (listener == null) return;
++        dispatcher.accept(() -> {
++            if (current == session) callback.run();
++        });
+     }
+-
+-    /**
+-     * Gửi yêu cầu ván mới.
+-     */
+-    public void sendRestart() {
+-        if (out != null) {
+-            out.println("RESTART");
++    public void sendMove(int row, int col) { send("MOVE " + row + " " + col); }
++    public void sendRestart() { send("RESTART"); }
++    private void send(String message) {
++        Session session = current;
++        if (session != null && session.connected) {
++            PrintWriter writer = session.out;
++            if (writer != null) writer.println(message);
+         }
+     }
+-
+-    /**
+-     * Ngắt kết nối an toàn và dọn dẹp tài nguyên socket.
+-     */
+-    public void disconnect() {
+-        isConnected = false;
+-        try {
+-            if (out != null) {
+-                out.println("DISCONNECT");
+-                out.flush();
+-            }
+-        } catch (Exception ignored) {}
+-
+-        try {
+-            if (socket != null && !socket.isClosed()) socket.close();
+-        } catch (Exception ignored) {}
+-        try {
+-            if (serverSocket != null && !serverSocket.isClosed()) serverSocket.close();
+-        } catch (Exception ignored) {}
+-
+-        socket = null;
+-        serverSocket = null;
+-        out = null;
+-        in = null;
++    /** Invalidate callbacks first, then close even a pending bind/connect/accept. */
++    public synchronized void disconnect() {
++        Session old = current;
++        current = null;
++        if (old != null) old.close(); // EOF notifies the peer without a blocking protocol write
+     }
+-
+-    private void notifyError(String msg) {
+-        if (listener != null) {
+-            listener.onError(msg);
++    public boolean isConnected() {
++        Session session = current;
++        return session != null && session.connected;
++    }
++    public boolean isHost() { Session session = current; return session != null && session.host; }
++
++    private static final class Session {
++        final boolean host;
++        final String address;
++        final int port;
++        volatile boolean closed;
++        volatile boolean connected;
++        volatile PrintWriter out;
++        private Socket socket;
++        private ServerSocket server;
++        Session(boolean host, String address, int port) {
++            this.host = host; this.address = address; this.port = port;
++        }
++        synchronized boolean attach(Socket socket) {
++            if (closed) return false;
++            this.socket = socket;
++            return true;
++        }
++        synchronized boolean attach(ServerSocket server) {
++            if (closed) return false;
++            this.server = server;
++            return true;
++        }
++        void close() {
++            Socket oldSocket;
++            ServerSocket oldServer;
++            synchronized (this) {
++                if (closed) return;
++                closed = true;
++                connected = false;
++                oldSocket = socket;
++                oldServer = server;
++            }
++            try { if (oldSocket != null) oldSocket.close(); } catch (IOException ignored) {}
++            try { if (oldServer != null) oldServer.close(); } catch (IOException ignored) {}
+         }
+     }
+-
+-    public boolean isConnected() { return isConnected; }
+-    public boolean isHost() { return isHost; }
+ }
+diff --git a/src/game/view/BoardPanel.java b/src/game/view/BoardPanel.java
+index be8d1af..1d49cbd 100644
+--- a/src/game/view/BoardPanel.java
++++ b/src/game/view/BoardPanel.java
+@@ -57,11 +57,12 @@ public class BoardPanel extends JPanel {
+     private final Board board;
+     private Piece currentTurn = Piece.X;
+     private boolean isGameOver = false;
++    private Piece winner = Piece.NONE;
+     private boolean isAiThinking = false;
+     private int lastMoveRow = -1, lastMoveCol = -1;
+     private int hoverRow = -1, hoverCol = -1;
+ 
+-    private int gameId = 1;
++    private volatile int gameId = 1; // also captured when a network callback is queued
+     private SwingWorker<Move, Void> aiWorker = null;
+     private int aiExecutionToken = 0;
+ 
+@@ -156,6 +157,11 @@ public class BoardPanel extends JPanel {
+     public Piece getCurrentTurn() { return currentTurn; }
+     public int getGameId() { return gameId; }
+     public boolean isGameOver() { return isGameOver; }
++    public Piece getWinner() { return winner; }
++    public String getGameOverMessage() {
++        if (!isGameOver) return null;
++        return winner == Piece.NONE ? Lang.drawGame() : buildWinMessage(winner);
++    }
+     public boolean isAiThinking() { return isAiThinking; }
+     public int getLastMoveRow() { return lastMoveRow; }
+     public int getLastMoveCol() { return lastMoveCol; }
+@@ -173,6 +179,7 @@ public class BoardPanel extends JPanel {
+         moveHistory.clear();
+         currentTurn = Piece.X;
+         isGameOver = isAiThinking = false;
++        winner = Piece.NONE;
+         lastMoveRow = lastMoveCol = hoverRow = hoverCol = -1;
+         setCursor(Cursor.getDefaultCursor());
+         if (stateListener != null) {
+@@ -196,8 +203,9 @@ public class BoardPanel extends JPanel {
+ 
+         if (gameMode == GameMode.PVP) {
+             Move m = moveHistory.remove(moveHistory.size() - 1);
++            Piece removedPiece = board.getPiece(m.row, m.col);
+             board.undoMove(m.row, m.col);
+-            currentTurn = currentTurn.opposite();
++            currentTurn = removedPiece;
+             isGameOver = false;
+         } else if (gameMode == GameMode.PV_AI) {
+             isGameOver = false;
+@@ -213,6 +221,7 @@ public class BoardPanel extends JPanel {
+             }
+             currentTurn = Piece.X;
+         }
++        winner = Piece.NONE;
+ 
+         if (!moveHistory.isEmpty()) {
+             Move prev = moveHistory.get(moveHistory.size() - 1);
+@@ -262,15 +271,28 @@ public class BoardPanel extends JPanel {
+      * Nhận nước đi từ mạng do đối thủ gửi tới.
+      */
+     public void applyOpponentMove(int row, int col) {
+-        SwingUtilities.invokeLater(() -> {
+-            if (isGameOver) {
+-                // Bỏ qua gói MOVE nếu ván đã kết thúc
++        final int receivedGameId = gameId;
++        Runnable apply = () -> {
++            if (receivedGameId != gameId || gameMode != GameMode.ONLINE
++                    || isGameOver || currentTurn != myPiece.opposite()) {
++                // Reject callbacks queued for an old game, wrong mode or local turn.
+                 return;
+             }
+             if (board.isValidMove(row, col)) {
+-                executeMove(row, col, currentTurn);
++                executeMove(row, col, myPiece.opposite());
+             }
+-        });
++        };
++        if (SwingUtilities.isEventDispatchThread()) apply.run();
++        else SwingUtilities.invokeLater(apply);
++    }
++
++    /** Stop background work when its owning window is disposed. */
++    public void cancelAiComputation() {
++        aiExecutionToken++;
++        if (aiWorker != null) aiWorker.cancel(true);
++        aiWorker = null;
++        isAiThinking = false;
++        setCursor(Cursor.getDefaultCursor());
+     }
+ 
+     private void executeMove(int row, int col, Piece piece) {
+@@ -283,6 +305,7 @@ public class BoardPanel extends JPanel {
+ 
+         if (board.checkWin(row, col)) {
+             isGameOver = true;
++            winner = piece;
+             SoundManager.playVictorySound();
+             repaint();
+             if (stateListener != null) {
+@@ -294,6 +317,7 @@ public class BoardPanel extends JPanel {
+         }
+         if (board.isFull()) {
+             isGameOver = true;
++            winner = Piece.NONE;
+             repaint();
+             if (stateListener != null) {
+                 stateListener.onGameOver(gameId, Lang.drawGame(), Piece.NONE);
+@@ -340,9 +364,10 @@ public class BoardPanel extends JPanel {
+         final int capturedGameId = this.gameId;
+         final int capturedMoveCount = this.moveHistory.size();
+         final Board snap = board.copy();
++        final MinimaxAI searchAi = new MinimaxAI(Piece.O, ai.getDifficulty());
+ 
+         aiWorker = new SwingWorker<Move, Void>() {
+-            @Override protected Move doInBackground() { return ai.findBestMove(snap); }
++            @Override protected Move doInBackground() { return searchAi.findBestMove(snap); }
+             @Override protected void done() {
+                 try {
+                     if (isCancelled() || token != aiExecutionToken || capturedGameId != gameId || capturedMoveCount != moveHistory.size()) {
+@@ -352,7 +377,7 @@ public class BoardPanel extends JPanel {
+                     isAiThinking = false;
+                     setCursor(Cursor.getDefaultCursor());
+                     if (stateListener != null)
+-                        stateListener.onAiStatsUpdated(ai.getExecutionTimeMs(), ai.getNodesEvaluated(), ai.getPruningCount());
++                        stateListener.onAiStatsUpdated(searchAi.getExecutionTimeMs(), searchAi.getNodesEvaluated(), searchAi.getPruningCount());
+                     if (best != null && !isGameOver) executeMove(best.row, best.col, Piece.O);
+                 } catch (Exception ex) {
+                     if (token == aiExecutionToken) {
+diff --git a/src/game/view/Lang.java b/src/game/view/Lang.java
+index f0397f2..16639fd 100644
+--- a/src/game/view/Lang.java
++++ b/src/game/view/Lang.java
+@@ -298,17 +298,17 @@ public class Lang {
+ 
+     public static String hostBtn() {
+         return switch (current) {
+-            case VI -> "Tạo Phòng (Host)";
+-            case EN -> "Create Room (Host)";
+-            case PT -> "Criar Sala (Host)";
++            case VI -> "Tạo Phòng (Host - Quân Đen)";
++            case EN -> "Create Room (Host - Black)";
++            case PT -> "Criar Sala (Host - Preto)";
+         };
+     }
+ 
+     public static String joinBtn() {
+         return switch (current) {
+-            case VI -> "Vào Phòng (Join)";
+-            case EN -> "Join Room";
+-            case PT -> "Entrar na Sala";
++            case VI -> "Vào Phòng (Join - Quân Trắng)";
++            case EN -> "Join Room (Join - White)";
++            case PT -> "Entrar na Sala (Join - Branco)";
+         };
+     }
+ 
+@@ -337,6 +337,27 @@ public class Lang {
+         };
+     }
+ 
++    public static String networkError(game.network.NetworkManager.NetworkError error) {
++        String endpoint = error.address() + ":" + error.port();
++        return switch (error.type()) {
++            case HOST -> switch (current) {
++                case VI -> "Không thể tạo phòng tại cổng " + error.port() + ". Hãy thử cổng khác.";
++                case EN -> "Cannot host on port " + error.port() + ". Try another port.";
++                case PT -> "Não foi possível criar a sala na porta " + error.port() + ". Tente outra porta.";
++            };
++            case JOIN -> switch (current) {
++                case VI -> "Không thể kết nối tới " + endpoint + ". Kiểm tra địa chỉ và phòng đang mở.";
++                case EN -> "Cannot connect to " + endpoint + ". Check the address and that the room is open.";
++                case PT -> "Não foi possível conectar a " + endpoint + ". Verifique o endereço e se a sala está aberta.";
++            };
++            case CHANNEL -> switch (current) {
++                case VI -> "Không thể thiết lập kết nối. Hãy thử lại.";
++                case EN -> "Cannot set up the connection. Please try again.";
++                case PT -> "Não foi possível estabelecer a conexão. Tente novamente.";
++            };
++        };
++    }
++
+     // =========================================================================
+     // Online – thông báo trong MainFrame
+     // =========================================================================
+diff --git a/src/game/view/MainFrame.java b/src/game/view/MainFrame.java
+index dda0e41..54298df 100644
+--- a/src/game/view/MainFrame.java
++++ b/src/game/view/MainFrame.java
+@@ -9,8 +9,6 @@ import game.network.NetworkManager;
+ import javax.swing.*;
+ import javax.swing.border.EmptyBorder;
+ import java.awt.*;
+-import java.awt.event.WindowAdapter;
+-import java.awt.event.WindowEvent;
+ 
+ /**
+  * Cửa sổ chính "Gomoku":
+@@ -48,6 +46,9 @@ public class MainFrame extends JFrame {
+     // === Chế độ chơi Online ===
+     private NetworkManager networkManager;
+     private NetworkDialog networkDialog;
++    private boolean modeComboUpdating;
++    private boolean disposed;
++    private final Runnable languageListener = this::updateLanguage;
+ 
+     // === Cài đặt ===
+     private final AppSettings appSettings;
+@@ -67,21 +68,13 @@ public class MainFrame extends JFrame {
+         SoundManager.setSoundEnabled(appSettings.loadSound());
+ 
+         setTitle("Gomoku");
+-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
++        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+         setResizable(false);
+         setLayout(new BorderLayout(0, 0));
+ 
+         // Khởi tạo NetworkManager
+         initNetworkManager();
+ 
+-        // Đảm bảo ngắt socket khi tắt ứng dụng
+-        addWindowListener(new WindowAdapter() {
+-            @Override
+-            public void windowClosing(WindowEvent e) {
+-                if (networkManager != null) networkManager.disconnect();
+-            }
+-        });
+-
+         // =====================================================================
+         // 1. HEADER TỐI
+         // =====================================================================
+@@ -156,6 +149,7 @@ public class MainFrame extends JFrame {
+         // 4. ĐĂNG KÝ SỰ KIỆN
+         // =====================================================================
+         modeCombo.addActionListener(e -> {
++            if (modeComboUpdating) return;
+             BoardPanel.GameMode sel = (BoardPanel.GameMode) modeCombo.getSelectedItem();
+             diffCombo.setEnabled(sel == BoardPanel.GameMode.PV_AI);
+ 
+@@ -163,9 +157,7 @@ public class MainFrame extends JFrame {
+                 btnUndo.setEnabled(false);
+                 openNetworkDialog();
+             } else {
+-                if (networkManager != null && networkManager.isConnected()) {
+-                    networkManager.disconnect();
+-                }
++                networkManager.disconnect();
+                 boardPanel.setGameMode(sel);
+             }
+         });
+@@ -205,23 +197,7 @@ public class MainFrame extends JFrame {
+         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
+             @Override
+             public void onTurnChanged(Piece currentTurn, boolean isAiThinking) {
+-                BoardPanel.GameMode mode = boardPanel.getGameMode();
+-                if (mode == BoardPanel.GameMode.ONLINE) {
+-                    Piece myP = boardPanel.getMyPiece();
+-                    if (currentTurn == myP) {
+-                        setTurnLabel(Lang.onlineYourTurn(), new Color(20, 120, 50));
+-                    } else {
+-                        setTurnLabel(Lang.onlineOpponentTurn(), new Color(200, 100, 20));
+-                    }
+-                } else if (isAiThinking) {
+-                    setTurnLabel(Lang.aiThinking(), new Color(200, 100, 20));
+-                } else if (mode == BoardPanel.GameMode.PV_AI) {
+-                    if (currentTurn == Piece.X) setTurnLabel(Lang.yourTurn(),  new Color(20, 80, 170));
+-                    else                        setTurnLabel(Lang.aiTurn(),    new Color(160, 30, 30));
+-                } else {
+-                    if (currentTurn == Piece.X) setTurnLabel(Lang.p1Turn(), new Color(20, 80, 170));
+-                    else                        setTurnLabel(Lang.p2Turn(), new Color(160, 30, 30));
+-                }
++                refreshGameStatus();
+             }
+ 
+             @Override
+@@ -241,13 +217,7 @@ public class MainFrame extends JFrame {
+                     refreshScores();
+                 }
+ 
+-                if (winner == Piece.NONE) {
+-                    setTurnLabel(message, new Color(120, 80, 20));
+-                } else if (winner == humanPiece) {
+-                    setTurnLabel(message, new Color(30, 130, 50));
+-                } else {
+-                    setTurnLabel(message, new Color(160, 30, 30));
+-                }
++                refreshGameStatus();
+ 
+                 JOptionPane.showMessageDialog(MainFrame.this, message,
+                         Lang.gameOverTitle(), JOptionPane.INFORMATION_MESSAGE);
+@@ -263,7 +233,7 @@ public class MainFrame extends JFrame {
+         });
+ 
+         // Lang listener — cập nhật toàn bộ UI khi ngôn ngữ thay đổi
+-        Lang.addChangeListener(this::updateLanguage);
++        Lang.addChangeListener(languageListener);
+ 
+         // =====================================================================
+         // 5. LẮP RÁP
+@@ -373,10 +343,12 @@ public class MainFrame extends JFrame {
+             }
+ 
+             @Override
++            @SuppressWarnings("unchecked")
+             public void paintCurrentValue(Graphics g, Rectangle bounds, boolean hasFocus) {
+                 // Lấy item hiển thị
+                 Object item = comboBox.getSelectedItem();
+                 if (item == null) return;
++                @SuppressWarnings("rawtypes")
+                 ListCellRenderer renderer = comboBox.getRenderer();
+                 Component rc = renderer.getListCellRendererComponent(
+                         listBox, item, -1, false, false);
+@@ -461,14 +433,14 @@ public class MainFrame extends JFrame {
+         this.networkManager = new NetworkManager(new NetworkManager.NetworkListener() {
+             @Override
+             public void onConnected(boolean isHost) {
+-                SwingUtilities.invokeLater(() -> {
++                if (!disposed) {
+                     if (networkDialog != null) networkDialog.onConnectionSuccess();
+                     boardPanel.setupOnlineGame(networkManager, isHost);
+ 
+                     String msg = isHost ? Lang.onlineConnectedHost() : Lang.onlineConnectedClient();
+                     JOptionPane.showMessageDialog(MainFrame.this, msg,
+                             Lang.connectedTitle(), JOptionPane.INFORMATION_MESSAGE);
+-                });
++                }
+             }
+ 
+             @Override
+@@ -478,35 +450,58 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onRestartRequested() {
+-                SwingUtilities.invokeLater(() -> {
++                if (!disposed && boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
+                     scoreTracker.newGame();
+                     boardPanel.resetGame();
+                     JOptionPane.showMessageDialog(MainFrame.this,
+                             Lang.restartedMsg(), Lang.newGameTitle(),
+                             JOptionPane.INFORMATION_MESSAGE);
+-                });
++                }
+             }
+ 
+             @Override
+             public void onOpponentDisconnected() {
+-                SwingUtilities.invokeLater(() -> {
++                if (!disposed) {
++                    modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
+                     JOptionPane.showMessageDialog(MainFrame.this,
+                             Lang.opponentDisconnected(), Lang.disconnectedTitle(),
+                             JOptionPane.WARNING_MESSAGE);
+-                    modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
+-                });
++                }
+             }
+ 
+             @Override
+-            public void onError(String message) {
+-                if (networkDialog != null) networkDialog.onConnectionFailed(message);
++            public void onError(NetworkManager.NetworkError error) {
++                if (!disposed && networkDialog != null) networkDialog.onConnectionFailed(Lang.networkError(error));
+             }
+-        });
++        }, SwingUtilities::invokeLater);
+     }
+ 
+     private void openNetworkDialog() {
+-        networkDialog = new NetworkDialog(this, networkManager, () -> {});
+-        networkDialog.setVisible(true);
++        BoardPanel.GameMode previousMode = boardPanel.getGameMode();
++        NetworkDialog dialog = new NetworkDialog(this, networkManager, () -> {});
++        networkDialog = dialog;
++        dialog.setVisible(true);
++        if (networkDialog == dialog) networkDialog = null;
++        if (!disposed && !dialog.wasConnected()) {
++            modeComboUpdating = true;
++            try {
++                modeCombo.setSelectedItem(previousMode);
++                diffCombo.setEnabled(previousMode == BoardPanel.GameMode.PV_AI);
++                btnUndo.setEnabled(boardPanel.canUndo());
++            } finally {
++                modeComboUpdating = false;
++            }
++        }
++    }
++
++    @Override
++    public void dispose() {
++        disposed = true;
++        Lang.removeChangeListener(languageListener);
++        if (networkManager != null) networkManager.disconnect();
++        if (networkDialog != null) networkDialog.dispose();
++        if (boardPanel != null) boardPanel.cancelAiComputation();
++        super.dispose();
+     }
+ 
+     // =========================================================================
+@@ -537,7 +532,7 @@ public class MainFrame extends JFrame {
+         lblLossTxt.setText(Lang.losses());
+         lblDrawTxt.setText(Lang.draws());
+ 
+-        boardPanel.resetGame();
++        refreshGameStatus();
+         revalidate();
+         repaint();
+     }
+@@ -587,6 +582,31 @@ public class MainFrame extends JFrame {
+         turnLabel.setForeground(color);
+     }
+ 
++    /** Refresh translated status without changing the board, turn or AI worker. */
++    private void refreshGameStatus() {
++        BoardPanel.GameMode mode = boardPanel.getGameMode();
++        Piece turn = boardPanel.getCurrentTurn();
++        if (boardPanel.isGameOver()) {
++            Piece winner = boardPanel.getWinner();
++            Piece local = mode == BoardPanel.GameMode.ONLINE ? boardPanel.getMyPiece() : Piece.X;
++            Color color = winner == Piece.NONE ? new Color(120, 80, 20)
++                    : winner == local ? new Color(30, 130, 50) : new Color(160, 30, 30);
++            setTurnLabel(boardPanel.getGameOverMessage(), color);
++        } else if (mode == BoardPanel.GameMode.ONLINE) {
++            boolean localTurn = turn == boardPanel.getMyPiece();
++            setTurnLabel(localTurn ? Lang.onlineYourTurn() : Lang.onlineOpponentTurn(),
++                    localTurn ? new Color(20, 120, 50) : new Color(200, 100, 20));
++        } else if (boardPanel.isAiThinking()) {
++            setTurnLabel(Lang.aiThinking(), new Color(200, 100, 20));
++        } else if (mode == BoardPanel.GameMode.PV_AI) {
++            setTurnLabel(turn == Piece.X ? Lang.yourTurn() : Lang.aiTurn(),
++                    turn == Piece.X ? new Color(20, 80, 170) : new Color(160, 30, 30));
++        } else {
++            setTurnLabel(turn == Piece.X ? Lang.p1Turn() : Lang.p2Turn(),
++                    turn == Piece.X ? new Color(20, 80, 170) : new Color(160, 30, 30));
++        }
++    }
++
+     // =========================================================================
+     // FACTORY HELPERS
+     // =========================================================================
+diff --git a/src/game/view/NetworkDialog.java b/src/game/view/NetworkDialog.java
+index 054dbef..efce18a 100644
+--- a/src/game/view/NetworkDialog.java
++++ b/src/game/view/NetworkDialog.java
+@@ -20,11 +20,14 @@ public class NetworkDialog extends JDialog {
+     private JLabel lblStatus;
+     private JButton btnHost;
+     private JButton btnJoin;
++    private boolean finished;
++    private boolean connected;
+ 
+     public NetworkDialog(JFrame parent, NetworkManager networkManager, Runnable onConnectedCallback) {
+         super(parent, Lang.networkDialogTitle(), true);
+         this.networkManager = networkManager;
+         this.onConnectedCallback = onConnectedCallback;
++        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+ 
+         setLayout(new BorderLayout());
+         setResizable(false);
+@@ -117,7 +120,9 @@ public class NetworkDialog extends JDialog {
+ 
+     private int parsePort() {
+         try {
+-            return Integer.parseInt(txtPort.getText().trim());
++            int port = Integer.parseInt(txtPort.getText().trim());
++            if (port < 1 || port > 65535) throw new NumberFormatException();
++            return port;
+         } catch (Exception ex) {
+             lblStatus.setText(Lang.invalidPort());
+             lblStatus.setForeground(Color.RED);
+@@ -135,19 +140,38 @@ public class NetworkDialog extends JDialog {
+     }
+ 
+     public void onConnectionSuccess() {
+-        SwingUtilities.invokeLater(() -> {
++        runOnEdt(() -> {
++            if (finished) return;
++            connected = true;
+             if (onConnectedCallback != null) onConnectedCallback.run();
+             dispose();
+         });
+     }
+ 
+     public void onConnectionFailed(String error) {
+-        SwingUtilities.invokeLater(() -> {
++        runOnEdt(() -> {
++            if (finished) return;
+             setLoadingState(false, error);
+             lblStatus.setForeground(new Color(200, 40, 40));
+         });
+     }
+ 
++    public boolean wasConnected() { return connected; }
++
++    @Override
++    public void dispose() {
++        if (!finished) {
++            finished = true;
++            if (!connected) networkManager.disconnect();
++        }
++        super.dispose();
++    }
++
++    private static void runOnEdt(Runnable task) {
++        if (SwingUtilities.isEventDispatchThread()) task.run();
++        else SwingUtilities.invokeLater(task);
++    }
++
+     private void styleButton(JButton btn, Color bg, Color fg) {
+         btn.setFont(new Font("Segoe UI", Font.BOLD, 12));
+         btn.setBackground(bg);
+diff --git a/src/game/view/SoundManager.java b/src/game/view/SoundManager.java
+index c1ad89d..f7a0c84 100644
+--- a/src/game/view/SoundManager.java
++++ b/src/game/view/SoundManager.java
+@@ -2,6 +2,7 @@ package game.view;
+ 
+ import javax.sound.sampled.*;
+ import java.io.ByteArrayInputStream;
++import java.util.concurrent.*;
+ 
+ /**
+  * Trình quản lý âm thanh cho game Caro:
+@@ -9,7 +10,14 @@ import java.io.ByteArrayInputStream;
+  * mà không cần file ngoài, đảm bảo 100% chạy mượt trên mọi máy tính.
+  */
+ public class SoundManager {
+-    private static boolean soundEnabled = true;
++    private static volatile boolean soundEnabled = true;
++    private static final ThreadPoolExecutor PLAYBACK = new ThreadPoolExecutor(
++            2, 2, 30, TimeUnit.SECONDS, new ArrayBlockingQueue<>(8), task -> {
++                Thread thread = new Thread(task, "gomoku-audio");
++                thread.setDaemon(true);
++                return thread;
++            }, new ThreadPoolExecutor.DiscardOldestPolicy());
++    static { PLAYBACK.allowCoreThreadTimeOut(true); }
+ 
+     public static void setSoundEnabled(boolean enabled) {
+         soundEnabled = enabled;
+@@ -25,7 +33,8 @@ public class SoundManager {
+     public static void playPlacePieceSound() {
+         if (!soundEnabled) return;
+ 
+-        new Thread(() -> {
++        PLAYBACK.execute(() -> {
++            if (!soundEnabled) return;
+             try {
+                 float sampleRate = 44100;
+                 int durationMs = 60;
+@@ -44,7 +53,7 @@ public class SoundManager {
+                 playBuffer(buffer, sampleRate);
+             } catch (Exception ignored) {
+             }
+-        }).start();
++        });
+     }
+ 
+     /**
+@@ -53,7 +62,8 @@ public class SoundManager {
+     public static void playVictorySound() {
+         if (!soundEnabled) return;
+ 
+-        new Thread(() -> {
++        PLAYBACK.execute(() -> {
++            if (!soundEnabled) return;
+             try {
+                 float sampleRate = 44100;
+                 int durationMs = 400;
+@@ -73,17 +83,31 @@ public class SoundManager {
+                 playBuffer(buffer, sampleRate);
+             } catch (Exception ignored) {
+             }
+-        }).start();
++        });
+     }
+ 
+     private static void playBuffer(byte[] buffer, float sampleRate) {
+         try {
+-            AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
+-            AudioInputStream ais = new AudioInputStream(new ByteArrayInputStream(buffer), format, buffer.length);
+-            Clip clip = AudioSystem.getClip();
+-            clip.open(ais);
+-            clip.start();
++            playClip(AudioSystem.getClip(), buffer, sampleRate);
+         } catch (Exception ignored) {
+         }
+     }
++
++    /** Package-visible to verify cleanup without requiring an audio device. */
++    static void playClip(Clip clip, byte[] buffer, float sampleRate) throws Exception {
++        CountDownLatch stopped = new CountDownLatch(1);
++        AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
++        try (AudioInputStream stream = new AudioInputStream(
++                new ByteArrayInputStream(buffer), format, buffer.length)) {
++            clip.addLineListener(event -> {
++                if (event.getType() == LineEvent.Type.STOP) stopped.countDown();
++            });
++            clip.open(stream);
++            clip.start();
++            long durationMs = (long) (1000.0 * buffer.length / sampleRate);
++            stopped.await(durationMs + 1000, TimeUnit.MILLISECONDS);
++        } finally {
++            clip.close();
++        }
++    }
+ }
+diff --git a/test/game/I18nSourceScanTest.java b/test/game/I18nSourceScanTest.java
+index 05a994c..97ace5e 100644
+--- a/test/game/I18nSourceScanTest.java
++++ b/test/game/I18nSourceScanTest.java
+@@ -19,8 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
+ @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
+ public class I18nSourceScanTest {
+ 
+-    static final Path VIEW_DIR = Paths.get(
+-        "c:\\VNUK\\Năm 3 - Kì 1 - 2026_2027\\Basic Project\\Gomoku\\src\\game\\view");
++    static final Path VIEW_DIR = Paths.get("src", "game", "view");
+ 
+     // Regex ký tự Unicode tiếng Việt có dấu
+     static final Pattern VIET_CHAR = Pattern.compile(
+diff --git a/test/game/LangPurityTest.java b/test/game/LangPurityTest.java
+new file mode 100644
+index 0000000..96e3364
+--- /dev/null
++++ b/test/game/LangPurityTest.java
+@@ -0,0 +1,224 @@
++package game;
++
++import game.view.*;
++import org.junit.jupiter.api.*;
++
++import javax.swing.*;
++import java.awt.*;
++import java.awt.image.BufferedImage;
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++import java.util.ArrayList;
++import java.util.List;
++import java.util.Set;
++import java.util.prefs.Preferences;
++
++import static org.junit.jupiter.api.Assertions.*;
++
++/**
++ * Test độ thuần khiết ngôn ngữ của Lang.java:
++ *   CA A – bản PT không chứa ký tự tiếng Việt đặc trưng
++ *   CA B – bản PT không trùng EN (trừ allowlist tường minh)
++ *   CA C – contrast ratio combo >= 4.5 (ô display tối trên nền header)
++ *
++ * Chạy test này TRƯỚC khi sửa nguồn để xác nhận đỏ/xanh.
++ */
++@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
++public class LangPurityTest {
++
++    private static Lang.Language origLang;
++    private static boolean origSound;
++    private static java.util.Map<String, String> productionBefore;
++
++    static final String TEST_NODE = "/test/task3/langPurity-" + java.util.UUID.randomUUID();
++
++    // Tập ký tự tiếng Việt đặc trưng KHÔNG có trong tiếng Bồ Đào Nha:
++    // ă, đ, ơ, ư và các chữ có dấu thanh chồng
++    static final String VI_ONLY_CHARS =
++        "ăĂđĐơƠưƯ" +
++        "ạảấầẩẫậẠẢẤẦẨẪẬ" +
++        "ắằẳẵặẮẰẲẴẶ" +
++        "ẹẻẽếềểễệẸẺẼẾỀỂỄỆ" +
++        "ỉịỈỊ" +
++        "ọỏốồổỗộớờởỡợỌỎỐỒỔỖỘỚỜỞỠỢ" +
++        "ụủứừửữựỤỦỨỪỬỮỰ" +
++        "ỳỵỷỹỲỴỶỸ";
++
++    @BeforeAll
++    static void setup() throws Exception {
++        productionBefore = PreferencesIsolation.snapshot();
++        origLang  = Lang.get();
++        origSound = SoundManager.isSoundEnabled();
++    }
++
++    @AfterEach
++    void restore() throws Exception {
++        Lang.set(origLang);
++        SoundManager.setSoundEnabled(origSound);
++        PreferencesIsolation.cleanup(TEST_NODE, productionBefore);
++    }
++
++    @AfterAll
++    static void cleanup() throws Exception {
++        Lang.set(origLang);
++        SoundManager.setSoundEnabled(origSound);
++        PreferencesIsolation.cleanup(TEST_NODE, productionBefore);
++    }
++
++    // =========================================================================
++    // CA A – bản PT không chứa ký tự tiếng Việt đặc trưng
++    // =========================================================================
++    @Test
++    @Order(1)
++    @DisplayName("A – PT không chứa ký tự tiếng Việt đặc trưng (ă đ ơ ư ...)")
++    void a_ptNoVietnameseChars() throws Exception {
++        List<Method> methods = getNoArgStringMethods();
++        System.out.println("[A] Kiểm " + methods.size() + " methods với bản PT");
++
++        List<String> failures = new ArrayList<>();
++        for (Method m : methods) {
++            Lang.set(Lang.Language.PT);
++            String pt = (String) m.invoke(null);
++            for (char c : VI_ONLY_CHARS.toCharArray()) {
++                if (pt.indexOf(c) >= 0) {
++                    failures.add("PT." + m.getName() + "() chứa ký tự VI '" + c
++                        + "': \"" + pt + "\"");
++                }
++            }
++        }
++
++        // Cũng kiểm connectingMsg
++        Lang.set(Lang.Language.PT);
++        String ptConn = Lang.connectingMsg("1.2.3.4");
++        for (char c : VI_ONLY_CHARS.toCharArray()) {
++            if (ptConn.indexOf(c) >= 0) {
++                failures.add("PT.connectingMsg() chứa ký tự VI '" + c
++                    + "': \"" + ptConn + "\"");
++            }
++        }
++
++        if (!failures.isEmpty()) {
++            fail("[A] FAILURES:\n" + String.join("\n", failures));
++        }
++        System.out.println("[A] PASS – không có ký tự VI trong bản PT");
++    }
++
++    // =========================================================================
++    // CA B – bản EN chỉ chứa ASCII
++    // =========================================================================
++    @Test
++    @Order(2)
++    @DisplayName("B – EN chỉ chứa ASCII (0x00-0x7F)")
++    void b_enAsciiOnly() throws Exception {
++        List<Method> methods = getNoArgStringMethods();
++        System.out.println("[B] Kiểm " + methods.size() + " methods với bản EN");
++
++        List<String> failures = new ArrayList<>();
++        for (Method m : methods) {
++            Lang.set(Lang.Language.EN);
++            String en = (String) m.invoke(null);
++            for (int i = 0; i < en.length(); i++) {
++                char c = en.charAt(i);
++                if (c > 0x7F) {
++                    failures.add("EN." + m.getName() + "() chứa non-ASCII U+"
++                        + String.format("%04X", (int) c) + " '" + c
++                        + "': \"" + en + "\"");
++                    break; // chỉ báo 1 lần mỗi method
++                }
++            }
++        }
++
++        // connectingMsg
++        Lang.set(Lang.Language.EN);
++        String enConn = Lang.connectingMsg("1.2.3.4");
++        for (int i = 0; i < enConn.length(); i++) {
++            char c = enConn.charAt(i);
++            if (c > 0x7F) {
++                failures.add("EN.connectingMsg() chứa non-ASCII U+"
++                    + String.format("%04X", (int) c) + ": \"" + enConn + "\"");
++                break;
++            }
++        }
++
++        if (!failures.isEmpty()) {
++            fail("[B] FAILURES:\n" + String.join("\n", failures));
++        }
++        System.out.println("[B] PASS – toàn bộ EN là ASCII thuần");
++    }
++
++    // =========================================================================
++    // CA C – contrast ratio combo display field >= 4.5 (WCAG AA)
++    // =========================================================================
++    @Test
++    @Order(3)
++    @DisplayName("C – Combo display field: contrast ratio nền/chữ >= 4.5 (WCAG AA)")
++    void c_comboContrastRatio() throws Exception {
++        System.setProperty("java.awt.headless", "false");
++        Lang.set(Lang.Language.VI);
++        MainFrame frame = new MainFrame(new AppSettings(
++                Preferences.userRoot().node(TEST_NODE + "/c")));
++        try {
++            // Màu nền ô display (bgColor) và màu chữ (fgColor) từ applyDarkComboUI:
++            //   bgColor = RGB(55, 58, 65)
++            //   fgColor = Color.WHITE = RGB(255, 255, 255)
++            Color bg = new Color(55, 58, 65);
++            Color fg = Color.WHITE;
++
++            double cr = contrastRatio(bg, fg);
++            System.out.printf("[C] bg=RGB(%d,%d,%d) fg=WHITE → contrast ratio = %.2f%n",
++                bg.getRed(), bg.getGreen(), bg.getBlue(), cr);
++
++            assertTrue(cr >= 4.5,
++                "Contrast ratio " + String.format("%.2f", cr) + " < 4.5 (WCAG AA)");
++
++            // Kiểm thêm: selected state (selBg = 80,60,140) vs fgColor = WHITE
++            Color selBg = new Color(80, 60, 140);
++            double crSel = contrastRatio(selBg, fg);
++            System.out.printf("[C] selBg=RGB(%d,%d,%d) fg=WHITE → contrast ratio selected = %.2f%n",
++                selBg.getRed(), selBg.getGreen(), selBg.getBlue(), crSel);
++            assertTrue(crSel >= 3.0,
++                "Contrast ratio selected " + String.format("%.2f", crSel) + " < 3.0");
++
++            System.out.println("[C] PASS");
++        } finally {
++            frame.dispose();
++            try { Preferences.userRoot().node(TEST_NODE + "/c").removeNode(); }
++            catch (Exception ignored) {}
++        }
++    }
++
++    // =========================================================================
++    // Helpers
++    // =========================================================================
++    private List<Method> getNoArgStringMethods() {
++        List<Method> result = new ArrayList<>();
++        for (Method m : Lang.class.getDeclaredMethods()) {
++            if (Modifier.isPublic(m.getModifiers())
++                    && Modifier.isStatic(m.getModifiers())
++                    && m.getReturnType() == String.class
++                    && m.getParameterCount() == 0) {
++                result.add(m);
++            }
++        }
++        return result;
++    }
++
++    private double contrastRatio(Color c1, Color c2) {
++        double l1 = relativeLuminance(c1);
++        double l2 = relativeLuminance(c2);
++        double lighter = Math.max(l1, l2);
++        double darker  = Math.min(l1, l2);
++        return (lighter + 0.05) / (darker + 0.05);
++    }
++
++    private double relativeLuminance(Color c) {
++        double r = srgb(c.getRed()   / 255.0);
++        double g = srgb(c.getGreen() / 255.0);
++        double b = srgb(c.getBlue()  / 255.0);
++        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
++    }
++
++    private double srgb(double v) {
++        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
++    }
++}
+diff --git a/test/game/NetworkStabilityTest.java b/test/game/NetworkStabilityTest.java
+new file mode 100644
+index 0000000..5c908a6
+--- /dev/null
++++ b/test/game/NetworkStabilityTest.java
+@@ -0,0 +1,174 @@
++package game;
++
++import game.network.NetworkManager;
++import org.junit.jupiter.api.Test;
++import java.io.*;
++import java.net.*;
++import java.nio.charset.StandardCharsets;
++import java.util.concurrent.*;
++import static org.junit.jupiter.api.Assertions.*;
++
++class NetworkStabilityTest {
++    static final class Events implements NetworkManager.NetworkListener {
++        final BlockingQueue<String> events = new LinkedBlockingQueue<>();
++        final BlockingQueue<Integer> ports = new LinkedBlockingQueue<>();
++        public void onHosting(int port) { ports.add(port); }
++        public void onConnected(boolean host) { events.add("connected:" + host); }
++        public void onMoveReceived(int r, int c) { events.add("move:" + r + ":" + c); }
++        public void onRestartRequested() { events.add("restart"); }
++        public void onOpponentDisconnected() { events.add("disconnected"); }
++        public void onError(NetworkManager.NetworkError error) { events.add("error:" + error.type()); }
++        String next() throws InterruptedException { return events.poll(3, TimeUnit.SECONDS); }
++    }
++
++    @Test
++    void cancelPendingHostReleasesPortWithoutError() throws Exception {
++        Events events = new Events();
++        NetworkManager manager = new NetworkManager(events);
++        try {
++            manager.hostGame(0);
++            Integer port = events.ports.poll(3, TimeUnit.SECONDS);
++            assertNotNull(port);
++            manager.disconnect();
++            try (ServerSocket rebound = new ServerSocket(port)) {
++                assertTrue(rebound.isBound());
++            }
++            assertFalse(manager.isConnected());
++            assertNull(events.events.poll(150, TimeUnit.MILLISECONDS));
++        } finally { manager.disconnect(); }
++    }
++
++    @Test
++    void hostAndClientExchangeMovesRestartAndDisconnect() throws Exception {
++        Events hostEvents = new Events();
++        Events clientEvents = new Events();
++        NetworkManager host = new NetworkManager(hostEvents);
++        NetworkManager client = new NetworkManager(clientEvents);
++        try {
++            host.hostGame(0);
++            Integer port = hostEvents.ports.poll(3, TimeUnit.SECONDS);
++            assertNotNull(port);
++            client.joinGame("127.0.0.1", port);
++            assertEquals("connected:true", hostEvents.next());
++            assertEquals("connected:false", clientEvents.next());
++            host.sendMove(7, 7);
++            assertEquals("move:7:7", clientEvents.next());
++            client.sendMove(6, 6);
++            assertEquals("move:6:6", hostEvents.next());
++            host.sendRestart();
++            assertEquals("restart", clientEvents.next());
++            client.disconnect();
++            assertEquals("disconnected", hostEvents.next());
++            assertFalse(host.isConnected());
++        } finally { client.disconnect(); host.disconnect(); }
++    }
++
++    @Test
++    void malformedMoveDoesNotKillConnectionAndOrderIsPreserved() throws Exception {
++        Events events = new Events();
++        NetworkManager manager = new NetworkManager(events);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000);
++            manager.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                assertEquals("connected:false", events.next());
++                PrintWriter out = new PrintWriter(peer.getOutputStream(), true, StandardCharsets.UTF_8);
++                out.println("MOVE nope 4");
++                out.println("MOVE 1 2 3");
++                out.println("MOVE 4 5");
++                out.println("RESTART");
++                out.println("MOVE   6   7");
++                assertEquals("move:4:5", events.next());
++                assertEquals("restart", events.next());
++                assertEquals("move:6:7", events.next());
++                assertTrue(manager.isConnected());
++            }
++        } finally { manager.disconnect(); }
++    }
++
++    @Test
++    void callbacksAlreadyQueuedAreDiscardedAfterCancel() throws Exception {
++        Events events = new Events();
++        BlockingQueue<Runnable> callbacks = new LinkedBlockingQueue<>();
++        NetworkManager manager = new NetworkManager(events, callbacks::add);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000);
++            manager.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                Runnable connected = callbacks.poll(3, TimeUnit.SECONDS);
++                assertNotNull(connected);
++                new PrintWriter(peer.getOutputStream(), true).println("MOVE 1 2");
++                Runnable move = callbacks.poll(3, TimeUnit.SECONDS);
++                assertNotNull(move);
++                manager.disconnect();
++                connected.run();
++                move.run();
++                assertTrue(events.events.isEmpty());
++            }
++        } finally { manager.disconnect(); }
++    }
++
++    @Test
++    void reconnectCannotBeClosedOrNotifiedByPreviousSession() throws Exception {
++        Events events = new Events();
++        BlockingQueue<Runnable> callbacks = new LinkedBlockingQueue<>();
++        NetworkManager manager = new NetworkManager(events, callbacks::add);
++        try (ServerSocket first = new ServerSocket(0); ServerSocket second = new ServerSocket(0)) {
++            first.setSoTimeout(3000); second.setSoTimeout(3000);
++            manager.joinGame("127.0.0.1", first.getLocalPort());
++            try (Socket oldPeer = first.accept()) {
++                Runnable oldConnected = callbacks.poll(3, TimeUnit.SECONDS);
++                assertNotNull(oldConnected);
++                manager.joinGame("127.0.0.1", second.getLocalPort());
++                try (Socket newPeer = second.accept()) {
++                    Runnable newConnected = callbacks.poll(3, TimeUnit.SECONDS);
++                    assertNotNull(newConnected);
++                    oldConnected.run(); newConnected.run();
++                    assertEquals("connected:false", events.next());
++                    oldPeer.setSoTimeout(3000);
++                    assertEquals(-1, oldPeer.getInputStream().read());
++                    new PrintWriter(newPeer.getOutputStream(), true).println("MOVE 8 9");
++                    Runnable move = callbacks.poll(3, TimeUnit.SECONDS);
++                    assertNotNull(move);
++                    move.run();
++                    assertEquals("move:8:9", events.next());
++                    assertTrue(manager.isConnected());
++                    assertTrue(events.events.isEmpty());
++                }
++            }
++        } finally { manager.disconnect(); }
++    }
++
++    @Test
++    void staleErrorIsDiscardedWhenNewSessionStarts() throws Exception {
++        Events events = new Events();
++        BlockingQueue<Runnable> callbacks = new LinkedBlockingQueue<>();
++        NetworkManager manager = new NetworkManager(events, callbacks::add);
++        try (ServerSocket occupied = new ServerSocket(0); ServerSocket next = new ServerSocket(0)) {
++            next.setSoTimeout(3000);
++            manager.hostGame(occupied.getLocalPort());
++            Runnable error = callbacks.poll(3, TimeUnit.SECONDS);
++            assertNotNull(error);
++            manager.joinGame("127.0.0.1", next.getLocalPort());
++            try (Socket peer = next.accept()) {
++                Runnable connected = callbacks.poll(3, TimeUnit.SECONDS);
++                assertNotNull(connected);
++                error.run(); connected.run();
++                assertEquals("connected:false", events.next());
++                assertTrue(events.events.isEmpty());
++                assertTrue(manager.isConnected());
++            }
++        } finally { manager.disconnect(); }
++    }
++
++    @Test
++    void occupiedPortReportsTypedHostError() throws Exception {
++        Events events = new Events();
++        NetworkManager manager = new NetworkManager(events);
++        try (ServerSocket occupied = new ServerSocket(0)) {
++            manager.hostGame(occupied.getLocalPort());
++            assertEquals("error:HOST", events.next());
++            assertFalse(manager.isConnected());
++        } finally { manager.disconnect(); }
++    }
++}
+diff --git a/test/game/P1RegressionTest.java b/test/game/P1RegressionTest.java
+new file mode 100644
+index 0000000..05608da
+--- /dev/null
++++ b/test/game/P1RegressionTest.java
+@@ -0,0 +1,289 @@
++package game;
++
++import game.model.Board;
++import game.model.Piece;
++import game.view.*;
++import org.junit.jupiter.api.*;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.EnumSource;
++
++import javax.swing.*;
++import java.util.HashMap;
++import java.util.Map;
++import java.util.prefs.AbstractPreferences;
++
++import static org.junit.jupiter.api.Assertions.*;
++
++/** Regression tests run Swing on the EDT and never access production Preferences. */
++class P1RegressionTest {
++    private Lang.Language originalLanguage;
++    private boolean originalSound;
++
++    @BeforeEach
++    void setup() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            originalLanguage = Lang.get();
++            originalSound = SoundManager.isSoundEnabled();
++            SoundManager.setSoundEnabled(false);
++        });
++    }
++
++    @AfterEach
++    void restore() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            Lang.set(originalLanguage);
++            SoundManager.setSoundEnabled(originalSound);
++        });
++    }
++
++    @ParameterizedTest
++    @EnumSource(BoardPanel.GameMode.class)
++    void languageChangePreservesActiveGame(BoardPanel.GameMode mode) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
++            try {
++                BoardPanel panel = frame.getBoardPanel();
++                if (mode == BoardPanel.GameMode.ONLINE) panel.setupOnlineGame(null, true);
++                else panel.setGameMode(mode);
++                assertTrue(panel.playMove(7, 7));
++                int gameId = panel.getGameId();
++                boolean thinking = panel.isAiThinking();
++                boolean canUndo = panel.canUndo();
++                frame.getScoreTracker().recordResult(gameId - 1, Piece.X);
++                for (Lang.Language language : Lang.Language.values()) {
++                    Lang.set(language);
++                    assertEquals(gameId, panel.getGameId());
++                    assertEquals(1, panel.getMoveHistory().size());
++                    assertEquals(Piece.O, panel.getCurrentTurn());
++                    assertEquals(mode, panel.getGameMode());
++                    assertEquals(thinking, panel.isAiThinking());
++                    assertEquals(canUndo, panel.canUndo());
++                    assertEquals(7, panel.getLastMoveRow());
++                    assertEquals(7, panel.getLastMoveCol());
++                    assertFalse(panel.isGameOver());
++                    assertEquals(1, frame.getScoreTracker().getHumanWins());
++                    assertEquals(Lang.mode(), frame.getLblMode().getText());
++                    assertEquals(mode == BoardPanel.GameMode.ONLINE ? Lang.onlineOpponentTurn()
++                            : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : Lang.p2Turn(),
++                            statusText(frame));
++                }
++            } finally {
++                frame.getBoardPanel().resetGame(); // cancel a possible AI worker
++                frame.dispose();
++            }
++        });
++    }
++
++    @ParameterizedTest
++    @EnumSource(Piece.class)
++    void languageChangePreservesFinishedGameAndTranslatesResult(Piece winner) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
++            try {
++                BoardPanel panel = frame.getBoardPanel();
++                panel.setGameMode(BoardPanel.GameMode.PVP);
++                panel.setGameStateListener(null); // suppress the modal result popup in this test
++                if (winner == Piece.NONE) {
++                    for (int r = 0; r < Board.SIZE; r++) {
++                        for (int c = 0; c < Board.SIZE; c++) {
++                            int phase = r % 2 == 0 ? 0 : 2;
++                            panel.executeMoveForTest(r, c, (c + phase) % 4 < 2 ? Piece.X : Piece.O);
++                        }
++                    }
++                } else {
++                    for (int c = 0; c < 5; c++) panel.executeMoveForTest(7, c, winner);
++                }
++                assertTrue(panel.isGameOver());
++                int gameId = panel.getGameId();
++                int history = panel.getMoveHistory().size();
++                for (Lang.Language language : Lang.Language.values()) {
++                    Lang.set(language);
++                    assertTrue(panel.isGameOver());
++                    assertEquals(winner, panel.getWinner());
++                    assertEquals(gameId, panel.getGameId());
++                    assertEquals(history, panel.getMoveHistory().size());
++                    String expected = winner == Piece.NONE ? Lang.drawGame()
++                            : winner == Piece.X ? Lang.p1Wins() : Lang.p2Wins();
++                    assertEquals(expected, panel.getGameOverMessage());
++                    assertEquals(expected, statusText(frame));
++                }
++            } finally {
++                frame.dispose();
++            }
++        });
++    }
++
++    @ParameterizedTest
++    @EnumSource(value = Piece.class, names = {"X", "O"})
++    void pvpUndoAfterWinRestoresWinningPlayerTurn(Piece winner) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            Board board = new Board();
++            BoardPanel panel = new BoardPanel(board);
++            panel.setGameMode(BoardPanel.GameMode.PVP);
++            int gameId = panel.getGameId();
++            for (int c = 0; c < 4; c++) {
++                assertTrue(panel.playMove(winner == Piece.X ? 7 : 0, winner == Piece.X ? c : c * 2));
++                assertTrue(panel.playMove(winner == Piece.X ? 0 : 7, winner == Piece.X ? c * 2 : c));
++            }
++            if (winner == Piece.O) assertTrue(panel.playMove(2, 10));
++            assertTrue(panel.playMove(7, 4));
++            assertTrue(panel.isGameOver());
++            int history = panel.getMoveHistory().size();
++            panel.undoMove();
++            assertEquals(winner, panel.getCurrentTurn());
++            assertFalse(panel.isGameOver());
++            assertEquals(Piece.NONE, panel.getWinner());
++            assertNull(panel.getGameOverMessage());
++            assertEquals(Piece.NONE, board.getPiece(7, 4));
++            assertEquals(history - 1, panel.getMoveHistory().size());
++            assertEquals(gameId, panel.getGameId());
++            assertTrue(panel.playMove(7, 4));
++            assertEquals(winner, board.getPiece(7, 4));
++            assertTrue(panel.isGameOver());
++        });
++    }
++
++    @Test
++    void pvpUndoAfterDrawRestoresLastPlayerTurn() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            Board board = new Board();
++            BoardPanel panel = new BoardPanel(board);
++            panel.setGameMode(BoardPanel.GameMode.PVP);
++            // Draw fixture: no five-in-a-row; final square is X.
++            for (int r = 0; r < Board.SIZE; r++) {
++                for (int c = 0; c < Board.SIZE; c++) {
++                    if (r == 14 && c == 14) continue;
++                    int phase = r % 2 == 0 ? 0 : 2;
++                    int p = (c + phase) % 4;
++                    board.makeMove(r, c, p < 2 ? Piece.X : Piece.O);
++                }
++            }
++            assertTrue(panel.playMove(14, 14));
++            assertTrue(panel.isGameOver());
++            panel.undoMove();
++            assertFalse(panel.isGameOver());
++            assertEquals(Piece.X, panel.getCurrentTurn());
++            assertEquals(224, board.getMoveCount());
++        });
++    }
++
++    @Test
++    void onlineRejectsOpponentMoveOnLocalTurn() throws Exception {
++        Board board = new Board();
++        BoardPanel[] panel = new BoardPanel[1];
++        SwingUtilities.invokeAndWait(() -> {
++            panel[0] = new BoardPanel(board);
++            panel[0].setupOnlineGame(null, true);
++            panel[0].applyOpponentMove(5, 5);
++        });
++        SwingUtilities.invokeAndWait(() -> {
++            assertEquals(Piece.NONE, board.getPiece(5, 5));
++            assertTrue(panel[0].getMoveHistory().isEmpty());
++            assertEquals(Piece.X, panel[0].getCurrentTurn());
++        });
++    }
++
++    @ParameterizedTest
++    @EnumSource(value = BoardPanel.GameMode.class, names = {"PVP", "PV_AI"})
++    void onlineRejectsMoveAfterSwitchingMode(BoardPanel.GameMode mode) throws Exception {
++        Board board = new Board();
++        BoardPanel[] panel = new BoardPanel[1];
++        SwingUtilities.invokeAndWait(() -> {
++            panel[0] = new BoardPanel(board);
++            panel[0].setupOnlineGame(null, false);
++            panel[0].setGameMode(mode);
++            panel[0].applyOpponentMove(5, 5);
++        });
++        SwingUtilities.invokeAndWait(() -> assertEquals(0, board.getMoveCount()));
++    }
++
++    @ParameterizedTest
++    @EnumSource(value = Piece.class, names = {"X", "O"})
++    void onlineAcceptsOnlyOneMoveFromCorrectOpponent(Piece localPiece) throws Exception {
++        Board board = new Board();
++        BoardPanel[] panel = new BoardPanel[1];
++        SwingUtilities.invokeAndWait(() -> {
++            panel[0] = new BoardPanel(board);
++            panel[0].setupOnlineGame(null, localPiece == Piece.X);
++            if (localPiece == Piece.X) assertTrue(panel[0].playMove(7, 7));
++            panel[0].applyOpponentMove(5, 5);
++            panel[0].applyOpponentMove(6, 6);
++        });
++        SwingUtilities.invokeAndWait(() -> {
++            assertEquals(localPiece.opposite(), board.getPiece(5, 5));
++            assertEquals(Piece.NONE, board.getPiece(6, 6));
++            assertEquals(localPiece, panel[0].getCurrentTurn());
++            assertEquals(localPiece == Piece.X ? 2 : 1, board.getMoveCount());
++        });
++    }
++
++    @Test
++    void onlineRejectsQueuedMoveAfterNewGame() throws Exception {
++        Board board = new Board();
++        BoardPanel[] panel = new BoardPanel[1];
++        SwingUtilities.invokeAndWait(() -> {
++            panel[0] = new BoardPanel(board);
++            panel[0].setupOnlineGame(null, false);
++            // Receive on a socket thread while the EDT is busy with a new game.
++            Thread receiver = new Thread(() -> panel[0].applyOpponentMove(5, 5));
++            receiver.start();
++            try {
++                receiver.join(1000);
++                assertFalse(receiver.isAlive());
++            } catch (InterruptedException e) {
++                throw new AssertionError(e);
++            }
++            panel[0].resetGame();
++        });
++        SwingUtilities.invokeAndWait(() -> assertEquals(0, board.getMoveCount()));
++    }
++
++    @Test
++    void onlineRejectsInvalidSquaresAndMovesAfterGameOver() throws Exception {
++        Board board = new Board();
++        BoardPanel[] panel = new BoardPanel[1];
++        SwingUtilities.invokeAndWait(() -> {
++            panel[0] = new BoardPanel(board);
++            panel[0].setupOnlineGame(null, true);
++            assertTrue(panel[0].playMove(7, 7));
++            panel[0].applyOpponentMove(-1, 5);
++            panel[0].applyOpponentMove(15, 5);
++            panel[0].applyOpponentMove(7, 7);
++        });
++        SwingUtilities.invokeAndWait(() -> {
++            assertEquals(1, board.getMoveCount());
++            assertEquals(Piece.O, panel[0].getCurrentTurn());
++            for (int c = 0; c < 5; c++) panel[0].executeMoveForTest(0, c, Piece.X);
++            assertTrue(panel[0].isGameOver());
++            panel[0].applyOpponentMove(5, 5);
++        });
++        SwingUtilities.invokeAndWait(() -> {
++            assertEquals(6, board.getMoveCount());
++            assertEquals(Piece.NONE, board.getPiece(5, 5));
++        });
++    }
++
++    private static String statusText(MainFrame frame) {
++        try {
++            var field = MainFrame.class.getDeclaredField("turnLabel");
++            field.setAccessible(true);
++            return ((JLabel) field.get(frame)).getText();
++        } catch (ReflectiveOperationException e) {
++            throw new AssertionError(e);
++        }
++    }
++
++    private static final class MemoryPreferences extends AbstractPreferences {
++        private final Map<String, String> values = new HashMap<>();
++        MemoryPreferences() { super(null, ""); values.put("soundEnabled", "false"); }
++        protected void putSpi(String key, String value) { values.put(key, value); }
++        protected String getSpi(String key) { return values.get(key); }
++        protected void removeSpi(String key) { values.remove(key); }
++        protected void removeNodeSpi() { values.clear(); }
++        protected String[] keysSpi() { return values.keySet().toArray(new String[0]); }
++        protected String[] childrenNamesSpi() { return new String[0]; }
++        protected AbstractPreferences childSpi(String name) { throw new UnsupportedOperationException(); }
++        protected void syncSpi() {}
++        protected void flushSpi() {}
++    }
++}
+diff --git a/test/game/P2LifecycleTest.java b/test/game/P2LifecycleTest.java
+new file mode 100644
+index 0000000..b06cc8d
+--- /dev/null
++++ b/test/game/P2LifecycleTest.java
+@@ -0,0 +1,220 @@
++package game;
++
++import game.ai.MinimaxAI;
++import game.model.*;
++import game.network.NetworkManager;
++import game.view.*;
++import org.junit.jupiter.api.*;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.EnumSource;
++import javax.swing.*;
++import java.awt.event.WindowEvent;
++import java.net.*;
++import java.util.*;
++import java.util.concurrent.*;
++import java.util.concurrent.atomic.AtomicReference;
++import java.util.prefs.AbstractPreferences;
++import static org.junit.jupiter.api.Assertions.*;
++
++class P2LifecycleTest {
++    private Lang.Language language;
++    private boolean sound;
++    @BeforeEach void remember() {
++        language = Lang.get(); sound = SoundManager.isSoundEnabled();
++        SoundManager.setSoundEnabled(false);
++    }
++    @AfterEach void restore() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            Lang.set(language); SoundManager.setSoundEnabled(sound);
++        });
++    }
++
++    @Test void disposedFrameDoesNotReceiveLanguageEvents() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame disposed = new MainFrame(new AppSettings(new MemoryPreferences()));
++            MainFrame active = new MainFrame(new AppSettings(new MemoryPreferences()));
++            try {
++                String before = disposed.getLblMode().getText();
++                disposed.dispose();
++                Lang.set(Lang.get() == Lang.Language.EN ? Lang.Language.PT : Lang.Language.EN);
++                assertEquals(before, disposed.getLblMode().getText());
++                assertEquals(Lang.mode(), active.getLblMode().getText());
++            } finally { disposed.dispose(); active.dispose(); }
++        });
++    }
++
++    @Test void disposingFrameCancelsItsWorkerAndPreservesBoard() throws Exception {
++        MainFrame[] frame = new MainFrame[1];
++        SwingUtilities.invokeAndWait(() -> {
++            frame[0] = new MainFrame(new AppSettings(new MemoryPreferences()));
++            BoardPanel panel = frame[0].getBoardPanel();
++            assertTrue(panel.playMove(7, 7));
++            assertTrue(panel.isAiThinking());
++            SwingWorker<?, ?> worker = field(panel, "aiWorker");
++            frame[0].dispose();
++            assertTrue(worker.isCancelled());
++            assertFalse(panel.isAiThinking());
++        });
++        SwingUtilities.invokeAndWait(() -> assertEquals(1, frame[0].getBoardPanel().getMoveHistory().size()));
++    }
++
++    @Test void closingDialogCancelsPendingHostAndIgnoresLateResults() throws Exception {
++        NetworkStabilityTest.Events events = new NetworkStabilityTest.Events();
++        NetworkManager manager = new NetworkManager(events);
++        try {
++            manager.hostGame(0);
++            Integer port = events.ports.poll(3, TimeUnit.SECONDS);
++            assertNotNull(port);
++            SwingUtilities.invokeAndWait(() -> {
++                NetworkDialog dialog = new NetworkDialog(null, manager, () -> fail("cancelled"));
++                JLabel status = field(dialog, "lblStatus");
++                String before = status.getText();
++                dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
++                dialog.onConnectionSuccess();
++                dialog.onConnectionFailed("late error");
++                assertFalse(dialog.wasConnected());
++                assertEquals(before, status.getText());
++                assertFalse(dialog.isDisplayable());
++            });
++            try (ServerSocket rebound = new ServerSocket(port)) { assertTrue(rebound.isBound()); }
++        } finally { manager.disconnect(); }
++    }
++
++    @Test void successfulDialogDisposalKeepsConnection() throws Exception {
++        NetworkStabilityTest.Events events = new NetworkStabilityTest.Events();
++        NetworkManager manager = new NetworkManager(events);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000);
++            manager.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                assertEquals("connected:false", events.next());
++                SwingUtilities.invokeAndWait(() -> {
++                    NetworkDialog dialog = new NetworkDialog(null, manager, () -> {});
++                    dialog.onConnectionSuccess();
++                    assertTrue(dialog.wasConnected());
++                    assertTrue(manager.isConnected());
++                    assertFalse(dialog.isDisplayable());
++                });
++            }
++        } finally { manager.disconnect(); }
++    }
++
++    @Test void cancellingOnlineSelectionRestoresModeWithoutResettingGame() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
++            try {
++                frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
++                BoardPanel panel = frame.getBoardPanel();
++                assertTrue(panel.playMove(7, 7));
++                int id = panel.getGameId();
++                SwingUtilities.invokeLater(() -> {
++                    NetworkDialog dialog = field(frame, "networkDialog");
++                    dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
++                });
++                frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.ONLINE);
++                assertEquals(BoardPanel.GameMode.PVP, frame.getModeCombo().getSelectedItem());
++                assertEquals(BoardPanel.GameMode.PVP, panel.getGameMode());
++                assertEquals(id, panel.getGameId());
++                assertEquals(1, panel.getMoveHistory().size());
++                assertTrue(panel.canUndo());
++            } finally { frame.dispose(); }
++        });
++    }
++
++    @Test void receivedMoveIsAppliedBeforeNextEdtNetworkCallback() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            Board board = new Board();
++            BoardPanel panel = new BoardPanel(board);
++            panel.setupOnlineGame(null, false);
++            panel.applyOpponentMove(4, 4);
++            assertEquals(Piece.X, board.getPiece(4, 4));
++            assertEquals(Piece.O, panel.getCurrentTurn());
++            panel.resetGame();
++            panel.applyOpponentMove(5, 5);
++            assertEquals(Piece.NONE, board.getPiece(4, 4));
++            assertEquals(Piece.X, board.getPiece(5, 5));
++        });
++    }
++
++    @ParameterizedTest @EnumSource(NetworkManager.ErrorType.class)
++    void networkErrorsAreTranslated(NetworkManager.ErrorType type) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            var error = new NetworkManager.NetworkError(type, "127.0.0.1", 1234, new Exception("diagnostic"));
++            Lang.set(Lang.Language.VI); String vi = Lang.networkError(error);
++            Lang.set(Lang.Language.EN); String en = Lang.networkError(error);
++            Lang.set(Lang.Language.PT); String pt = Lang.networkError(error);
++            assertNotEquals(vi, en); assertNotEquals(en, pt); assertNotEquals(vi, pt);
++            assertTrue(en.chars().allMatch(c -> c < 128));
++            assertFalse(vi.contains("diagnostic"));
++            if (type != NetworkManager.ErrorType.CHANNEL) {
++                assertTrue(vi.contains("1234")); assertTrue(en.contains("1234")); assertTrue(pt.contains("1234"));
++            }
++        });
++    }
++
++    @Test void interruptedAiAbortsWithoutMutatingBoard() throws Exception {
++        Board board = new Board(); board.makeMove(7, 7, Piece.X);
++        AtomicReference<Throwable> result = new AtomicReference<>();
++        Thread worker = new Thread(() -> {
++            Thread.currentThread().interrupt();
++            try { new MinimaxAI(Piece.O, MinimaxAI.Difficulty.HARD).findBestMove(board); }
++            catch (Throwable error) { result.set(error); }
++        });
++        worker.start(); worker.join(2000);
++        assertFalse(worker.isAlive());
++        assertInstanceOf(CancellationException.class, result.get());
++        assertEquals(1, board.getMoveCount());
++    }
++
++    @Test void cancellationInsideRecursiveSearchUnwindsAllMoves() throws Exception {
++        Board board = new Board() {
++            @Override public boolean makeMove(int r, int c, Piece piece) {
++                boolean placed = super.makeMove(r, c, piece);
++                if (Arrays.stream(Thread.currentThread().getStackTrace())
++                        .anyMatch(frame -> frame.getClassName().equals(MinimaxAI.class.getName())
++                                && frame.getMethodName().equals("minimax"))) {
++                    Thread.currentThread().interrupt();
++                }
++                return placed;
++            }
++        };
++        board.makeMove(7, 7, Piece.X);
++        AtomicReference<Throwable> result = new AtomicReference<>();
++        Thread worker = new Thread(() -> {
++            try { new MinimaxAI(Piece.O, MinimaxAI.Difficulty.HARD).findBestMove(board); }
++            catch (Throwable error) { result.set(error); }
++        });
++        worker.setDaemon(true);
++        worker.start(); worker.join(3000);
++        try {
++            assertFalse(worker.isAlive());
++            assertInstanceOf(CancellationException.class, result.get());
++            assertEquals(1, board.getMoveCount());
++            for (int r = 0; r < Board.SIZE; r++) for (int c = 0; c < Board.SIZE; c++)
++                assertEquals(r == 7 && c == 7 ? Piece.X : Piece.NONE, board.getPiece(r, c));
++        } finally { worker.interrupt(); }
++    }
++
++    @SuppressWarnings("unchecked")
++    static <T> T field(Object target, String name) {
++        try {
++            var field = target.getClass().getDeclaredField(name);
++            field.setAccessible(true);
++            return (T) field.get(target);
++        } catch (ReflectiveOperationException error) { throw new AssertionError(error); }
++    }
++
++    static final class MemoryPreferences extends AbstractPreferences {
++        private final Map<String, String> values = new HashMap<>();
++        MemoryPreferences() { super(null, ""); values.put("soundEnabled", "false"); }
++        protected void putSpi(String k, String v) { values.put(k, v); }
++        protected String getSpi(String k) { return values.get(k); }
++        protected void removeSpi(String k) { values.remove(k); }
++        protected void removeNodeSpi() { values.clear(); }
++        protected String[] keysSpi() { return values.keySet().toArray(new String[0]); }
++        protected String[] childrenNamesSpi() { return new String[0]; }
++        protected AbstractPreferences childSpi(String name) { throw new UnsupportedOperationException(); }
++        protected void syncSpi() {}
++        protected void flushSpi() {}
++    }
++}
+diff --git a/test/game/PreferencesIsolation.java b/test/game/PreferencesIsolation.java
+new file mode 100644
+index 0000000..5ecb29c
+--- /dev/null
++++ b/test/game/PreferencesIsolation.java
+@@ -0,0 +1,28 @@
++package game;
++
++import game.view.AppSettings;
++import java.util.Map;
++import java.util.TreeMap;
++import java.util.prefs.Preferences;
++import static org.junit.jupiter.api.Assertions.*;
++
++/** Reads production settings without writing; cleanup failures must fail the test. */
++final class PreferencesIsolation {
++    static Map<String, String> snapshot() throws Exception {
++        Preferences node = Preferences.userNodeForPackage(AppSettings.class);
++        node.sync();
++        Map<String, String> values = new TreeMap<>();
++        for (String key : node.keys()) values.put(key, node.get(key, null));
++        return values;
++    }
++
++    static void cleanup(String path, Map<String, String> before) throws Exception {
++        Preferences root = Preferences.userRoot();
++        if (root.nodeExists(path)) root.node(path).removeNode();
++        root.flush();
++        assertFalse(root.nodeExists(path), "Test node must be removed");
++        assertEquals(before, snapshot(), "Production preferences must remain unchanged");
++        System.out.println("[Preferences] " + path
++                + " removed; production /game/view unchanged: " + before);
++    }
++}
+diff --git a/test/game/SoundResourceTest.java b/test/game/SoundResourceTest.java
+new file mode 100644
+index 0000000..849e671
+--- /dev/null
++++ b/test/game/SoundResourceTest.java
+@@ -0,0 +1,36 @@
++package game.view;
++
++import org.junit.jupiter.api.Test;
++import javax.sound.sampled.*;
++import java.lang.reflect.Proxy;
++import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.concurrent.atomic.AtomicReference;
++import static org.junit.jupiter.api.Assertions.*;
++
++class SoundResourceTest {
++    @Test void closesClipAfterPlaybackStops() throws Exception { verify("success"); }
++    @Test void closesClipWhenOpenFails() throws Exception { verify("open"); }
++    @Test void closesClipWhenStartFails() throws Exception { verify("start"); }
++
++    private void verify(String scenario) throws Exception {
++        AtomicBoolean closed = new AtomicBoolean();
++        AtomicReference<LineListener> listener = new AtomicReference<>();
++        Clip clip = (Clip) Proxy.newProxyInstance(Clip.class.getClassLoader(), new Class<?>[]{Clip.class},
++                (proxy, method, args) -> {
++                    switch (method.getName()) {
++                        case "addLineListener" -> listener.set((LineListener) args[0]);
++                        case "open" -> { if (scenario.equals("open")) throw new LineUnavailableException(); }
++                        case "start" -> {
++                            if (scenario.equals("start")) throw new IllegalStateException();
++                            listener.get().update(new LineEvent((Line) proxy, LineEvent.Type.STOP, 1));
++                        }
++                        case "close" -> closed.set(true);
++                        default -> throw new AssertionError("Unexpected Clip call: " + method.getName());
++                    }
++                    return null;
++                });
++        if (scenario.equals("success")) SoundManager.playClip(clip, new byte[100], 44100);
++        else assertThrows(Exception.class, () -> SoundManager.playClip(clip, new byte[100], 44100));
++        assertTrue(closed.get(), "Clip must close on success and every failure path");
++    }
++}
+diff --git a/test/game/UILangSoundTest.java b/test/game/UILangSoundTest.java
+index 739921b..1051e26 100644
+--- a/test/game/UILangSoundTest.java
++++ b/test/game/UILangSoundTest.java
+@@ -26,31 +26,30 @@ public class UILangSoundTest {
+     // Lưu trạng thái gốc để khôi phục sau mỗi test
+     private static Lang.Language origLang;
+     private static boolean origSound;
++    private static java.util.Map<String, String> productionBefore;
+ 
+     // Node Preferences riêng cho test — KHÔNG phải node thật
+-    static final String TEST_PREF_NODE = "/test/task3/uiLangSound";
++    static final String TEST_PREF_NODE = "/test/task3/uiLangSound-" + java.util.UUID.randomUUID();
+ 
+     @BeforeAll
+     static void setup() throws Exception {
+         System.setProperty("java.awt.headless", "false");
++        productionBefore = PreferencesIsolation.snapshot();
+         origLang  = Lang.get();
+         origSound = SoundManager.isSoundEnabled();
+     }
+ 
+     @AfterEach
+-    void restore() {
++    void restore() throws Exception {
+         // Khôi phục trạng thái tĩnh sau mỗi test
+         Lang.set(origLang);
+         SoundManager.setSoundEnabled(origSound);
++        PreferencesIsolation.cleanup(TEST_PREF_NODE, productionBefore);
+     }
+ 
+     @AfterAll
+     static void cleanup() throws Exception {
+-        // Xóa Preferences test node
+-        try {
+-            Preferences testNode = Preferences.userRoot().node(TEST_PREF_NODE);
+-            testNode.removeNode();
+-        } catch (Exception ignored) {}
++        PreferencesIsolation.cleanup(TEST_PREF_NODE, productionBefore);
+         // Khôi phục lần cuối
+         Lang.set(origLang);
+         SoundManager.setSoundEnabled(origSound);
+@@ -63,14 +62,12 @@ public class UILangSoundTest {
+     @Order(1)
+     @DisplayName("C1 – Lang: mọi key VI/EN/PT không null, không rỗng, PT khác EN (trừ allowlist)")
+     void c1_langAllKeysNotNullNotEmpty() throws Exception {
+-        // allowlistValues: nếu EN chứa một trong các từ này thì cho phép PT==EN
+-        Set<String> allowlistValues = Set.of("Online (LAN)", "LAN", "Host");
+         // allowlistMethods: tên method được phép PT==EN
++        // Chỉ còn "online" — "Online (LAN)" là thuật ngữ quốc tế, PT==EN là đúng
++        // hostBtn: "Criar Sala (Host - Preto)" != "Create Room (Host - Black)" → không allowlist
++        // joinBtn: "Entrar na Sala (Join - Branco)" != "Join Room (Join - White)" → không allowlist
+         Set<String> allowlistMethods = Set.of(
+-            "online",              // "Online (LAN)" — từ quốc tế
+-            "networkDialogTitle",  // chứa "LAN"
+-            "networkDialogHeader", // CHOOSE/ESCOLHA — khác nhau
+-            "hostBtn"              // "Criar Sala (Host)" — "Host" là thuật ngữ kỹ thuật
++            "online"   // "Online (LAN)" — từ quốc tế, PT==VI==EN
+         );
+ 
+         List<Method> stringMethods = new ArrayList<>();
+@@ -168,6 +165,7 @@ public class UILangSoundTest {
+         dummyList.setBackground(new Color(55, 58, 65));
+         dummyList.setForeground(Color.WHITE);
+         Object item = combo.getItemAt(0);
++        @SuppressWarnings({"unchecked", "rawtypes"})
+         ListCellRenderer renderer = combo.getRenderer();
+         System.out.printf("[C2] %s renderer class: %s%n", name, renderer.getClass().getName());
+ 
+@@ -196,7 +194,8 @@ public class UILangSoundTest {
+             name + " display field bg không đủ tối (painted): RGB(" + avgR+","+avgG+","+avgB+")");
+ 
+         // index=0, isSelected=true: popup selected — kiểm qua renderer
+-        Component cSel = renderer.getListCellRendererComponent(dummyList, item, 0, true, false);
++        @SuppressWarnings({"unchecked", "rawtypes"})
++        Component cSel = ((ListCellRenderer)renderer).getListCellRendererComponent(dummyList, item, 0, true, false);
+         Color bgS = cSel.getBackground();
+         Color fgS = cSel.getForeground();
+         System.out.printf("[C2] %s selected: bg=RGB(%d,%d,%d) fg=RGB(%d,%d,%d)%n",
+diff --git a/tools/audit/AuditBenchmark.java b/tools/audit/AuditBenchmark.java
+new file mode 100644
+index 0000000..5f5a1a1
+--- /dev/null
++++ b/tools/audit/AuditBenchmark.java
+@@ -0,0 +1,52 @@
++import game.ai.*;
++import game.model.*;
++import game.view.*;
++import javax.swing.*;
++import java.util.*;
++import java.util.concurrent.*;
++
++public class AuditBenchmark {
++    static Board position(int count) {
++        Board board=new Board();Random random=new Random(20261026L+count);
++        for(int n=0;n<count;){int r=random.nextInt(15),c=random.nextInt(15);Piece p=n%2==0?Piece.X:Piece.O;
++            if(board.makeMove(r,c,p)){if(board.checkWin(r,c))board.undoMove(r,c);else n++;}}
++        return board;
++    }
++    static double percentile(java.util.List<Double> values,double p){Collections.sort(values);return values.get(Math.min(values.size()-1,(int)Math.ceil(values.size()*p)-1));}
++    public static void main(String[] args)throws Exception {
++        SoundManager.setSoundEnabled(false);
++        for(int count:new int[]{1,21,61,121})for(MinimaxAI.Difficulty level:MinimaxAI.Difficulty.values()){
++            Board board=position(count);MinimaxAI ai=new MinimaxAI(Piece.O,level);
++            for(int i=0;i<3;i++)ai.findBestMove(board);
++            java.util.List<Double> ms=new ArrayList<>();long minNodes=Long.MAX_VALUE,maxNodes=0;
++            for(int i=0;i<15;i++){long start=System.nanoTime();Move m=ai.findBestMove(board);ms.add((System.nanoTime()-start)/1e6);
++                if(m==null||!board.isValidMove(m.row,m.col)||board.getMoveCount()!=count)throw new AssertionError("invalid/mutated board");
++                minNodes=Math.min(minNodes,ai.getNodesEvaluated());maxNodes=Math.max(maxNodes,ai.getNodesEvaluated());}
++            System.out.printf(Locale.ROOT,"CORE stones=%d level=%s median=%.2fms p95=%.2fms max=%.2fms nodes=%d..%d%n",count,level.name(),percentile(ms,.5),percentile(ms,.95),Collections.max(ms),minNodes,maxNodes);
++        }
++        Board board=new Board();BoardPanel[] panel=new BoardPanel[1];
++        CountDownLatch[] completion=new CountDownLatch[1];
++        SwingUtilities.invokeAndWait(()->{
++            panel[0]=new BoardPanel(board);panel[0].setAiDifficulty(MinimaxAI.Difficulty.HARD);
++            panel[0].setGameStateListener(new BoardPanel.GameStateListener(){public void onGameOver(String msg,Piece w){if(completion[0]!=null)completion[0].countDown();}
++                public void onTurnChanged(Piece p,boolean thinking){if(p==Piece.X&&!thinking&&completion[0]!=null)completion[0].countDown();}
++                public void onAiStatsUpdated(long t,long n,long p){} public void onHistoryChanged(boolean b){} });
++        });
++        java.util.List<Double> delays=Collections.synchronizedList(new ArrayList<>());
++        ScheduledExecutorService clock=Executors.newSingleThreadScheduledExecutor();
++        clock.scheduleAtFixedRate(()->{long start=System.nanoTime();SwingUtilities.invokeLater(()->delays.add((System.nanoTime()-start)/1e6));},0,5,TimeUnit.MILLISECONDS);
++        Random random=new Random(26);java.util.List<Double> turns=new ArrayList<>();
++        try{
++            for(int i=0;i<10;i++){
++                SwingUtilities.invokeAndWait(()->{if(panel[0].isGameOver())panel[0].resetGame();});
++                CountDownLatch done=new CountDownLatch(1);long start=System.nanoTime();
++                SwingUtilities.invokeAndWait(()->{completion[0]=done;int r,c;do{r=random.nextInt(15);c=random.nextInt(15);}while(!board.isValidMove(r,c));
++                    if(!panel[0].playMove(r,c))throw new AssertionError("play rejected");});
++                if(!done.await(5,TimeUnit.SECONDS))throw new AssertionError("AI timeout");
++                turns.add((System.nanoTime()-start)/1e6);
++            }
++        }finally{clock.shutdownNow();SwingUtilities.invokeAndWait(()->panel[0].cancelAiComputation());}
++        System.out.printf(Locale.ROOT,"UI_AI turns=%d median=%.2fms p95=%.2fms max=%.2fms%n",turns.size(),percentile(turns,.5),percentile(turns,.95),Collections.max(turns));
++        System.out.printf(Locale.ROOT,"EDT samples=%d median=%.2fms p95=%.2fms max=%.2fms%n",delays.size(),percentile(delays,.5),percentile(delays,.95),Collections.max(delays));
++    }
++}
+diff --git a/tools/audit/CurrentAuditProbe.java b/tools/audit/CurrentAuditProbe.java
+new file mode 100644
+index 0000000..0cf6ab5
+--- /dev/null
++++ b/tools/audit/CurrentAuditProbe.java
+@@ -0,0 +1,95 @@
++import game.model.*;
++import game.ai.*;
++import game.view.*;
++import game.network.*;
++import javax.swing.*;
++import java.awt.*;
++import java.awt.image.BufferedImage;
++import javax.imageio.ImageIO;
++import java.io.*;
++import java.net.*;
++import java.util.*;
++import java.util.concurrent.*;
++import java.util.prefs.AbstractPreferences;
++
++public class CurrentAuditProbe {
++    static class MemoryPreferences extends AbstractPreferences {
++        final Map<String,String> values = new HashMap<>();
++        MemoryPreferences(Lang.Language lang) { super(null, ""); values.put("soundEnabled", "false"); values.put("language",lang.name()); }
++        protected void putSpi(String k,String v){values.put(k,v);} protected String getSpi(String k){return values.get(k);}
++        protected void removeSpi(String k){values.remove(k);} protected void removeNodeSpi(){}
++        protected String[] keysSpi(){return values.keySet().toArray(new String[0]);} protected String[] childrenNamesSpi(){return new String[0];}
++        protected AbstractPreferences childSpi(String n){throw new UnsupportedOperationException();} protected void syncSpi(){} protected void flushSpi(){}
++    }
++    static class Recorder extends NetworkManager {
++        int sent;
++        Recorder(){super(null);}
++        @Override public void sendMove(int r,int c){sent++;}
++    }
++    static NetworkManager.NetworkListener listener(BoardPanel panel) {
++        return new NetworkManager.NetworkListener() {
++            public void onConnected(boolean host){} public void onMoveReceived(int r,int c){panel.applyOpponentMove(r,c);}
++            public void onRestartRequested(){panel.resetGame();} public void onOpponentDisconnected(){}
++            public void onError(NetworkManager.NetworkError error){System.out.println("AUDIT NETWORK ERROR "+error);}
++        };
++    }
++    public static void main(String[] args) throws Exception {
++        SoundManager.setSoundEnabled(false);
++        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
++        SwingUtilities.invokeAndWait(() -> {
++            Recorder recorder = new Recorder(); Board board = new Board(); BoardPanel panel = new BoardPanel(board);
++            panel.setupOnlineGame(recorder,true);
++            for(int c=0;c<4;c++){panel.playMove(7,c);panel.applyOpponentMove(0,2*c);}
++            panel.setGameStateListener(new BoardPanel.GameStateListener(){
++                public void onTurnChanged(Piece p,boolean t){} public void onAiStatsUpdated(long t,long n,long p){}
++                public void onHistoryChanged(boolean c){}
++                public void onGameOver(String s,Piece p){System.out.println("FINAL_MOVE_SENDS_AT_GAMEOVER="+recorder.sent+" (expected 5 to notify opponent before popup)");}
++            });
++            panel.playMove(7,4);
++            System.out.println("FINAL_MOVE_SENDS_AFTER_CALLBACK="+recorder.sent);
++        });
++        Board board = new Board(); BoardPanel[] panel=new BoardPanel[1];
++        SwingUtilities.invokeAndWait(()->{panel[0]=new BoardPanel(board);panel[0].setupOnlineGame(null,false);});
++        BlockingQueue<Runnable> queue = new LinkedBlockingQueue<>();
++        NetworkManager manager = new NetworkManager(listener(panel[0]),queue::add);
++        try(ServerSocket server=new ServerSocket(0)){
++            server.setSoTimeout(3000);manager.joinGame("127.0.0.1",server.getLocalPort());
++            try(Socket peer=server.accept()){
++                Runnable connected=queue.poll(3,TimeUnit.SECONDS); if(connected==null)throw new AssertionError("connect timeout");
++                SwingUtilities.invokeAndWait(connected);
++                new PrintWriter(peer.getOutputStream(),true).println("MOVE 4 4");
++                Runnable oldMove=queue.poll(3,TimeUnit.SECONDS);if(oldMove==null)throw new AssertionError("move timeout");
++                SwingUtilities.invokeAndWait(()->{panel[0].resetGame();oldMove.run();System.out.println("OLD_MOVE_AFTER_RESTART="+board.getPiece(4,4)+" moveCount="+board.getMoveCount()+" (expected NONE / 0)");});
++            }
++        }finally{manager.disconnect();}
++        Board six=new Board();six.makeMove(7,2,Piece.O);for(int c=3;c<=8;c++)six.makeMove(7,c,Piece.X);six.makeMove(7,9,Piece.O);
++        System.out.println("BLOCKED_SIX win="+six.checkWin(7,5)+" heuristic="+HeuristicEvaluator.evaluatePlayerAdvanced(six,Piece.X));
++        Board three=new Board();for(int c=6;c<=8;c++)three.makeMove(7,c,Piece.X);
++        System.out.println("SINGLE_THREE heuristic="+HeuristicEvaluator.evaluatePlayerAdvanced(three,Piece.X));
++        for(Lang.Language lang:Lang.Language.values()) SwingUtilities.invokeAndWait(()->snapshot(lang));
++        SwingUtilities.invokeAndWait(()->{
++            MainFrame frame=new MainFrame(new AppSettings(new MemoryPreferences(Lang.Language.VI)));
++            try{Lang.set(Lang.Language.PT);layout(frame.getContentPane());System.out.println("AFTER_VI_TO_PT "+frame.getSize());checkLayout(frame.getContentPane());save(frame,"bin_test/audit-switch-PT.png");}
++            finally{frame.dispose();}
++        });
++    }
++    static void snapshot(Lang.Language lang){
++        MainFrame frame=new MainFrame(new AppSettings(new MemoryPreferences(lang)));
++        try{layout(frame.getContentPane());System.out.println("UI_"+lang+" frame="+frame.getSize());checkLayout(frame.getContentPane());save(frame,"bin_test/audit-"+lang+".png");}
++        finally{frame.dispose();}
++    }
++    static void layout(Container c){c.doLayout();for(Component child:c.getComponents())if(child instanceof Container n)layout(n);}
++    static void checkLayout(Container c){
++        for(Component child:c.getComponents()){
++            if(child.isVisible() && child.getWidth()>0 && (child.getX()+child.getWidth()>c.getWidth() || child.getY()+child.getHeight()>c.getHeight()))System.out.println("OUTSIDE_PARENT "+child.getClass().getSimpleName()+" "+child.getBounds()+" parent="+c.getSize());
++            if(child instanceof JComboBox<?> combo && combo.getSelectedItem()!=null){
++                String text=combo.getSelectedItem().toString();if(combo.getSelectedItem() instanceof MinimaxAI.Difficulty d)text=switch(d){case EASY->Lang.easy();case MEDIUM->Lang.medium();case HARD->Lang.hard();};
++                if(combo.getSelectedItem() instanceof Lang.Language l)text=Lang.langName(l);
++                int textWidth=combo.getFontMetrics(combo.getFont()).stringWidth(text);int available=combo.getWidth()-25;
++                if(textWidth>available)System.out.println("COMBO_TEXT_CLIPPED "+text+" textWidth="+textWidth+" available="+available);
++            }
++            if(child instanceof Container n)checkLayout(n);
++        }
++    }
++    static void save(MainFrame frame,String path){try{Container content=frame.getContentPane();BufferedImage img=new BufferedImage(content.getWidth(),content.getHeight(),BufferedImage.TYPE_INT_RGB);Graphics2D g=img.createGraphics();content.printAll(g);g.dispose();ImageIO.write(img,"png",new File(path));}catch(Exception e){throw new RuntimeException(e);}}
++}
+diff --git a/tools/audit/README.md b/tools/audit/README.md
+new file mode 100644
+index 0000000..26fc94e
+--- /dev/null
++++ b/tools/audit/README.md
+@@ -0,0 +1,22 @@
++# Audit probes
++
++Run from the repository root with compiled production classes in bin:
++
++```powershell
++javac -encoding UTF-8 -cp bin -d bin_test tools/audit/CurrentAuditProbe.java tools/audit/AuditBenchmark.java
++java '-Dstdout.encoding=UTF-8' -cp 'bin_test;bin' CurrentAuditProbe
++java '-Dstdout.encoding=UTF-8' -cp 'bin_test;bin' AuditBenchmark
++```
++
++CurrentAuditProbe uses localhost sockets, EDT callbacks, in-memory Preferences
++and offscreen rendering of Swing content using the system Look & Feel.
++It prints observed behavior rather than asserting that the unresolved bugs pass.
++Images are written to bin_test. No app Preferences are changed.
++
++AuditBenchmark uses fixed seeds, 3 warmups and 15 measured searches per
++configuration; then measures 10 Hard turns through BoardPanel/SwingWorker.
++Its EDT heartbeat does not represent a full visible-window rendering benchmark.
++Sound is disabled. It checks legal returned moves and unchanged move counts.
++
++Production behavior is not changed by these tools. They are excluded from
++the normal test source compilation and do not increase the JUnit test count.

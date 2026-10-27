@@ -1,0 +1,978 @@
+diff --git a/src/game/network/NetworkManager.java b/src/game/network/NetworkManager.java
+index 432d9c3..9d07487 100644
+--- a/src/game/network/NetworkManager.java
++++ b/src/game/network/NetworkManager.java
+@@ -4,19 +4,27 @@ import java.io.*;
+ import java.net.*;
+ import java.nio.charset.StandardCharsets;
+ import java.util.Objects;
++import java.util.UUID;
+ import java.util.function.Consumer;
+ 
+-/** One session owns its sockets; cancelled sessions cannot notify or close a new one. */
++/** Each connection owns its resources; wire round IDs are independent of local game IDs. */
+ public class NetworkManager {
+     public static final int DEFAULT_PORT = 8888;
+     public static final int CONNECT_TIMEOUT_MS = 5000;
+-    public enum ErrorType { HOST, JOIN, CHANNEL }
++    public static final int START_TIMEOUT_MS = 5000;
++    public static final int MAX_LINE_LENGTH = 256;
++    public static final int PROTOCOL_VERSION = 2;
++    public enum ErrorType { HOST, JOIN, CHANNEL, START_TIMEOUT, VERSION }
+     public record NetworkError(ErrorType type, String address, int port, Exception cause) {}
+     public interface NetworkListener {
+         default void onHosting(int port) {}
+         void onConnected(boolean isHost);
++        default void onConnected(boolean isHost, String roundId) { onConnected(isHost); }
+         void onMoveReceived(int row, int col);
++        default void onMoveReceived(String roundId, int ply, int row, int col) { onMoveReceived(row, col); }
+         void onRestartRequested();
++        default void onRoundStarted(String base, String next) { onRestartRequested(); }
++        default void onRestartWaiting(String base) {}
+         void onOpponentDisconnected();
+         void onError(NetworkError error);
+     }
+@@ -25,10 +33,8 @@ public class NetworkManager {
+     private volatile Session current;
+ 
+     public NetworkManager(NetworkListener listener) { this(listener, Runnable::run); }
+-    /** UI supplies SwingUtilities::invokeLater; validation occurs on that thread. */
+     public NetworkManager(NetworkListener listener, Consumer<Runnable> dispatcher) {
+-        this.listener = listener;
+-        this.dispatcher = Objects.requireNonNull(dispatcher);
++        this.listener = listener; this.dispatcher = Objects.requireNonNull(dispatcher);
+     }
+     public static String getLocalIP() {
+         try { return InetAddress.getLocalHost().getHostAddress(); }
+@@ -36,14 +42,11 @@ public class NetworkManager {
+     }
+     public void hostGame(int port) { start(true, "", port); }
+     public void joinGame(String ip, int port) { start(false, ip, port); }
+-
+     private synchronized void start(boolean host, String ip, int port) {
+         disconnect();
+-        Session session = new Session(host, ip, port);
+-        current = session;
++        Session session = new Session(host, ip, port); current = session;
+         Thread worker = new Thread(() -> connectAndListen(session), "gomoku-lan");
+-        worker.setDaemon(true);
+-        worker.start();
++        worker.setDaemon(true); worker.start();
+     }
+     private void connectAndListen(Session session) {
+         ErrorType stage = session.host ? ErrorType.HOST : ErrorType.JOIN;
+@@ -66,103 +69,150 @@ public class NetworkManager {
+             stage = ErrorType.CHANNEL;
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true, StandardCharsets.UTF_8);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8));
++            if (session.host) {
++                session.roundId = UUID.randomUUID().toString();
++                out.println("START " + PROTOCOL_VERSION + " " + session.roundId);
++            } else {
++                long deadline = System.nanoTime() + START_TIMEOUT_MS * 1_000_000L;
++                while (!session.closed && session.roundId == null) {
++                    String line = readLine(in, socket, deadline);
++                    if (line == null) throw new EOFException("EOF before START");
++                    String[] p = line.trim().split("\\s+");
++                    if (p.length == 3 && p[0].equals("START")) {
++                        try {
++                            if (Integer.parseInt(p[1]) != PROTOCOL_VERSION) throw new ProtocolFailure(ErrorType.VERSION);
++                            if (validId(p[2])) session.roundId = p[2];
++                        } catch (NumberFormatException ignored) {}
++                    }
++                }
++                socket.setSoTimeout(0);
++            }
+             synchronized (session) {
+                 if (session.closed) return;
+-                session.out = out;
+-                session.connected = true;
++                session.out = out; session.connected = true;
+             }
+             established = true;
+-            dispatch(session, () -> listener.onConnected(session.host));
++            String initialRound = session.roundId;
++            dispatch(session, () -> listener.onConnected(session.host, initialRound));
+             String line;
+-            while (!session.closed && (line = in.readLine()) != null) {
+-                String[] parts = line.trim().split("\\s+");
+-                if (parts.length == 3 && parts[0].equals("MOVE")) {
+-                    try {
+-                        int row = Integer.parseInt(parts[1]);
+-                        int col = Integer.parseInt(parts[2]);
+-                        dispatch(session, () -> listener.onMoveReceived(row, col));
+-                    } catch (NumberFormatException ignored) {
+-                        // Malformed packets do not terminate a healthy session.
+-                    }
+-                } else if (line.trim().equals("RESTART")) {
+-                    dispatch(session, () -> listener.onRestartRequested());
+-                } else if (line.trim().equals("DISCONNECT")) {
+-                    break;
+-                }
+-            }
++            while (!session.closed && (line = readLine(in, socket, 0)) != null) processLine(session, line);
+         } catch (Exception error) {
+             if (!session.closed && !established) {
+-                ErrorType type = stage;
+-                dispatch(session, () -> listener.onError(
+-                        new NetworkError(type, session.address, session.port, error)));
++                ErrorType type = error instanceof ProtocolFailure p ? p.type
++                        : error instanceof SocketTimeoutException ? ErrorType.START_TIMEOUT : stage;
++                dispatch(session, () -> listener.onError(new NetworkError(type, session.address, session.port, error)));
+             }
+         } finally {
+-            boolean notifyPeerLeft = established && !session.closed;
++            boolean notify = established && !session.closed;
+             session.close();
+-            if (notifyPeerLeft) dispatch(session, () -> listener.onOpponentDisconnected());
++            if (notify) dispatch(session, () -> listener.onOpponentDisconnected());
+         }
+     }
+-    private void dispatch(Session session, Runnable callback) {
+-        if (listener == null) return;
+-        dispatcher.accept(() -> {
+-            if (current == session) callback.run();
+-        });
+-    }
+-    public void sendMove(int row, int col) { send("MOVE " + row + " " + col); }
+-    public void sendRestart() { send("RESTART"); }
+-    private void send(String message) {
+-        Session session = current;
+-        if (session != null && session.connected) {
+-            PrintWriter writer = session.out;
+-            if (writer != null) writer.println(message);
++    /** Bounded storage, drain overlong lines; handshake uses an absolute deadline. */
++    private static String readLine(Reader in, Socket socket, long deadline) throws IOException {
++        StringBuilder line = new StringBuilder(); boolean overlong = false;
++        while (true) {
++            if (deadline != 0) {
++                long remaining = deadline - System.nanoTime();
++                if (remaining <= 0) throw new SocketTimeoutException("START timeout");
++                socket.setSoTimeout((int) Math.max(1, (remaining + 999999) / 1000000));
++            }
++            int c = in.read();
++            if (c == -1) return line.isEmpty() && !overlong ? null : "";
++            if (c == '\n') return overlong ? "" : line.toString();
++            if (c != '\r' && !overlong) {
++                if (line.length() == MAX_LINE_LENGTH) { overlong = true; line.setLength(0); }
++                else line.append((char) c);
++            }
+         }
+     }
+-    /** Invalidate callbacks first, then close even a pending bind/connect/accept. */
+-    public synchronized void disconnect() {
+-        Session old = current;
+-        current = null;
+-        if (old != null) old.close(); // EOF notifies the peer without a blocking protocol write
++    private void processLine(Session session, String line) {
++        String[] p = line.trim().split("\\s+");
++        try {
++            if (p.length == 5 && p[0].equals("MOVE") && validId(p[1])) {
++                int ply = Integer.parseInt(p[2]), row = Integer.parseInt(p[3]), col = Integer.parseInt(p[4]);
++                if (ply < 1 || ply > 225 || row < 0 || row >= 15 || col < 0 || col >= 15) return;
++                // X/black starts. Host owns odd plies; client owns even plies.
++                if ((ply % 2 == 1) == session.host) return;
++                String round = p[1];
++                dispatch(session, () -> listener.onMoveReceived(round, ply, row, col));
++            } else if (p.length == 2 && p[0].equals("RESTART_REQUEST") && session.host && validId(p[1])) {
++                commitRestart(session, p[1]);
++            } else if (p.length == 3 && p[0].equals("RESTART") && !session.host
++                    && validId(p[1]) && validId(p[2]) && !p[1].equals(p[2])) {
++                synchronized (session) {
++                    if (session.closed || !p[1].equals(session.roundId)) return;
++                    session.roundId = p[2]; session.waiting = false;
++                    dispatch(session, () -> listener.onRoundStarted(p[1], p[2]));
++                }
++            }
++        } catch (NumberFormatException ignored) { /* garbage does not disconnect the peer */ }
+     }
+-    public boolean isConnected() {
+-        Session session = current;
+-        return session != null && session.connected;
++    private static boolean validId(String id) {
++        try { return UUID.fromString(id).toString().equals(id); }
++        catch (IllegalArgumentException e) { return false; }
+     }
+-    public boolean isHost() { Session session = current; return session != null && session.host; }
+-
+-    private static final class Session {
+-        final boolean host;
+-        final String address;
+-        final int port;
+-        volatile boolean closed;
+-        volatile boolean connected;
+-        volatile PrintWriter out;
+-        private Socket socket;
+-        private ServerSocket server;
+-        Session(boolean host, String address, int port) {
+-            this.host = host; this.address = address; this.port = port;
++    private void dispatch(Session session, Runnable callback) {
++        if (listener != null) dispatcher.accept(() -> { if (current == session) callback.run(); });
++    }
++    public String getRoundId() { Session s = current; return s == null ? null : s.roundId; }
++    public boolean isWaitingForRestart() { Session s = current; return s != null && s.waiting; }
++    public void sendMove(String roundId, int ply, int row, int col) {
++        Session s = current;
++        if (s != null) synchronized (s) {
++            if (s.connected && !s.closed && !s.waiting && Objects.equals(roundId, s.roundId))
++                s.out.println("MOVE " + roundId + " " + ply + " " + row + " " + col);
+         }
+-        synchronized boolean attach(Socket socket) {
+-            if (closed) return false;
+-            this.socket = socket;
++    }
++    /** Request phase, kept separate from host commit for Task 5's future consent policy. */
++    public boolean requestRestart(String base) {
++        Session s = current;
++        if (s == null) return false;
++        synchronized (s) {
++            if (!s.connected || s.closed || s.waiting || !Objects.equals(base, s.roundId)) return false;
++            if (s.host) return commitRestart(s, base);
++            s.waiting = true;
++            s.out.println("RESTART_REQUEST " + base);
++            dispatch(s, () -> { if (s.waiting && base.equals(s.roundId)) listener.onRestartWaiting(base); });
+             return true;
+         }
+-        synchronized boolean attach(ServerSocket server) {
+-            if (closed) return false;
+-            this.server = server;
++    }
++    private boolean commitRestart(Session s, String base) {
++        synchronized (s) {
++            if (s.closed || !s.connected || !s.host || !base.equals(s.roundId)) return false;
++            String next = UUID.randomUUID().toString(); s.roundId = next;
++            s.out.println("RESTART " + base + " " + next);
++            dispatch(s, () -> listener.onRoundStarted(base, next));
+             return true;
+         }
++    }
++    /** EOF closes the peer. Never write a DISCONNECT packet or wait for an ACK. */
++    public synchronized void disconnect() {
++        Session old = current; current = null; if (old != null) old.close();
++    }
++    public boolean isConnected() { Session s = current; return s != null && s.connected; }
++    public boolean isHost() { Session s = current; return s != null && s.host; }
++    private static final class ProtocolFailure extends IOException {
++        final ErrorType type;
++        ProtocolFailure(ErrorType type) { this.type = type; }
++    }
++    private static final class Session {
++        final boolean host; final String address; final int port;
++        volatile boolean closed, connected, waiting;
++        volatile String roundId;
++        volatile PrintWriter out;
++        private Socket socket; private ServerSocket server;
++        Session(boolean host, String address, int port) { this.host = host; this.address = address; this.port = port; }
++        synchronized boolean attach(Socket socket) { if (closed) return false; this.socket = socket; return true; }
++        synchronized boolean attach(ServerSocket server) { if (closed) return false; this.server = server; return true; }
+         void close() {
+-            Socket oldSocket;
+-            ServerSocket oldServer;
++            Socket oldSocket; ServerSocket oldServer;
+             synchronized (this) {
+                 if (closed) return;
+-                closed = true;
+-                connected = false;
+-                oldSocket = socket;
+-                oldServer = server;
++                closed = true; connected = false; waiting = false; oldSocket = socket; oldServer = server;
+             }
+             try { if (oldSocket != null) oldSocket.close(); } catch (IOException ignored) {}
+             try { if (oldServer != null) oldServer.close(); } catch (IOException ignored) {}
+         }
+     }
+-}
++}
+\ No newline at end of file
+diff --git a/src/game/view/BoardPanel.java b/src/game/view/BoardPanel.java
+index 1d49cbd..545d1f6 100644
+--- a/src/game/view/BoardPanel.java
++++ b/src/game/view/BoardPanel.java
+@@ -73,6 +73,8 @@ public class BoardPanel extends JPanel {
+     // Quản lý chế độ Online
+     private NetworkManager networkManager;
+     private Piece myPiece = Piece.X; // Host là X (Đen), Client là O (Trắng)
++    private String networkRoundId;
++    private boolean restartWaiting;
+ 
+     // =========================================================================
+     public interface GameStateListener {
+@@ -147,12 +149,32 @@ public class BoardPanel extends JPanel {
+     }
+ 
+     public void setupOnlineGame(NetworkManager nm, boolean isHost) {
++        setupOnlineGame(nm, isHost, nm != null && nm.getRoundId() != null
++                ? nm.getRoundId() : java.util.UUID.randomUUID().toString());
++    }
++
++    public void setupOnlineGame(NetworkManager nm, boolean isHost, String roundId) {
+         this.networkManager = nm;
+         this.myPiece = isHost ? Piece.X : Piece.O;
+         this.gameMode = GameMode.ONLINE;
++        this.networkRoundId = java.util.Objects.requireNonNull(roundId);
+         resetGame();
+     }
+ 
++    public String getNetworkRoundId() { return networkRoundId; }
++    public boolean isRestartWaiting() { return restartWaiting; }
++    public void setRestartWaiting(boolean waiting) {
++        restartWaiting = waiting;
++        if (stateListener != null) stateListener.onTurnChanged(currentTurn, isAiThinking);
++    }
++    public boolean startOnlineRound(String base, String next) {
++        if (gameMode != GameMode.ONLINE || !java.util.Objects.equals(base, networkRoundId)
++                || java.util.Objects.equals(base, next)) return false;
++        networkRoundId = next;
++        resetGame();
++        return true;
++    }
++
+     public Piece getMyPiece() { return myPiece; }
+     public Piece getCurrentTurn() { return currentTurn; }
+     public int getGameId() { return gameId; }
+@@ -180,6 +202,7 @@ public class BoardPanel extends JPanel {
+         currentTurn = Piece.X;
+         isGameOver = isAiThinking = false;
+         winner = Piece.NONE;
++        restartWaiting = false;
+         lastMoveRow = lastMoveCol = hoverRow = hoverCol = -1;
+         setCursor(Cursor.getDefaultCursor());
+         if (stateListener != null) {
+@@ -240,7 +263,7 @@ public class BoardPanel extends JPanel {
+ 
+     // =========================================================================
+     public boolean playMove(int row, int col) {
+-        if (isGameOver || isAiThinking) return false;
++        if (isGameOver || isAiThinking || restartWaiting) return false;
+ 
+         // Ở chế độ Online: Không được đánh nếu chưa đến lượt của mình
+         if (gameMode == GameMode.ONLINE && currentTurn != myPiece) return false;
+@@ -251,7 +274,7 @@ public class BoardPanel extends JPanel {
+ 
+         // Gửi nước đi sang máy đối thủ nếu đang chơi Online
+         if (gameMode == GameMode.ONLINE && networkManager != null) {
+-            networkManager.sendMove(row, col);
++            networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
+         }
+ 
+         // Kích hoạt AI nếu chơi với máy
+@@ -271,10 +294,17 @@ public class BoardPanel extends JPanel {
+      * Nhận nước đi từ mạng do đối thủ gửi tới.
+      */
+     public void applyOpponentMove(int row, int col) {
++        applyOpponentMove(networkRoundId, board.getMoveCount() + 1, row, col);
++    }
++
++    public void applyOpponentMove(String roundId, int ply, int row, int col) {
+         final int receivedGameId = gameId;
+         Runnable apply = () -> {
++            Piece wirePiece = ply % 2 == 1 ? Piece.X : Piece.O;
+             if (receivedGameId != gameId || gameMode != GameMode.ONLINE
+-                    || isGameOver || currentTurn != myPiece.opposite()) {
++                    || !java.util.Objects.equals(roundId, networkRoundId)
++                    || ply != board.getMoveCount() + 1 || wirePiece != myPiece.opposite()
++                    || isGameOver || restartWaiting || currentTurn != wirePiece) {
+                 // Reject callbacks queued for an old game, wrong mode or local turn.
+                 return;
+             }
+@@ -306,7 +336,8 @@ public class BoardPanel extends JPanel {
+         if (board.checkWin(row, col)) {
+             isGameOver = true;
+             winner = piece;
+-            SoundManager.playVictorySound();
++            final int resultGameId = gameId;
++            SoundManager.playVictorySound(() -> resultGameId == gameId);
+             repaint();
+             if (stateListener != null) {
+                 String msg = buildWinMessage(piece);
+diff --git a/src/game/view/Lang.java b/src/game/view/Lang.java
+index 16639fd..b466775 100644
+--- a/src/game/view/Lang.java
++++ b/src/game/view/Lang.java
+@@ -355,6 +355,24 @@ public class Lang {
+                 case EN -> "Cannot set up the connection. Please try again.";
+                 case PT -> "Não foi possível estabelecer a conexão. Tente novamente.";
+             };
++            case START_TIMEOUT -> switch (current) {
++                case VI -> "Hết thời gian chờ bắt đầu ván. Hãy kết nối lại.";
++                case EN -> "Timed out waiting for the game to start. Please reconnect.";
++                case PT -> "O tempo de espera para iniciar a partida terminou. Conecte-se novamente.";
++            };
++            case VERSION -> switch (current) {
++                case VI -> "Phiên bản kết nối không tương thích. Hai máy cần cùng phiên bản game.";
++                case EN -> "Incompatible protocol version. Both players need the same game version.";
++                case PT -> "Versão de protocolo incompatível. Os dois jogadores precisam da mesma versão do jogo.";
++            };
++        };
++    }
++
++    public static String restartWaiting() {
++        return switch (current) {
++            case VI -> "Đang chờ chủ phòng bắt đầu ván mới...";
++            case EN -> "Waiting for the host to start a new game...";
++            case PT -> "Aguardando o anfitrião iniciar uma nova partida...";
+         };
+     }
+ 
+diff --git a/src/game/view/MainFrame.java b/src/game/view/MainFrame.java
+index 54298df..c0117d1 100644
+--- a/src/game/view/MainFrame.java
++++ b/src/game/view/MainFrame.java
+@@ -49,6 +49,7 @@ public class MainFrame extends JFrame {
+     private boolean modeComboUpdating;
+     private boolean disposed;
+     private final Runnable languageListener = this::updateLanguage;
++    private JDialog resultDialog;
+ 
+     // === Cài đặt ===
+     private final AppSettings appSettings;
+@@ -157,6 +158,7 @@ public class MainFrame extends JFrame {
+                 btnUndo.setEnabled(false);
+                 openNetworkDialog();
+             } else {
++                closeResultDialog();
+                 networkManager.disconnect();
+                 boardPanel.setGameMode(sel);
+             }
+@@ -167,10 +169,11 @@ public class MainFrame extends JFrame {
+ 
+         btnNewGame.addActionListener(e -> {
+             if (boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
+-                if (networkManager != null && networkManager.isConnected()) {
+-                    networkManager.sendRestart();
+-                }
++                if (networkManager.requestRestart(boardPanel.getNetworkRoundId()) && !networkManager.isHost())
++                    boardPanel.setRestartWaiting(true);
++                return;
+             }
++            closeResultDialog();
+             scoreTracker.newGame();
+             boardPanel.resetGame();
+         });
+@@ -207,6 +210,7 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onGameOver(int gameId, String message, Piece winner) {
++                if (disposed || gameId != boardPanel.getGameId() || !boardPanel.isGameOver()) return;
+                 BoardPanel.GameMode mode = boardPanel.getGameMode();
+                 Piece humanPiece = (mode == BoardPanel.GameMode.ONLINE) ? boardPanel.getMyPiece() : Piece.X;
+                 boolean isNewRecord = scoreTracker.recordResult(gameId, winner, humanPiece);
+@@ -219,8 +223,15 @@ public class MainFrame extends JFrame {
+ 
+                 refreshGameStatus();
+ 
+-                JOptionPane.showMessageDialog(MainFrame.this, message,
+-                        Lang.gameOverTitle(), JOptionPane.INFORMATION_MESSAGE);
++                closeResultDialog();
++                JDialog dialog = new JOptionPane(message, JOptionPane.INFORMATION_MESSAGE)
++                        .createDialog(MainFrame.this, Lang.gameOverTitle());
++                resultDialog = dialog;
++                try { dialog.setVisible(true); }
++                finally {
++                    if (resultDialog == dialog) resultDialog = null;
++                    dialog.dispose();
++                }
+             }
+ 
+             @Override
+@@ -433,9 +444,14 @@ public class MainFrame extends JFrame {
+         this.networkManager = new NetworkManager(new NetworkManager.NetworkListener() {
+             @Override
+             public void onConnected(boolean isHost) {
++                onConnected(isHost, networkManager.getRoundId());
++            }
++
++            @Override
++            public void onConnected(boolean isHost, String roundId) {
+                 if (!disposed) {
+                     if (networkDialog != null) networkDialog.onConnectionSuccess();
+-                    boardPanel.setupOnlineGame(networkManager, isHost);
++                    boardPanel.setupOnlineGame(networkManager, isHost, roundId);
+ 
+                     String msg = isHost ? Lang.onlineConnectedHost() : Lang.onlineConnectedClient();
+                     JOptionPane.showMessageDialog(MainFrame.this, msg,
+@@ -448,20 +464,36 @@ public class MainFrame extends JFrame {
+                 boardPanel.applyOpponentMove(row, col);
+             }
+ 
++            @Override
++            public void onMoveReceived(String roundId, int ply, int row, int col) {
++                boardPanel.applyOpponentMove(roundId, ply, row, col);
++            }
++
+             @Override
+             public void onRestartRequested() {
+-                if (!disposed && boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
++                // Restart decisions are handled by requestRestart / onRoundStarted.
++            }
++
++            @Override
++            public void onRoundStarted(String base, String next) {
++                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId())) {
++                    closeResultDialog();
+                     scoreTracker.newGame();
+-                    boardPanel.resetGame();
+-                    JOptionPane.showMessageDialog(MainFrame.this,
+-                            Lang.restartedMsg(), Lang.newGameTitle(),
+-                            JOptionPane.INFORMATION_MESSAGE);
++                    boardPanel.startOnlineRound(base, next);
+                 }
+             }
+ 
++            @Override
++            public void onRestartWaiting(String base) {
++                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId()))
++                    boardPanel.setRestartWaiting(true);
++            }
++
+             @Override
+             public void onOpponentDisconnected() {
+                 if (!disposed) {
++                    closeResultDialog();
++                    boardPanel.setRestartWaiting(false);
+                     modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
+                     JOptionPane.showMessageDialog(MainFrame.this,
+                             Lang.opponentDisconnected(), Lang.disconnectedTitle(),
+@@ -497,6 +529,7 @@ public class MainFrame extends JFrame {
+     @Override
+     public void dispose() {
+         disposed = true;
++        closeResultDialog();
+         Lang.removeChangeListener(languageListener);
+         if (networkManager != null) networkManager.disconnect();
+         if (networkDialog != null) networkDialog.dispose();
+@@ -504,6 +537,10 @@ public class MainFrame extends JFrame {
+         super.dispose();
+     }
+ 
++    private void closeResultDialog() {
++        if (resultDialog != null) { JDialog old = resultDialog; resultDialog = null; old.dispose(); }
++    }
++
+     // =========================================================================
+     // CẬP NHẬT NGÔN NGỮ
+     // =========================================================================
+@@ -586,7 +623,9 @@ public class MainFrame extends JFrame {
+     private void refreshGameStatus() {
+         BoardPanel.GameMode mode = boardPanel.getGameMode();
+         Piece turn = boardPanel.getCurrentTurn();
+-        if (boardPanel.isGameOver()) {
++        if (boardPanel.isRestartWaiting()) {
++            setTurnLabel(Lang.restartWaiting(), new Color(200, 100, 20));
++        } else if (boardPanel.isGameOver()) {
+             Piece winner = boardPanel.getWinner();
+             Piece local = mode == BoardPanel.GameMode.ONLINE ? boardPanel.getMyPiece() : Piece.X;
+             Color color = winner == Piece.NONE ? new Color(120, 80, 20)
+diff --git a/src/game/view/SoundManager.java b/src/game/view/SoundManager.java
+index f7a0c84..c09ce60 100644
+--- a/src/game/view/SoundManager.java
++++ b/src/game/view/SoundManager.java
+@@ -3,6 +3,7 @@ package game.view;
+ import javax.sound.sampled.*;
+ import java.io.ByteArrayInputStream;
+ import java.util.concurrent.*;
++import java.util.function.BooleanSupplier;
+ 
+ /**
+  * Trình quản lý âm thanh cho game Caro:
+@@ -60,10 +61,14 @@ public class SoundManager {
+      * Phát âm thanh chuông reo vui vẻ khi người chơi chiến thắng.
+      */
+     public static void playVictorySound() {
++        playVictorySound(() -> true);
++    }
++
++    public static void playVictorySound(BooleanSupplier currentResult) {
+         if (!soundEnabled) return;
+ 
+         PLAYBACK.execute(() -> {
+-            if (!soundEnabled) return;
++            if (!soundEnabled || !currentResult.getAsBoolean()) return;
+             try {
+                 float sampleRate = 44100;
+                 int durationMs = 400;
+@@ -80,7 +85,10 @@ public class SoundManager {
+                     buffer[i] = (byte) (sample * decay * 110);
+                 }
+ 
+-                playBuffer(buffer, sampleRate);
++                if (currentResult.getAsBoolean()) {
++                    try { playClip(AudioSystem.getClip(), buffer, sampleRate, currentResult); }
++                    catch (Exception ignored) {}
++                }
+             } catch (Exception ignored) {
+             }
+         });
+@@ -95,6 +103,10 @@ public class SoundManager {
+ 
+     /** Package-visible to verify cleanup without requiring an audio device. */
+     static void playClip(Clip clip, byte[] buffer, float sampleRate) throws Exception {
++        playClip(clip, buffer, sampleRate, () -> true);
++    }
++
++    static void playClip(Clip clip, byte[] buffer, float sampleRate, BooleanSupplier currentResult) throws Exception {
+         CountDownLatch stopped = new CountDownLatch(1);
+         AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
+         try (AudioInputStream stream = new AudioInputStream(
+@@ -103,9 +115,12 @@ public class SoundManager {
+                 if (event.getType() == LineEvent.Type.STOP) stopped.countDown();
+             });
+             clip.open(stream);
++            if (!currentResult.getAsBoolean()) return;
+             clip.start();
+             long durationMs = (long) (1000.0 * buffer.length / sampleRate);
+-            stopped.await(durationMs + 1000, TimeUnit.MILLISECONDS);
++            long deadline = System.nanoTime() + (durationMs + 1000) * 1_000_000L;
++            while (currentResult.getAsBoolean() && System.nanoTime() < deadline)
++                if (stopped.await(10, TimeUnit.MILLISECONDS)) break;
+         } finally {
+             clip.close();
+         }
+diff --git a/test/game/F1ProtocolTest.java b/test/game/F1ProtocolTest.java
+new file mode 100644
+index 0000000..3f25491
+--- /dev/null
++++ b/test/game/F1ProtocolTest.java
+@@ -0,0 +1,159 @@
++package game;
++
++import game.model.*;
++import game.network.NetworkManager;
++import game.view.*;
++import org.junit.jupiter.api.*;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.ValueSource;
++import javax.swing.*;
++import java.io.*;
++import java.net.*;
++import java.util.*;
++import java.util.concurrent.*;
++import static org.junit.jupiter.api.Assertions.*;
++
++class F1ProtocolTest {
++    @BeforeEach void mute() { SoundManager.setSoundEnabled(false); }
++    static String id() { return UUID.randomUUID().toString(); }
++    static PrintWriter writer(Socket socket) throws IOException { return new PrintWriter(socket.getOutputStream(), true); }
++
++    @ParameterizedTest @ValueSource(ints = {0, 2, 3, 225})
++    void invalidPlyOrColorDoesNotChangeBoard(int ply) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            Board board = new Board(); BoardPanel panel = new BoardPanel(board); String round = id();
++            panel.setupOnlineGame(null, false, round);
++            panel.applyOpponentMove(round, ply, 4, 4);
++            assertEquals(0, board.getMoveCount());
++        });
++    }
++    @Test void wrongRoundDuplicateWrongTurnAndOccupiedSquareAreIgnored() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            Board board = new Board(); BoardPanel panel = new BoardPanel(board); String round = id();
++            panel.setupOnlineGame(null, false, round);
++            panel.applyOpponentMove(id(), 1, 4, 4); assertEquals(0, board.getMoveCount());
++            panel.applyOpponentMove(round, 1, 4, 4); assertEquals(Piece.X, board.getPiece(4, 4));
++            panel.applyOpponentMove(round, 1, 5, 5); // duplicate
++            panel.applyOpponentMove(round, 2, 5, 5); // opponent cannot play white
++            panel.applyOpponentMove(round, 3, 5, 5); // local turn
++            assertEquals(1, board.getMoveCount());
++            assertTrue(panel.playMove(6, 6));
++            panel.applyOpponentMove(round, 3, 6, 6); assertEquals(2, board.getMoveCount());
++        });
++    }
++    @Test void queuedWireMoveKeepsOldRoundAfterReset() throws Exception {
++        Board board = new Board(); BoardPanel[] panel = new BoardPanel[1]; String base = id();
++        SwingUtilities.invokeAndWait(() -> { panel[0] = new BoardPanel(board); panel[0].setupOnlineGame(null, false, base); });
++        BlockingQueue<Runnable> callbacks = new LinkedBlockingQueue<>();
++        NetworkManager manager = new NetworkManager(new NetworkStabilityTest.Events() {
++            @Override public void onMoveReceived(String round, int ply, int r, int c) { panel[0].applyOpponentMove(round, ply, r, c); }
++        }, callbacks::add);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000); manager.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                writer(peer).println("START 2 " + base);
++                assertNotNull(callbacks.poll(3, TimeUnit.SECONDS));
++                writer(peer).println("MOVE " + base + " 1 4 4");
++                Runnable move = callbacks.poll(3, TimeUnit.SECONDS); assertNotNull(move);
++                SwingUtilities.invokeAndWait(() -> { panel[0].startOnlineRound(base, id()); move.run(); assertEquals(0, board.getMoveCount()); });
++            }
++        } finally { manager.disconnect(); }
++    }
++    @Test void simultaneousSameBaseRestartAndStaleRequestResetOnce() throws Exception {
++        NetworkStabilityTest.Events events = new NetworkStabilityTest.Events(); NetworkManager host = new NetworkManager(events);
++        try {
++            host.hostGame(0); Integer port = events.ports.poll(3, TimeUnit.SECONDS); assertNotNull(port);
++            try (Socket client = new Socket("127.0.0.1", port)) {
++                client.setSoTimeout(3000); BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
++                String base = in.readLine().split(" ")[2]; assertEquals("connected:true", events.next());
++                assertTrue(host.requestRestart(base));
++                writer(client).println("RESTART_REQUEST " + base);
++                assertTrue(in.readLine().startsWith("RESTART " + base + " "));
++                assertEquals("restart", events.next());
++                assertFalse(host.requestRestart(base));
++                writer(client).println("RESTART_REQUEST " + base);
++                // A valid subsequent MOVE is a FIFO barrier after both stale requests.
++                writer(client).println("MOVE " + host.getRoundId() + " 2 3 3");
++                assertEquals("move:3:3", events.next()); assertTrue(events.events.isEmpty());
++            }
++        } finally { host.disconnect(); }
++    }
++    @Test void clientSendsOneRequestAcceptsOnlyMatchingBaseAndClearsWaitOnEof() throws Exception {
++        NetworkStabilityTest.Events events = new NetworkStabilityTest.Events(); NetworkManager client = new NetworkManager(events);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000); client.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                peer.setSoTimeout(150); BufferedReader in = new BufferedReader(new InputStreamReader(peer.getInputStream()));
++                String base = id(); writer(peer).println("START 2 " + base); assertEquals("connected:false", events.next());
++                assertTrue(client.requestRestart(base)); assertFalse(client.requestRestart(base));
++                assertEquals("RESTART_REQUEST " + base, in.readLine());
++                assertThrows(SocketTimeoutException.class, in::readLine);
++                writer(peer).println("RESTART " + id() + " " + id());
++                writer(peer).println("MOVE " + base + " 1 1 1");
++                assertEquals("move:1:1", events.next()); assertEquals(base, client.getRoundId()); assertTrue(client.isWaitingForRestart());
++                String next = id(); writer(peer).println("RESTART " + base + " " + next);
++                assertEquals("restart", events.next()); assertEquals(next, client.getRoundId()); assertFalse(client.isWaitingForRestart());
++                assertTrue(client.requestRestart(next));
++            }
++            assertEquals("disconnected", events.next()); assertFalse(client.isWaitingForRestart());
++        } finally { client.disconnect(); }
++    }
++    @Test void startTimeoutClosesSession() throws Exception {
++        NetworkStabilityTest.Events events = new NetworkStabilityTest.Events(); NetworkManager client = new NetworkManager(events);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000); client.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                assertEquals("error:START_TIMEOUT", events.events.poll(7, TimeUnit.SECONDS));
++                assertFalse(client.isConnected()); peer.setSoTimeout(3000); assertEquals(-1, peer.getInputStream().read());
++            }
++        } finally { client.disconnect(); }
++    }
++    @Test void mismatchedVersionClosesSession() throws Exception {
++        NetworkStabilityTest.Events events = new NetworkStabilityTest.Events(); NetworkManager client = new NetworkManager(events);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000); client.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                writer(peer).println("START 99 " + id()); assertEquals("error:VERSION", events.next()); assertFalse(client.isConnected());
++            }
++        } finally { client.disconnect(); }
++    }
++    @Test void garbageMissingFieldsOversizedAndWrongColorDoNotDisconnect() throws Exception {
++        NetworkStabilityTest.Events events = new NetworkStabilityTest.Events(); NetworkManager client = new NetworkManager(events);
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000); client.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                String round = id(); PrintWriter out = writer(peer); out.println("START 2 " + round);
++                assertEquals("connected:false", events.next());
++                for (String line : new String[]{"DISCONNECT", "garbage", "MOVE", "MOVE " + round + " 1 2", "MOVE " + round + " a 1 2",
++                        "MOVE " + round + " 2 1 2", "MOVE " + round + " 1 1 2 extra", "X".repeat(10000)}) out.println(line);
++                out.println("MOVE " + round + " 1 7 7");
++                assertEquals("move:7:7", events.next()); assertTrue(client.isConnected()); assertTrue(events.events.isEmpty());
++            }
++        } finally { client.disconnect(); }
++    }
++    @Test void waitingLocksMovesAndRoundChangeClosesPopupRejectingOldResult() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = new MainFrame(new AppSettings(new P2LifecycleTest.MemoryPreferences()));
++            try {
++                BoardPanel panel = frame.getBoardPanel(); String base = id(), next = id();
++                panel.setupOnlineGame(null, true, base); panel.setRestartWaiting(true);
++                assertFalse(panel.playMove(7, 7)); panel.setRestartWaiting(false);
++                int oldGameId = panel.getGameId();
++                for (int c = 0; c < 4; c++) panel.executeMoveForTest(7, c, Piece.X);
++                NetworkManager manager = P2LifecycleTest.field(frame, "networkManager");
++                NetworkManager.NetworkListener networkListener = P2LifecycleTest.field(manager, "listener");
++                SwingUtilities.invokeLater(() -> {
++                    JDialog popup = P2LifecycleTest.field(frame, "resultDialog"); assertNotNull(popup); assertTrue(popup.isVisible());
++                    networkListener.onRoundStarted(base, next);
++                    assertFalse(popup.isDisplayable());
++                });
++                panel.executeMoveForTest(7, 4, Piece.X);
++                assertFalse(panel.isGameOver()); assertEquals(next, panel.getNetworkRoundId()); assertTrue(panel.getMoveHistory().isEmpty());
++                int wins = frame.getScoreTracker().getHumanWins();
++                BoardPanel.GameStateListener state = P2LifecycleTest.field(panel, "stateListener");
++                state.onGameOver(oldGameId, "stale", Piece.X);
++                assertEquals(wins, frame.getScoreTracker().getHumanWins()); assertNull(P2LifecycleTest.field(frame, "resultDialog"));
++            } finally { frame.dispose(); }
++        });
++    }
++}
+diff --git a/test/game/NetworkStabilityTest.java b/test/game/NetworkStabilityTest.java
+index 5c908a6..558c684 100644
+--- a/test/game/NetworkStabilityTest.java
++++ b/test/game/NetworkStabilityTest.java
+@@ -9,7 +9,7 @@ import java.util.concurrent.*;
+ import static org.junit.jupiter.api.Assertions.*;
+ 
+ class NetworkStabilityTest {
+-    static final class Events implements NetworkManager.NetworkListener {
++    static class Events implements NetworkManager.NetworkListener {
+         final BlockingQueue<String> events = new LinkedBlockingQueue<>();
+         final BlockingQueue<Integer> ports = new LinkedBlockingQueue<>();
+         public void onHosting(int port) { ports.add(port); }
+@@ -51,11 +51,12 @@ class NetworkStabilityTest {
+             client.joinGame("127.0.0.1", port);
+             assertEquals("connected:true", hostEvents.next());
+             assertEquals("connected:false", clientEvents.next());
+-            host.sendMove(7, 7);
++            host.sendMove(host.getRoundId(), 1, 7, 7);
+             assertEquals("move:7:7", clientEvents.next());
+-            client.sendMove(6, 6);
++            client.sendMove(client.getRoundId(), 2, 6, 6);
+             assertEquals("move:6:6", hostEvents.next());
+-            host.sendRestart();
++            host.requestRestart(host.getRoundId());
++            assertEquals("restart", hostEvents.next());
+             assertEquals("restart", clientEvents.next());
+             client.disconnect();
+             assertEquals("disconnected", hostEvents.next());
+@@ -71,13 +72,16 @@ class NetworkStabilityTest {
+             server.setSoTimeout(3000);
+             manager.joinGame("127.0.0.1", server.getLocalPort());
+             try (Socket peer = server.accept()) {
++                new PrintWriter(peer.getOutputStream(), true).println("START 2 " + java.util.UUID.randomUUID());
+                 assertEquals("connected:false", events.next());
+                 PrintWriter out = new PrintWriter(peer.getOutputStream(), true, StandardCharsets.UTF_8);
+                 out.println("MOVE nope 4");
+                 out.println("MOVE 1 2 3");
+-                out.println("MOVE 4 5");
+-                out.println("RESTART");
+-                out.println("MOVE   6   7");
++                String base = manager.getRoundId();
++                String next = java.util.UUID.randomUUID().toString();
++                out.println("MOVE " + base + " 1 4 5");
++                out.println("RESTART " + base + " " + next);
++                out.println("MOVE   " + next + "   1   6   7");
+                 assertEquals("move:4:5", events.next());
+                 assertEquals("restart", events.next());
+                 assertEquals("move:6:7", events.next());
+@@ -95,9 +99,11 @@ class NetworkStabilityTest {
+             server.setSoTimeout(3000);
+             manager.joinGame("127.0.0.1", server.getLocalPort());
+             try (Socket peer = server.accept()) {
++                String round = java.util.UUID.randomUUID().toString();
++                new PrintWriter(peer.getOutputStream(), true).println("START 2 " + round);
+                 Runnable connected = callbacks.poll(3, TimeUnit.SECONDS);
+                 assertNotNull(connected);
+-                new PrintWriter(peer.getOutputStream(), true).println("MOVE 1 2");
++                new PrintWriter(peer.getOutputStream(), true).println("MOVE " + round + " 1 1 2");
+                 Runnable move = callbacks.poll(3, TimeUnit.SECONDS);
+                 assertNotNull(move);
+                 manager.disconnect();
+@@ -117,17 +123,20 @@ class NetworkStabilityTest {
+             first.setSoTimeout(3000); second.setSoTimeout(3000);
+             manager.joinGame("127.0.0.1", first.getLocalPort());
+             try (Socket oldPeer = first.accept()) {
++                new PrintWriter(oldPeer.getOutputStream(), true).println("START 2 " + java.util.UUID.randomUUID());
+                 Runnable oldConnected = callbacks.poll(3, TimeUnit.SECONDS);
+                 assertNotNull(oldConnected);
+                 manager.joinGame("127.0.0.1", second.getLocalPort());
+                 try (Socket newPeer = second.accept()) {
++                    String round = java.util.UUID.randomUUID().toString();
++                    new PrintWriter(newPeer.getOutputStream(), true).println("START 2 " + round);
+                     Runnable newConnected = callbacks.poll(3, TimeUnit.SECONDS);
+                     assertNotNull(newConnected);
+                     oldConnected.run(); newConnected.run();
+                     assertEquals("connected:false", events.next());
+                     oldPeer.setSoTimeout(3000);
+                     assertEquals(-1, oldPeer.getInputStream().read());
+-                    new PrintWriter(newPeer.getOutputStream(), true).println("MOVE 8 9");
++                    new PrintWriter(newPeer.getOutputStream(), true).println("MOVE " + round + " 1 8 9");
+                     Runnable move = callbacks.poll(3, TimeUnit.SECONDS);
+                     assertNotNull(move);
+                     move.run();
+@@ -151,6 +160,7 @@ class NetworkStabilityTest {
+             assertNotNull(error);
+             manager.joinGame("127.0.0.1", next.getLocalPort());
+             try (Socket peer = next.accept()) {
++                new PrintWriter(peer.getOutputStream(), true).println("START 2 " + java.util.UUID.randomUUID());
+                 Runnable connected = callbacks.poll(3, TimeUnit.SECONDS);
+                 assertNotNull(connected);
+                 error.run(); connected.run();
+diff --git a/test/game/P2LifecycleTest.java b/test/game/P2LifecycleTest.java
+index b06cc8d..69857b7 100644
+--- a/test/game/P2LifecycleTest.java
++++ b/test/game/P2LifecycleTest.java
+@@ -87,6 +87,7 @@ class P2LifecycleTest {
+             server.setSoTimeout(3000);
+             manager.joinGame("127.0.0.1", server.getLocalPort());
+             try (Socket peer = server.accept()) {
++                new java.io.PrintWriter(peer.getOutputStream(), true).println("START 2 " + UUID.randomUUID());
+                 assertEquals("connected:false", events.next());
+                 SwingUtilities.invokeAndWait(() -> {
+                     NetworkDialog dialog = new NetworkDialog(null, manager, () -> {});
+@@ -146,7 +147,7 @@ class P2LifecycleTest {
+             assertNotEquals(vi, en); assertNotEquals(en, pt); assertNotEquals(vi, pt);
+             assertTrue(en.chars().allMatch(c -> c < 128));
+             assertFalse(vi.contains("diagnostic"));
+-            if (type != NetworkManager.ErrorType.CHANNEL) {
++            if (type == NetworkManager.ErrorType.HOST || type == NetworkManager.ErrorType.JOIN) {
+                 assertTrue(vi.contains("1234")); assertTrue(en.contains("1234")); assertTrue(pt.contains("1234"));
+             }
+         });
+diff --git a/test/game/SoundResourceTest.java b/test/game/SoundResourceTest.java
+index 849e671..959d55b 100644
+--- a/test/game/SoundResourceTest.java
++++ b/test/game/SoundResourceTest.java
+@@ -11,9 +11,11 @@ class SoundResourceTest {
+     @Test void closesClipAfterPlaybackStops() throws Exception { verify("success"); }
+     @Test void closesClipWhenOpenFails() throws Exception { verify("open"); }
+     @Test void closesClipWhenStartFails() throws Exception { verify("start"); }
++    @Test void staleResultClosesClipWithoutStarting() throws Exception { verify("stale"); }
+ 
+     private void verify(String scenario) throws Exception {
+         AtomicBoolean closed = new AtomicBoolean();
++        AtomicBoolean started = new AtomicBoolean();
+         AtomicReference<LineListener> listener = new AtomicReference<>();
+         Clip clip = (Clip) Proxy.newProxyInstance(Clip.class.getClassLoader(), new Class<?>[]{Clip.class},
+                 (proxy, method, args) -> {
+@@ -21,6 +23,7 @@ class SoundResourceTest {
+                         case "addLineListener" -> listener.set((LineListener) args[0]);
+                         case "open" -> { if (scenario.equals("open")) throw new LineUnavailableException(); }
+                         case "start" -> {
++                            started.set(true);
+                             if (scenario.equals("start")) throw new IllegalStateException();
+                             listener.get().update(new LineEvent((Line) proxy, LineEvent.Type.STOP, 1));
+                         }
+@@ -29,8 +32,10 @@ class SoundResourceTest {
+                     }
+                     return null;
+                 });
+-        if (scenario.equals("success")) SoundManager.playClip(clip, new byte[100], 44100);
++        if (scenario.equals("stale")) SoundManager.playClip(clip, new byte[100], 44100, () -> false);
++        else if (scenario.equals("success")) SoundManager.playClip(clip, new byte[100], 44100);
+         else assertThrows(Exception.class, () -> SoundManager.playClip(clip, new byte[100], 44100));
+         assertTrue(closed.get(), "Clip must close on success and every failure path");
++        if (scenario.equals("stale")) assertFalse(started.get());
+     }
+ }
+diff --git a/tools/audit/CurrentAuditProbe.java b/tools/audit/CurrentAuditProbe.java
+index 0cf6ab5..74fc9f5 100644
+--- a/tools/audit/CurrentAuditProbe.java
++++ b/tools/audit/CurrentAuditProbe.java
+@@ -24,11 +24,12 @@ public class CurrentAuditProbe {
+     static class Recorder extends NetworkManager {
+         int sent;
+         Recorder(){super(null);}
+-        @Override public void sendMove(int r,int c){sent++;}
++        @Override public void sendMove(String id,int ply,int r,int c){sent++;}
+     }
+     static NetworkManager.NetworkListener listener(BoardPanel panel) {
+         return new NetworkManager.NetworkListener() {
+             public void onConnected(boolean host){} public void onMoveReceived(int r,int c){panel.applyOpponentMove(r,c);}
++            public void onMoveReceived(String id,int ply,int r,int c){panel.applyOpponentMove(id,ply,r,c);}
+             public void onRestartRequested(){panel.resetGame();} public void onOpponentDisconnected(){}
+             public void onError(NetworkManager.NetworkError error){System.out.println("AUDIT NETWORK ERROR "+error);}
+         };
+@@ -55,11 +56,13 @@ public class CurrentAuditProbe {
+         try(ServerSocket server=new ServerSocket(0)){
+             server.setSoTimeout(3000);manager.joinGame("127.0.0.1",server.getLocalPort());
+             try(Socket peer=server.accept()){
++                String base = panel[0].getNetworkRoundId();
++                new PrintWriter(peer.getOutputStream(),true).println("START 2 " + base);
+                 Runnable connected=queue.poll(3,TimeUnit.SECONDS); if(connected==null)throw new AssertionError("connect timeout");
+                 SwingUtilities.invokeAndWait(connected);
+-                new PrintWriter(peer.getOutputStream(),true).println("MOVE 4 4");
++                new PrintWriter(peer.getOutputStream(),true).println("MOVE " + base + " 1 4 4");
+                 Runnable oldMove=queue.poll(3,TimeUnit.SECONDS);if(oldMove==null)throw new AssertionError("move timeout");
+-                SwingUtilities.invokeAndWait(()->{panel[0].resetGame();oldMove.run();System.out.println("OLD_MOVE_AFTER_RESTART="+board.getPiece(4,4)+" moveCount="+board.getMoveCount()+" (expected NONE / 0)");});
++                SwingUtilities.invokeAndWait(()->{panel[0].startOnlineRound(base,UUID.randomUUID().toString());oldMove.run();System.out.println("OLD_MOVE_AFTER_RESTART="+board.getPiece(4,4).name()+" moveCount="+board.getMoveCount()+" (expected NONE / 0)");});
+             }
+         }finally{manager.disconnect();}
+         Board six=new Board();six.makeMove(7,2,Piece.O);for(int c=3;c<=8;c++)six.makeMove(7,c,Piece.X);six.makeMove(7,9,Piece.O);

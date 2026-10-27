@@ -57,11 +57,12 @@ public class BoardPanel extends JPanel {
     private final Board board;
     private Piece currentTurn = Piece.X;
     private boolean isGameOver = false;
+    private Piece winner = Piece.NONE;
     private boolean isAiThinking = false;
     private int lastMoveRow = -1, lastMoveCol = -1;
     private int hoverRow = -1, hoverCol = -1;
 
-    private int gameId = 1;
+    private volatile int gameId = 1; // also captured when a network callback is queued
     private SwingWorker<Move, Void> aiWorker = null;
     private int aiExecutionToken = 0;
 
@@ -72,6 +73,8 @@ public class BoardPanel extends JPanel {
     // Quản lý chế độ Online
     private NetworkManager networkManager;
     private Piece myPiece = Piece.X; // Host là X (Đen), Client là O (Trắng)
+    private String networkRoundId;
+    private boolean restartWaiting;
 
     // =========================================================================
     public interface GameStateListener {
@@ -146,16 +149,41 @@ public class BoardPanel extends JPanel {
     }
 
     public void setupOnlineGame(NetworkManager nm, boolean isHost) {
+        setupOnlineGame(nm, isHost, nm != null && nm.getRoundId() != null
+                ? nm.getRoundId() : java.util.UUID.randomUUID().toString());
+    }
+
+    public void setupOnlineGame(NetworkManager nm, boolean isHost, String roundId) {
         this.networkManager = nm;
         this.myPiece = isHost ? Piece.X : Piece.O;
         this.gameMode = GameMode.ONLINE;
+        this.networkRoundId = java.util.Objects.requireNonNull(roundId);
         resetGame();
+    }
+
+    public String getNetworkRoundId() { return networkRoundId; }
+    public boolean isRestartWaiting() { return restartWaiting; }
+    public void setRestartWaiting(boolean waiting) {
+        restartWaiting = waiting;
+        if (stateListener != null) stateListener.onTurnChanged(currentTurn, isAiThinking);
+    }
+    public boolean startOnlineRound(String base, String next) {
+        if (gameMode != GameMode.ONLINE || !java.util.Objects.equals(base, networkRoundId)
+                || java.util.Objects.equals(base, next)) return false;
+        networkRoundId = next;
+        resetGame();
+        return true;
     }
 
     public Piece getMyPiece() { return myPiece; }
     public Piece getCurrentTurn() { return currentTurn; }
     public int getGameId() { return gameId; }
     public boolean isGameOver() { return isGameOver; }
+    public Piece getWinner() { return winner; }
+    public String getGameOverMessage() {
+        if (!isGameOver) return null;
+        return winner == Piece.NONE ? Lang.drawGame() : buildWinMessage(winner);
+    }
     public boolean isAiThinking() { return isAiThinking; }
     public int getLastMoveRow() { return lastMoveRow; }
     public int getLastMoveCol() { return lastMoveCol; }
@@ -173,6 +201,8 @@ public class BoardPanel extends JPanel {
         moveHistory.clear();
         currentTurn = Piece.X;
         isGameOver = isAiThinking = false;
+        winner = Piece.NONE;
+        restartWaiting = false;
         lastMoveRow = lastMoveCol = hoverRow = hoverCol = -1;
         setCursor(Cursor.getDefaultCursor());
         if (stateListener != null) {
@@ -196,8 +226,9 @@ public class BoardPanel extends JPanel {
 
         if (gameMode == GameMode.PVP) {
             Move m = moveHistory.remove(moveHistory.size() - 1);
+            Piece removedPiece = board.getPiece(m.row, m.col);
             board.undoMove(m.row, m.col);
-            currentTurn = currentTurn.opposite();
+            currentTurn = removedPiece;
             isGameOver = false;
         } else if (gameMode == GameMode.PV_AI) {
             isGameOver = false;
@@ -213,6 +244,7 @@ public class BoardPanel extends JPanel {
             }
             currentTurn = Piece.X;
         }
+        winner = Piece.NONE;
 
         if (!moveHistory.isEmpty()) {
             Move prev = moveHistory.get(moveHistory.size() - 1);
@@ -231,19 +263,14 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     public boolean playMove(int row, int col) {
-        if (isGameOver || isAiThinking) return false;
+        if (isGameOver || isAiThinking || restartWaiting) return false;
 
         // Ở chế độ Online: Không được đánh nếu chưa đến lượt của mình
         if (gameMode == GameMode.ONLINE && currentTurn != myPiece) return false;
 
         if (!board.isValidMove(row, col)) return false;
 
-        executeMove(row, col, currentTurn);
-
-        // Gửi nước đi sang máy đối thủ nếu đang chơi Online
-        if (gameMode == GameMode.ONLINE && networkManager != null) {
-            networkManager.sendMove(row, col);
-        }
+        executeMove(row, col, currentTurn, true);
 
         // Kích hoạt AI nếu chơi với máy
         if (!isGameOver && gameMode == GameMode.PV_AI && currentTurn == Piece.O) {
@@ -262,42 +289,74 @@ public class BoardPanel extends JPanel {
      * Nhận nước đi từ mạng do đối thủ gửi tới.
      */
     public void applyOpponentMove(int row, int col) {
-        SwingUtilities.invokeLater(() -> {
-            if (isGameOver) {
-                // Bỏ qua gói MOVE nếu ván đã kết thúc
+        applyOpponentMove(networkRoundId, board.getMoveCount() + 1, row, col);
+    }
+
+    public void applyOpponentMove(String roundId, int ply, int row, int col) {
+        final int receivedGameId = gameId;
+        Runnable apply = () -> {
+            Piece wirePiece = ply % 2 == 1 ? Piece.X : Piece.O;
+            if (receivedGameId != gameId || gameMode != GameMode.ONLINE
+                    || !java.util.Objects.equals(roundId, networkRoundId)
+                    || ply != board.getMoveCount() + 1 || wirePiece != myPiece.opposite()
+                    || isGameOver || restartWaiting || currentTurn != wirePiece) {
+                // Reject callbacks queued for an old game, wrong mode or local turn.
                 return;
             }
             if (board.isValidMove(row, col)) {
-                executeMove(row, col, currentTurn);
+                executeMove(row, col, myPiece.opposite());
             }
-        });
+        };
+        if (SwingUtilities.isEventDispatchThread()) apply.run();
+        else SwingUtilities.invokeLater(apply);
+    }
+
+    /** Stop background work when its owning window is disposed. */
+    public void cancelAiComputation() {
+        aiExecutionToken++;
+        if (aiWorker != null) aiWorker.cancel(true);
+        aiWorker = null;
+        isAiThinking = false;
+        setCursor(Cursor.getDefaultCursor());
     }
 
     private void executeMove(int row, int col, Piece piece) {
+        executeMove(row, col, piece, false);
+    }
+
+    private void executeMove(int row, int col, Piece piece, boolean publishOnline) {
         board.makeMove(row, col, piece);
         moveHistory.add(new Move(row, col));
         lastMoveRow = row; lastMoveCol = col;
         hoverRow = hoverCol = -1;
 
+        // Publish the applied move before any UI listener can enter a modal loop.
+        if (publishOnline && gameMode == GameMode.ONLINE && networkManager != null)
+            networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
+
         SoundManager.playPlacePieceSound();
 
         if (board.checkWin(row, col)) {
             isGameOver = true;
-            SoundManager.playVictorySound();
+            winner = piece;
+            final int resultGameId = gameId;
+            SoundManager.playVictorySound(() -> resultGameId == gameId);
             repaint();
             if (stateListener != null) {
                 String msg = buildWinMessage(piece);
                 stateListener.onGameOver(gameId, msg, piece);
-                stateListener.onHistoryChanged(canUndo());
+                if (resultGameId == gameId) stateListener.onHistoryChanged(canUndo());
             }
             return;
         }
         if (board.isFull()) {
             isGameOver = true;
+            winner = Piece.NONE;
             repaint();
             if (stateListener != null) {
+                int resultGameId = gameId;
                 stateListener.onGameOver(gameId, Lang.drawGame(), Piece.NONE);
-                stateListener.onHistoryChanged(canUndo());
+                if (resultGameId == gameId) stateListener.onHistoryChanged(canUndo());
             }
             return;
         }
@@ -340,9 +399,10 @@ public class BoardPanel extends JPanel {
         final int capturedGameId = this.gameId;
         final int capturedMoveCount = this.moveHistory.size();
         final Board snap = board.copy();
+        final MinimaxAI searchAi = new MinimaxAI(Piece.O, ai.getDifficulty());
 
         aiWorker = new SwingWorker<Move, Void>() {
-            @Override protected Move doInBackground() { return ai.findBestMove(snap); }
+            @Override protected Move doInBackground() { return searchAi.findBestMove(snap); }
             @Override protected void done() {
                 try {
                     if (isCancelled() || token != aiExecutionToken || capturedGameId != gameId || capturedMoveCount != moveHistory.size()) {
@@ -352,7 +412,7 @@ public class BoardPanel extends JPanel {
                     isAiThinking = false;
                     setCursor(Cursor.getDefaultCursor());
                     if (stateListener != null)
-                        stateListener.onAiStatsUpdated(ai.getExecutionTimeMs(), ai.getNodesEvaluated(), ai.getPruningCount());
+                        stateListener.onAiStatsUpdated(searchAi.getExecutionTimeMs(), searchAi.getNodesEvaluated(), searchAi.getPruningCount());
                     if (best != null && !isGameOver) executeMove(best.row, best.col, Piece.O);
                 } catch (Exception ex) {
                     if (token == aiExecutionToken) {

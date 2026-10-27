@@ -5,6 +5,8 @@ import game.model.Piece;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Bộ đánh giá thế cờ Heuristic cho 3 cấp độ:
@@ -21,6 +23,7 @@ public class HeuristicEvaluator {
     public static final int BLOCKED_THREE = 8_000;       // 3 quân chặn 1 đầu
     public static final int OPEN_TWO = 1_500;            // 2 quân hở 2 đầu
     public static final int BLOCKED_TWO = 150;
+    public static final int MAX_NON_TERMINAL = FIVE / 4;
 
     public static int evaluateBoardAdvanced(Board board, Piece aiPiece) {
         Piece humanPiece = aiPiece.opposite();
@@ -28,7 +31,9 @@ public class HeuristicEvaluator {
         int aiScore = evaluatePlayerAdvanced(board, aiPiece);
         int humanScore = evaluatePlayerAdvanced(board, humanPiece);
 
-        return aiScore - (int) (humanScore * 1.3);
+        if (aiScore == FIVE) return FIVE;
+        if (humanScore == FIVE) return -FIVE;
+        return Math.max(-FIVE + 1, Math.min(FIVE - 1, aiScore - (int) (humanScore * 1.3)));
     }
 
     public static int evaluateBoardSimple(Board board, Piece aiPiece) {
@@ -52,7 +57,8 @@ public class HeuristicEvaluator {
                 line[c] = board.getPiece(r, c);
             }
             int[] res = evaluateLineAdvanced(line, player, rule);
-            totalScore += res[0];
+            if (res[0] == FIVE) return FIVE;
+            totalScore = Math.min(MAX_NON_TERMINAL, totalScore + res[0]);
             openThreeCount += res[1];
         }
 
@@ -63,7 +69,8 @@ public class HeuristicEvaluator {
                 line[r] = board.getPiece(r, c);
             }
             int[] res = evaluateLineAdvanced(line, player, rule);
-            totalScore += res[0];
+            if (res[0] == FIVE) return FIVE;
+            totalScore = Math.min(MAX_NON_TERMINAL, totalScore + res[0]);
             openThreeCount += res[1];
         }
 
@@ -78,7 +85,8 @@ public class HeuristicEvaluator {
             }
             if (diag.size() >= 5) {
                 int[] res = evaluateLineAdvanced(diag.toArray(new Piece[0]), player, rule);
-                totalScore += res[0];
+                if (res[0] == FIVE) return FIVE;
+                totalScore = Math.min(MAX_NON_TERMINAL, totalScore + res[0]);
                 openThreeCount += res[1];
             }
         }
@@ -94,7 +102,8 @@ public class HeuristicEvaluator {
             }
             if (diag.size() >= 5) {
                 int[] res = evaluateLineAdvanced(diag.toArray(new Piece[0]), player, rule);
-                totalScore += res[0];
+                if (res[0] == FIVE) return FIVE;
+                totalScore = Math.min(MAX_NON_TERMINAL, totalScore + res[0]);
                 openThreeCount += res[1];
             }
         }
@@ -103,73 +112,50 @@ public class HeuristicEvaluator {
             totalScore += DOUBLE_THREE;
         }
 
-        return totalScore;
+        return Math.min(MAX_NON_TERMINAL, totalScore);
     }
 
     private static int[] evaluateLineAdvanced(Piece[] line, Piece player, Board.WinRule rule) {
+        Piece opponent = player.opposite();
+        // Evaluate complete runs, never a five-cell fragment inside an overline.
+        for (int i = 0; i < line.length;) {
+            if (line[i] != player) { i++; continue; }
+            int start = i;
+            while (i < line.length && line[i] == player) i++;
+            int length = i - start;
+            boolean blockedBefore = start > 0 && line[start - 1] == opponent;
+            boolean blockedAfter = i < line.length && line[i] == opponent;
+            if ((rule == Board.WinRule.RULE_A ? length == 5 : length >= 5)
+                    && !(blockedBefore && blockedAfter)) return new int[]{FIVE, 0};
+        }
         int score = 0;
-        int openThreeCount = 0;
-        int n = line.length;
-        Piece opp = player.opposite();
-
-        // Quét cửa sổ 6 ô: Bắt thế hở 2 đầu _XXXX_, _XXX_, _XX_
-        for (int i = 0; i <= n - 6; i++) {
-            int pCount = 0;
-            int oppCount = 0;
-            for (int j = 0; j < 6; j++) {
-                if (line[i + j] == player) pCount++;
-                else if (line[i + j] == opp) oppCount++;
+        Set<Integer> openThrees = new HashSet<>(), openFours = new HashSet<>(), openTwos = new HashSet<>();
+        for (int i = 0; i + 6 <= line.length; i++) {
+            if (line[i] != Piece.NONE || line[i + 5] != Piece.NONE) continue;
+            int mask = 0, count = 0; boolean blocked = false;
+            for (int j = i + 1; j < i + 5; j++) {
+                if (line[j] == opponent) { blocked = true; break; }
+                if (line[j] == player) { mask |= 1 << j; count++; }
             }
-
-            if (oppCount == 0 && line[i] == Piece.NONE && line[i + 5] == Piece.NONE) {
-                if (pCount == 4) {
-                    score += OPEN_FOUR;
-                } else if (pCount == 3) {
-                    score += OPEN_THREE;
-                    openThreeCount++;
-                } else if (pCount == 2) {
-                    score += OPEN_TWO;
-                }
-            }
+            if (blocked) continue;
+            if (count == 4 && openFours.add(mask)) score += OPEN_FOUR;
+            if (count == 3 && openThrees.add(mask)) score += OPEN_THREE;
+            if (count == 2 && openTwos.add(mask)) score += OPEN_TWO;
         }
-
-        // Quét cửa sổ 5 ô
-        for (int i = 0; i <= n - 5; i++) {
-            int pCount = 0;
-            int oppCount = 0;
-            for (int j = 0; j < 5; j++) {
-                if (line[i + j] == player) pCount++;
-                else if (line[i + j] == opp) oppCount++;
+        Set<Integer> fours = new HashSet<>(), threes = new HashSet<>(), twos = new HashSet<>();
+        for (int i = 0; i + 5 <= line.length; i++) {
+            int mask = 0, count = 0; boolean blocked = false;
+            for (int j = i; j < i + 5; j++) {
+                if (line[j] == opponent) { blocked = true; break; }
+                if (line[j] == player) { mask |= 1 << j; count++; }
             }
-
-            if (oppCount == 0) {
-                if (pCount == 5) {
-                    boolean blockedBefore = (i > 0 && line[i - 1] == opp);
-                    boolean blockedAfter = (i + 5 < n && line[i + 5] == opp);
-                    // Ở Rule A, nếu ô trước hoặc ô sau là quân player (thành 6+) -> Không được tính thắng
-                    boolean extendedBefore = (i > 0 && line[i - 1] == player);
-                    boolean extendedAfter = (i + 5 < n && line[i + 5] == player);
-
-                    if (rule == Board.WinRule.RULE_A && (extendedBefore || extendedAfter)) {
-                        score += 0; // Quá 5 quân ở Rule A
-                    } else if (blockedBefore && blockedAfter) {
-                        score += 0; // Bị chặn 2 đầu
-                    } else {
-                        score += FIVE;
-                    }
-                } else if (pCount == 4) {
-                    score += BLOCKED_FOUR;
-                } else if (pCount == 3) {
-                    score += BLOCKED_THREE;
-                } else if (pCount == 2) {
-                    score += BLOCKED_TWO;
-                }
-            }
+            if (blocked) continue;
+            if (count == 4 && fours.add(mask)) score += BLOCKED_FOUR;
+            if (count == 3 && threes.add(mask)) score += BLOCKED_THREE;
+            if (count == 2 && twos.add(mask)) score += BLOCKED_TWO;
         }
-
-        return new int[]{score, openThreeCount};
+        return new int[]{Math.min(MAX_NON_TERMINAL, score), openThrees.size()};
     }
-
     private static int evaluatePlayerSimple(Board board, Piece player) {
         int totalScore = 0;
         for (int r = 0; r < Board.SIZE; r++) {
@@ -205,6 +191,8 @@ public class HeuristicEvaluator {
         int oppScore = advanced ? evaluatePlayerAdvanced(board, opp) : evaluatePlayerSimple(board, opp);
         board.undoMove(r, c);
 
-        return myScore + (int)(oppScore * 1.25);
+        if (advanced && myScore == FIVE) return 2 * FIVE;
+        if (advanced && oppScore == FIVE) return FIVE;
+        return Math.min(FIVE - 1, myScore + (int)(oppScore * 1.25));
     }
 }
