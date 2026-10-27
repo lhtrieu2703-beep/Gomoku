@@ -32,10 +32,14 @@ public class SoundManager {
      * Phát tiếng "cách" đanh của quân cờ gỗ khi đặt xuống bàn cờ.
      */
     public static void playPlacePieceSound() {
+        playPlacePieceSound(() -> true);
+    }
+
+    public static void playPlacePieceSound(BooleanSupplier currentGame) {
         if (!soundEnabled) return;
 
         PLAYBACK.execute(() -> {
-            if (!soundEnabled) return;
+            if (!soundEnabled || !currentGame.getAsBoolean()) return;
             try {
                 float sampleRate = 44100;
                 int durationMs = 60;
@@ -51,7 +55,8 @@ public class SoundManager {
                     buffer[i] = (byte) (sinVal * decay * 110);
                 }
 
-                playBuffer(buffer, sampleRate);
+                if (currentGame.getAsBoolean())
+                    playClip(AudioSystem.getClip(), buffer, sampleRate, currentGame);
             } catch (Exception ignored) {
             }
         });
@@ -92,13 +97,6 @@ public class SoundManager {
             } catch (Exception ignored) {
             }
         });
-    }
-
-    private static void playBuffer(byte[] buffer, float sampleRate) {
-        try {
-            playClip(AudioSystem.getClip(), buffer, sampleRate);
-        } catch (Exception ignored) {
-        }
     }
 
     /** Package-visible to verify cleanup without requiring an audio device. */

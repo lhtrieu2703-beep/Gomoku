@@ -108,7 +108,7 @@ public class BoardPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                if (isGameOver || isAiThinking) { clearHover(); return; }
+                if (!isEnabled() || isGameOver || isAiThinking) { clearHover(); return; }
                 // Ở chế độ Online, nếu chưa đến lượt của mình thì không cho hover
                 if (gameMode == GameMode.ONLINE && currentTurn != myPiece) { clearHover(); return; }
 
@@ -253,7 +253,8 @@ public class BoardPanel extends JPanel {
 
         hoverRow = hoverCol = -1;
 
-        SoundManager.playPlacePieceSound();
+        final int undoGameId = gameId;
+        SoundManager.playPlacePieceSound(() -> undoGameId == gameId && isEnabled());
         if (stateListener != null) {
             stateListener.onTurnChanged(currentTurn, false);
             stateListener.onHistoryChanged(canUndo());
@@ -263,7 +264,7 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     public boolean playMove(int row, int col) {
-        if (isGameOver || isAiThinking || restartWaiting) return false;
+        if (!isEnabled() || isGameOver || isAiThinking || restartWaiting) return false;
 
         // Ở chế độ Online: Không được đánh nếu chưa đến lượt của mình
         if (gameMode == GameMode.ONLINE && currentTurn != myPiece) return false;
@@ -296,7 +297,7 @@ public class BoardPanel extends JPanel {
         final int receivedGameId = gameId;
         Runnable apply = () -> {
             Piece wirePiece = ply % 2 == 1 ? Piece.X : Piece.O;
-            if (receivedGameId != gameId || gameMode != GameMode.ONLINE
+            if (!isEnabled() || receivedGameId != gameId || gameMode != GameMode.ONLINE
                     || !java.util.Objects.equals(roundId, networkRoundId)
                     || ply != board.getMoveCount() + 1 || wirePiece != myPiece.opposite()
                     || isGameOver || restartWaiting || currentTurn != wirePiece) {
@@ -320,6 +321,17 @@ public class BoardPanel extends JPanel {
         setCursor(Cursor.getDefaultCursor());
     }
 
+    /** Leave the game card without retaining online identity or background work. */
+    public void resetForMenu() {
+        setEnabled(false);
+        cancelAiComputation();
+        networkManager = null;
+        networkRoundId = null;
+        myPiece = Piece.X;
+        gameMode = GameMode.PV_AI;
+        resetGame();
+    }
+
     private void executeMove(int row, int col, Piece piece) {
         executeMove(row, col, piece, false);
     }
@@ -334,13 +346,14 @@ public class BoardPanel extends JPanel {
         if (publishOnline && gameMode == GameMode.ONLINE && networkManager != null)
             networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
 
-        SoundManager.playPlacePieceSound();
+        final int moveGameId = gameId;
+        SoundManager.playPlacePieceSound(() -> moveGameId == gameId && isEnabled());
 
         if (board.checkWin(row, col)) {
             isGameOver = true;
             winner = piece;
             final int resultGameId = gameId;
-            SoundManager.playVictorySound(() -> resultGameId == gameId);
+            SoundManager.playVictorySound(() -> resultGameId == gameId && isEnabled());
             repaint();
             if (stateListener != null) {
                 String msg = buildWinMessage(piece);

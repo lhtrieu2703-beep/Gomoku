@@ -158,6 +158,7 @@ public class LangPurityTest {
         MainFrame frame = new MainFrame(new AppSettings(
                 Preferences.userRoot().node(TEST_NODE + "/c")));
         try {
+            frame.startGame();
             // Màu nền ô display (bgColor) và màu chữ (fgColor) từ applyDarkComboUI:
             //   bgColor = RGB(55, 58, 65)
             //   fgColor = Color.WHITE = RGB(255, 255, 255)

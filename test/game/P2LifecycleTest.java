@@ -47,6 +47,7 @@ class P2LifecycleTest {
         MainFrame[] frame = new MainFrame[1];
         SwingUtilities.invokeAndWait(() -> {
             frame[0] = new MainFrame(new AppSettings(new MemoryPreferences()));
+            frame[0].startGame();
             BoardPanel panel = frame[0].getBoardPanel();
             assertTrue(panel.playMove(7, 7));
             assertTrue(panel.isAiThinking());
@@ -104,6 +105,7 @@ class P2LifecycleTest {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
             try {
+                frame.startGame();
                 frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
                 BoardPanel panel = frame.getBoardPanel();
                 assertTrue(panel.playMove(7, 7));

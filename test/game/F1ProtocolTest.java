@@ -142,6 +142,7 @@ class F1ProtocolTest {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame frame = new MainFrame(new AppSettings(new P2LifecycleTest.MemoryPreferences()));
             try {
+                frame.startGame();
                 BoardPanel panel = frame.getBoardPanel(); String base = id(), next = id();
                 panel.setupOnlineGame(null, true, base); panel.setRestartWaiting(true);
                 assertFalse(panel.playMove(7, 7)); panel.setRestartWaiting(false);

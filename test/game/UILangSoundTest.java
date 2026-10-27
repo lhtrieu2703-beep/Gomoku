@@ -144,6 +144,7 @@ public class UILangSoundTest {
         MainFrame frame = new MainFrame(new AppSettings(
                 Preferences.userRoot().node(TEST_PREF_NODE + "/c2")));
         try {
+            frame.startGame();
             // modeCombo
             JComboBox<BoardPanel.GameMode> modeCombo = frame.getModeCombo();
             assertRendererContrast(modeCombo, "modeCombo");

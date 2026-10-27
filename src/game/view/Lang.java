@@ -42,6 +42,83 @@ public class Lang {
 
     public static boolean isVI() { return current == Language.VI; }
 
+    public static String startTitle() {
+        return switch (current) {
+            case VI -> "Cờ Gomoku";
+            case EN -> "Gomoku Game";
+            case PT -> "Jogo Gomoku";
+        };
+    }
+
+    public static String startSubtitle() {
+        return switch (current) {
+            case VI -> "Nhập tên để bắt đầu ván cờ.";
+            case EN -> "Enter your name to start playing.";
+            case PT -> "Digite seu nome para começar a jogar.";
+        };
+    }
+
+    public static String playerNameLabel() {
+        return switch (current) {
+            case VI -> "Tên người chơi";
+            case EN -> "Player name";
+            case PT -> "Nome do jogador";
+        };
+    }
+
+    public static String playerNameHint() {
+        return switch (current) {
+            case VI -> "Tối đa 16 ký tự";
+            case EN -> "Up to 16 characters";
+            case PT -> "Até 16 caracteres";
+        };
+    }
+
+    public static String defaultPlayerName() {
+        return switch (current) {
+            case VI -> "Người chơi";
+            case EN -> "Player";
+            case PT -> "Jogador";
+        };
+    }
+
+    public static String startGame() {
+        return switch (current) {
+            case VI -> "Bắt đầu";
+            case EN -> "Start";
+            case PT -> "Começar";
+        };
+    }
+
+    public static String languageLabel() {
+        return switch (current) {
+            case VI -> "Ngôn ngữ";
+            case EN -> "Language";
+            case PT -> "Idioma";
+        };
+    }
+
+    public static String backToMenu() {
+        return switch (current) {
+            case VI -> "Về menu";
+            case EN -> "Back to menu";
+            case PT -> "Voltar ao menu";
+        };
+    }
+
+    public static String achievementsTooltip() {
+        return switch (current) {
+            case VI -> "Thành tích";
+            case EN -> "Score summary";
+            case PT -> "Resultados";
+        };
+    }
+
+    public static String scoreSummary(String name, int winCount, int lossCount, int drawCount) {
+        return playerNameLabel() + ": " + name + "\n\n" + wins() + ": " + winCount
+                + "\n" + losses() + ": " + lossCount + "\n" + draws() + ": " + drawCount;
+    }
+
     // =========================================================================
     // Tên ngôn ngữ hiển thị trong dropdown (hiện bằng chính ngôn ngữ đó)
     // =========================================================================

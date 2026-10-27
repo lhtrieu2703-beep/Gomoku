@@ -16,7 +16,7 @@ class F4LayoutTest {
         SwingUtilities.invokeAndWait(() -> {
             var prefs = new P2LifecycleTest.MemoryPreferences(); prefs.put("language", language.name());
             MainFrame frame = new MainFrame(new AppSettings(prefs));
-            try { layout(frame); check(frame.getContentPane()); render(frame, language.name()); }
+            try { frame.startGame(); layout(frame); check(frame.getContentPane()); render(frame, language.name()); }
             finally { frame.dispose(); }
         });
     }
@@ -26,6 +26,7 @@ class F4LayoutTest {
             var prefs = new P2LifecycleTest.MemoryPreferences(); prefs.put("language", initial.name());
             MainFrame frame = new MainFrame(new AppSettings(prefs));
             try {
+                frame.startGame();
                 for (Lang.Language next : Lang.Language.values()) { Lang.set(next); layout(frame); check(frame.getContentPane()); }
                 if (initial == Lang.Language.VI) {
                     Lang.set(Lang.Language.VI); Lang.set(Lang.Language.PT); layout(frame); check(frame.getContentPane()); render(frame, "VI-to-PT");
@@ -48,11 +49,25 @@ class F4LayoutTest {
         }
     }
     static void render(MainFrame frame, String name) {
+        render(frame, Paths.get("docs", "task4-render", "game"), name);
+    }
+    static void render(MainFrame frame, Path folder, String name) {
         try {
-            Path folder = Paths.get("docs", "task35-render"); Files.createDirectories(folder);
+            Files.createDirectories(folder);
             Container content = frame.getContentPane();
-            BufferedImage image = new BufferedImage(content.getWidth(), content.getHeight(), BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = image.createGraphics(); content.printAll(graphics); graphics.dispose();
+            var scale = frame.getGraphicsConfiguration().getDefaultTransform();
+            BufferedImage image = new BufferedImage((int) Math.ceil(content.getWidth() * scale.getScaleX()),
+                    (int) Math.ceil(content.getHeight() * scale.getScaleY()), BufferedImage.TYPE_INT_RGB);
+            Graphics2D graphics = image.createGraphics();
+            try {
+                graphics.scale(scale.getScaleX(), scale.getScaleY());
+                if (!frame.isMenuVisible()) {
+                    JLabel player = P2LifecycleTest.field(frame, "playerLabel");
+                    assertTrue(graphics.getFontMetrics(player.getFont()).stringWidth(player.getText()) <= player.getWidth(),
+                            "Player name must fit using the same DPI transform as the window");
+                }
+                content.printAll(graphics);
+            } finally { graphics.dispose(); }
             ImageIO.write(image, "png", folder.resolve(name + ".png").toFile());
         } catch (Exception e) { throw new AssertionError(e); }
     }

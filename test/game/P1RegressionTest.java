@@ -42,6 +42,7 @@ class P1RegressionTest {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
             try {
+                frame.startGame();
                 BoardPanel panel = frame.getBoardPanel();
                 if (mode == BoardPanel.GameMode.ONLINE) panel.setupOnlineGame(null, true);
                 else panel.setGameMode(mode);
@@ -80,6 +81,7 @@ class P1RegressionTest {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
             try {
+                frame.startGame();
                 BoardPanel panel = frame.getBoardPanel();
                 panel.setGameMode(BoardPanel.GameMode.PVP);
                 panel.setGameStateListener(null); // suppress the modal result popup in this test

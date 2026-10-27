@@ -1,5 +1,20 @@
 # GOMOKU PROJECT NOTES
 
+## Task 4 — StartScreen, tên local và bảng điểm — 2026-10-27
+- Base main 6c0b4c8 chứa Task 3.5 (3f07d02); nhánh task4-start-screen. Baseline thật: JUnit 175/175, RuleAndDrawTest 17/17, FullGomokuTestSuite 77/77 assertions, 54 tình huống chạy và 3 PENDING. Log gốc: docs/task4-results/baseline-*.txt.
+- Đăng nhập chỉ là nhập tên; không tài khoản/mật khẩu. StartScreen và bàn cờ là hai card trong cùng MainFrame. Enter hoặc Bắt đầu chuyển card; không tạo JFrame mới.
+- Tên chuẩn hóa NFC, bỏ khoảng trắng đầu/cuối, một dòng và tối đa 16 Unicode code point, không chẻ surrogate pair. Tên rỗng xóa key playerName để dùng Lang.defaultPlayerName theo ngôn ngữ hiện tại. AppSettings vẫn nhận Preferences qua constructor; các test ghi tên dùng node UUID riêng rồi removeNode và so sánh snapshot node thật.
+- Tên hiện cạnh trạng thái lượt; Online chỉ hiển thị tên local. Không gửi tên qua LAN, không sửa luật, Minimax/depth/difficulty hay định dạng giao thức v2.
+- Quyết định điểm: giữ toàn bộ thắng/thua/hòa trong phiên chạy ứng dụng, theo ScoreTracker.newGame hiện có. Đổi tên không tạo hồ sơ điểm riêng. Tắt app vẫn mất điểm RAM như Task 2.
+- Về menu: tăng screenEpoch và khóa input trước, ngắt phiên LAN, đóng các dialog sở hữu (kết quả/kết nối/bảng điểm), hủy AI, xóa bàn/lịch sử/roundId, đặt quân local X và chế độ PvAI/Medium mặc định, tăng gameId. Giữ tên/ngôn ngữ/âm thanh/điểm. Callback phiên cũ, callback UI cũ và kết quả AI cũ bị loại, kể cả khi đã bắt đầu lại.
+- Âm đặt quân/thắng mang điều kiện gameId và trạng thái bảng, nên tác vụ chờ của ván cũ không mở Clip sau khi về menu. Clip đang phát được đóng khi điều kiện hết hiệu lực. Test audio dùng proxy/điều kiện giả, không cần thiết bị âm thanh.
+- Undo vẫn dùng canUndo của Task 2; kết thúc ván không khóa Undo. Nút Java2D hình cúp chỉ mở bảng điểm hiện có, không có huy hiệu/thành tựu mới; tooltip và nội dung qua Lang VI/EN/PT.
+- Header hai hàng, bàn cờ giữ preferred size 596x596 và phép đổi tọa độ cũ. Test bounds bao phủ cả hai card, VI/EN/PT, chuyển ngôn ngữ và Look & Feel Metal/Windows; ảnh hiện tại ở docs/task4-render/. Các ảnh Task 3.5 giữ làm lịch sử; test F4 xuất ảnh bàn cờ Task 4 sang thư mục mới.
+- Ảnh render dùng getDefaultTransform của cửa sổ để khớp FontMetrics tại DPI hiện tại; kiểm độ rộng chữ tên với cùng transform. Ảnh 1x trước đó đo chữ PT 163 px trong khi cửa sổ đo 149 px, gây cắt chữ trong ảnh; không thêm padding tùy ý vào layout sản phẩm.
+- Test vòng đời tách hai kiểm chứng: hủy SwingWorker thật do BoardPanel tạo và phát lại done() sản phẩm sau đổi card; worker có latch đang chạy được tiêm vào slot để xác nhận interrupt mà không phụ thuộc thời gian tìm kiếm AI. Socket LAN trong test là TCP localhost thật.
+- Sơ đồ chuyển màn hình và tài liệu kiểm tay: TASK4_START_SCREEN.md. Chưa kiểm tay LAN hai máy, âm thanh thiết bị và DPI 125%/150%.
+- Kiểm tra cuối từ build sạch: biên dịch 21 file src, 19 file test và 2 audit; JUnit 211/211 (0 skipped/aborted/failed), RuleAndDrawTest 17/17, FullGomokuTestSuite 77/77 assertions / 54 tình huống / 3 PENDING. Tăng 36 JUnit so với baseline: StartScreen 17, Preferences 3, lifecycle 9, layout 6, audio 1. Log thô và cây chi tiết ở docs/task4-results/; production Preferences trước/sau vẫn {soundEnabled=true}, không có key playerName/language mới.
+
 ## Task 3.5 decision log
 - Baseline local commit 8cdbdc6 on task3-stabilize from origin/main 14bdbfe; 123 JUnit, 17 rule checks, console output 80 assertions before fixing empty checks.
 - F1: protocol v2 START 2 UUID, MOVE UUID ply row col, client RESTART_REQUEST base, host RESTART base next. Host owns UUIDs, local gameId remains score-only. X/host still starts; no runtime rule selector, no ruleId sent. EOF only; no DISCONNECT write and no ACK/consent (Task 5).

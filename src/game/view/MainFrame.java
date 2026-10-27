@@ -22,6 +22,18 @@ import java.awt.*;
 public class MainFrame extends JFrame {
     private final Board board;
     private final BoardPanel boardPanel;
+    private static final String MENU_CARD = "menu", GAME_CARD = "game";
+    private final CardLayout screenLayout = new CardLayout();
+    private final JPanel screenCards = new JPanel(screenLayout);
+    private final JPanel gameCard = new JPanel(new BorderLayout());
+    private final StartScreen startScreen;
+    private final JButton btnBackToMenu, btnAchievements;
+    private final JLabel playerLabel;
+    private String playerName;
+    private boolean menuVisible = true;
+    private volatile long screenEpoch;
+    private JDialog achievementsDialog;
+    private JTextArea achievementsText;
 
     // === Components điều khiển ===
     private final JLabel lblMode, lblDiff, turnLabel;
@@ -63,12 +75,15 @@ public class MainFrame extends JFrame {
         this.appSettings = settings;
         this.board = new Board();
         this.boardPanel = new BoardPanel(board);
+        this.boardPanel.setEnabled(false);
 
         // Load cài đặt TRƯỚC khi dựng UI
         Lang.set(appSettings.loadLang());
         SoundManager.setSoundEnabled(appSettings.loadSound());
+        playerName = appSettings.loadPlayerName();
+        startScreen = new StartScreen(playerName, this::startGame, this::selectLanguage);
 
-        setTitle("Gomoku");
+        setTitle(Lang.startTitle());
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setResizable(false);
         setLayout(new BorderLayout(0, 0));
@@ -79,7 +94,7 @@ public class MainFrame extends JFrame {
         // =====================================================================
         // 1. HEADER TỐI
         // =====================================================================
-        JPanel header = new JPanel(new BorderLayout());
+        JPanel header = new JPanel(new BorderLayout(0, 8));
         header.setBackground(new Color(34, 36, 40));
         header.setBorder(new EmptyBorder(10, 14, 10, 14));
 
@@ -108,6 +123,11 @@ public class MainFrame extends JFrame {
 
         // Combo ngôn ngữ
         langCombo = makeLangCombo();
+        btnBackToMenu = makeDarkBtn(Lang.backToMenu(), new Color(55, 58, 65), Color.WHITE);
+        btnAchievements = makeDarkBtn("", new Color(55, 58, 65), Color.WHITE);
+        btnAchievements.setIcon(new AchievementIcon(20));
+        btnAchievements.setToolTipText(Lang.achievementsTooltip());
+        btnAchievements.getAccessibleContext().setAccessibleName(Lang.achievementsTooltip());
 
         ctrlRow.add(lblMode); ctrlRow.add(modeCombo);
         ctrlRow.add(Box.createHorizontalStrut(6));
@@ -119,10 +139,16 @@ public class MainFrame extends JFrame {
 
         JPanel rightRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
         rightRow.setOpaque(false);
+        rightRow.add(btnAchievements);
+        rightRow.add(Box.createHorizontalStrut(8));
         rightRow.add(langCombo);
 
+        JPanel navigation = new JPanel(new BorderLayout(12, 0));
+        navigation.setOpaque(false);
+        navigation.add(btnBackToMenu, BorderLayout.WEST);
+        navigation.add(rightRow, BorderLayout.EAST);
+        header.add(navigation, BorderLayout.NORTH);
         header.add(ctrlRow, BorderLayout.CENTER);
-        header.add(rightRow, BorderLayout.EAST);
 
         // =====================================================================
         // 2. BẢNG THÀNH TÍCH
@@ -139,6 +165,11 @@ public class MainFrame extends JFrame {
         turnLabel = new JLabel(Lang.yourTurn());
         turnLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
         turnLabel.setForeground(new Color(30, 30, 30));
+        playerLabel = new JLabel();
+        playerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        playerLabel.putClientProperty("html.disable", Boolean.TRUE);
+        turnBar.add(playerLabel);
+        turnBar.add(Box.createHorizontalStrut(16));
         turnBar.add(turnLabel);
 
         JPanel north = new JPanel(new BorderLayout());
@@ -150,7 +181,7 @@ public class MainFrame extends JFrame {
         // 4. ĐĂNG KÝ SỰ KIỆN
         // =====================================================================
         modeCombo.addActionListener(e -> {
-            if (modeComboUpdating) return;
+            if (modeComboUpdating || menuVisible || disposed) return;
             BoardPanel.GameMode sel = (BoardPanel.GameMode) modeCombo.getSelectedItem();
             diffCombo.setEnabled(sel == BoardPanel.GameMode.PV_AI);
 
@@ -168,6 +199,7 @@ public class MainFrame extends JFrame {
             boardPanel.setAiDifficulty((MinimaxAI.Difficulty) diffCombo.getSelectedItem()));
 
         btnNewGame.addActionListener(e -> {
+            if (menuVisible || disposed) return;
             if (boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
                 if (networkManager.requestRestart(boardPanel.getNetworkRoundId()) && !networkManager.isHost())
                     boardPanel.setRestartWaiting(true);
@@ -178,7 +210,9 @@ public class MainFrame extends JFrame {
             boardPanel.resetGame();
         });
 
-        btnUndo.addActionListener(e -> boardPanel.undoMove());
+        btnUndo.addActionListener(e -> { if (!menuVisible && !disposed) boardPanel.undoMove(); });
+        btnBackToMenu.addActionListener(e -> returnToMenu());
+        btnAchievements.addActionListener(e -> showScoreSummary());
 
         // Listener nút âm thanh
         btnSound.addActionListener(e -> {
@@ -191,10 +225,7 @@ public class MainFrame extends JFrame {
         langCombo.addActionListener(e -> {
             if (langComboUpdating) return;
             Lang.Language sel = (Lang.Language) langCombo.getSelectedItem();
-            if (sel != null && sel != Lang.get()) {
-                Lang.set(sel);
-                appSettings.saveLang(Lang.get());
-            }
+            if (sel != null) selectLanguage(sel);
         });
 
         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
@@ -210,7 +241,7 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onGameOver(int gameId, String message, Piece winner) {
-                if (disposed || gameId != boardPanel.getGameId() || !boardPanel.isGameOver()) return;
+                if (disposed || menuVisible || gameId != boardPanel.getGameId() || !boardPanel.isGameOver()) return;
                 BoardPanel.GameMode mode = boardPanel.getGameMode();
                 Piece humanPiece = (mode == BoardPanel.GameMode.ONLINE) ? boardPanel.getMyPiece() : Piece.X;
                 boolean isNewRecord = scoreTracker.recordResult(gameId, winner, humanPiece);
@@ -240,7 +271,7 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onHistoryChanged(boolean canUndo) {
-                btnUndo.setEnabled(canUndo);
+                btnUndo.setEnabled(!menuVisible && !disposed && canUndo);
             }
         });
 
@@ -250,11 +281,102 @@ public class MainFrame extends JFrame {
         // =====================================================================
         // 5. LẮP RÁP
         // =====================================================================
-        add(north, BorderLayout.NORTH);
-        add(boardPanel, BorderLayout.CENTER);
+        gameCard.add(north, BorderLayout.NORTH);
+        gameCard.add(boardPanel, BorderLayout.CENTER);
+        screenCards.add(startScreen, MENU_CARD);
+        screenCards.add(gameCard, GAME_CARD);
+        add(screenCards, BorderLayout.CENTER);
+        screenLayout.show(screenCards, MENU_CARD);
+        getRootPane().setDefaultButton(startScreen.getStartButton());
+        refreshGameStatus();
 
         resizeTranslatedControls();
         setLocationRelativeTo(null);
+    }
+
+    private void selectLanguage(Lang.Language language) {
+        if (language != Lang.get()) Lang.set(language);
+        appSettings.saveLang(language);
+    }
+
+    public void startGame() {
+        if (disposed || !menuVisible) return;
+        playerName = AppSettings.normalizePlayerName(startScreen.getNameField().getText());
+        appSettings.savePlayerName(playerName);
+        startScreen.getNameField().setText(playerName);
+        menuVisible = false;
+        boardPanel.setEnabled(true);
+        screenLayout.show(screenCards, GAME_CARD);
+        getRootPane().setDefaultButton(null);
+        refreshScores();
+        refreshGameStatus();
+        resizeTranslatedControls();
+        boardPanel.requestFocusInWindow();
+    }
+
+    /** Invalidate callbacks before closing modal loops or resetting game state. */
+    public void returnToMenu() {
+        if (disposed || menuVisible) return;
+        screenEpoch++;
+        menuVisible = true;
+        boardPanel.setEnabled(false);
+        networkManager.disconnect();
+        closeOwnedDialogs();
+        modeComboUpdating = true;
+        try {
+            boardPanel.resetForMenu();
+            modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
+            diffCombo.setSelectedItem(MinimaxAI.Difficulty.MEDIUM);
+            boardPanel.setAiDifficulty(MinimaxAI.Difficulty.MEDIUM);
+            diffCombo.setEnabled(true);
+            btnUndo.setEnabled(false);
+        } finally { modeComboUpdating = false; }
+        scoreTracker.newGame(); // Task 2: retain totals for this application session.
+        startScreen.getNameField().setText(playerName);
+        screenLayout.show(screenCards, MENU_CARD);
+        getRootPane().setDefaultButton(startScreen.getStartButton());
+        refreshGameStatus();
+        resizeTranslatedControls();
+        startScreen.getNameField().requestFocusInWindow();
+    }
+
+    private void closeOwnedDialogs() {
+        closeResultDialog();
+        NetworkDialog pending = networkDialog;
+        networkDialog = null;
+        if (pending != null) pending.dispose();
+        for (Window window : getOwnedWindows()) if (window instanceof Dialog) window.dispose();
+        achievementsDialog = null;
+        achievementsText = null;
+    }
+
+    private void showScoreSummary() {
+        if (disposed || menuVisible) return;
+        if (achievementsDialog != null && achievementsDialog.isDisplayable()) {
+            refreshAchievementSummary();
+            achievementsDialog.toFront();
+            return;
+        }
+        achievementsDialog = new JDialog(this, Lang.scoreboard(), false);
+        achievementsDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        achievementsDialog.setResizable(false);
+        achievementsText = new JTextArea();
+        achievementsText.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        achievementsText.setEditable(false);
+        achievementsText.setFocusable(false);
+        achievementsText.setBorder(new EmptyBorder(20, 24, 20, 24));
+        achievementsDialog.add(achievementsText);
+        refreshAchievementSummary();
+        achievementsDialog.setLocationRelativeTo(this);
+        achievementsDialog.setVisible(true);
+    }
+
+    private void refreshAchievementSummary() {
+        if (achievementsDialog == null || achievementsText == null) return;
+        achievementsDialog.setTitle(Lang.scoreboard());
+        achievementsText.setText(Lang.scoreSummary(getPlayerName(), scoreTracker.getHumanWins(),
+                scoreTracker.getAiWins(), scoreTracker.getDraws()));
+        achievementsDialog.pack();
     }
 
     // =========================================================================
@@ -450,7 +572,7 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onConnected(boolean isHost, String roundId) {
-                if (!disposed) {
+                if (!disposed && !menuVisible) {
                     if (networkDialog != null) networkDialog.onConnectionSuccess();
                     boardPanel.setupOnlineGame(networkManager, isHost, roundId);
 
@@ -462,12 +584,12 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onMoveReceived(int row, int col) {
-                boardPanel.applyOpponentMove(row, col);
+                if (!disposed && !menuVisible) boardPanel.applyOpponentMove(row, col);
             }
 
             @Override
             public void onMoveReceived(String roundId, int ply, int row, int col) {
-                boardPanel.applyOpponentMove(roundId, ply, row, col);
+                if (!disposed && !menuVisible) boardPanel.applyOpponentMove(roundId, ply, row, col);
             }
 
             @Override
@@ -477,7 +599,7 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onRoundStarted(String base, String next) {
-                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId())) {
+                if (!disposed && !menuVisible && java.util.Objects.equals(base, boardPanel.getNetworkRoundId())) {
                     closeResultDialog();
                     scoreTracker.newGame();
                     boardPanel.startOnlineRound(base, next);
@@ -486,13 +608,13 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onRestartWaiting(String base) {
-                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId()))
+                if (!disposed && !menuVisible && java.util.Objects.equals(base, boardPanel.getNetworkRoundId()))
                     boardPanel.setRestartWaiting(true);
             }
 
             @Override
             public void onOpponentDisconnected() {
-                if (!disposed) {
+                if (!disposed && !menuVisible) {
                     closeResultDialog();
                     boardPanel.setRestartWaiting(false);
                     modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
@@ -504,18 +626,24 @@ public class MainFrame extends JFrame {
 
             @Override
             public void onError(NetworkManager.NetworkError error) {
-                if (!disposed && networkDialog != null) networkDialog.onConnectionFailed(Lang.networkError(error));
+                if (!disposed && !menuVisible && networkDialog != null) networkDialog.onConnectionFailed(Lang.networkError(error));
             }
-        }, SwingUtilities::invokeLater);
+        }, callback -> {
+            long epoch = screenEpoch;
+            SwingUtilities.invokeLater(() -> {
+                if (!disposed && !menuVisible && epoch == screenEpoch) callback.run();
+            });
+        });
     }
 
     private void openNetworkDialog() {
+        long epoch = screenEpoch;
         BoardPanel.GameMode previousMode = boardPanel.getGameMode();
         NetworkDialog dialog = new NetworkDialog(this, networkManager, () -> {});
         networkDialog = dialog;
         dialog.setVisible(true);
         if (networkDialog == dialog) networkDialog = null;
-        if (!disposed && !dialog.wasConnected()) {
+        if (!disposed && !menuVisible && epoch == screenEpoch && !dialog.wasConnected()) {
             modeComboUpdating = true;
             try {
                 modeCombo.setSelectedItem(previousMode);
@@ -530,10 +658,11 @@ public class MainFrame extends JFrame {
     @Override
     public void dispose() {
         disposed = true;
-        closeResultDialog();
+        screenEpoch++;
+        if (boardPanel != null) boardPanel.setEnabled(false);
+        closeOwnedDialogs();
         Lang.removeChangeListener(languageListener);
         if (networkManager != null) networkManager.disconnect();
-        if (networkDialog != null) networkDialog.dispose();
         if (boardPanel != null) boardPanel.cancelAiComputation();
         super.dispose();
     }
@@ -546,11 +675,16 @@ public class MainFrame extends JFrame {
     // CẬP NHẬT NGÔN NGỮ
     // =========================================================================
     private void updateLanguage() {
-        setTitle("Gomoku");
+        setTitle(Lang.startTitle());
+        startScreen.updateLanguage();
         lblMode.setText(Lang.mode());
         lblDiff.setText(Lang.difficulty());
         btnNewGame.setText(Lang.newGame());
         btnUndo.setText(Lang.undo());
+        btnBackToMenu.setText(Lang.backToMenu());
+        btnAchievements.setToolTipText(Lang.achievementsTooltip());
+        btnAchievements.getAccessibleContext().setAccessibleName(Lang.achievementsTooltip());
+        refreshAchievementSummary();
 
         // Cập nhật langCombo mà không kích hoạt listener
         langComboUpdating = true;
@@ -633,9 +767,13 @@ public class MainFrame extends JFrame {
     }
 
     private void refreshScores() {
+        humanWins = scoreTracker.getHumanWins();
+        aiWins = scoreTracker.getAiWins();
+        draws = scoreTracker.getDraws();
         lblWinVal.setText(String.valueOf(humanWins));
         lblLossVal.setText(String.valueOf(aiWins));
         lblDrawVal.setText(String.valueOf(draws));
+        refreshAchievementSummary();
     }
 
     private void setTurnLabel(String text, Color color) {
@@ -645,6 +783,7 @@ public class MainFrame extends JFrame {
 
     /** Refresh translated status without changing the board, turn or AI worker. */
     private void refreshGameStatus() {
+        playerLabel.setText(Lang.playerNameLabel() + ": " + getPlayerName());
         BoardPanel.GameMode mode = boardPanel.getGameMode();
         Piece turn = boardPanel.getCurrentTurn();
         if (boardPanel.isRestartWaiting()) {
@@ -711,6 +850,11 @@ public class MainFrame extends JFrame {
     // =========================================================================
     public ScoreTracker getScoreTracker() { return scoreTracker; }
     public BoardPanel getBoardPanel()     { return boardPanel; }
+    public StartScreen getStartScreen() { return startScreen; }
+    public boolean isMenuVisible() { return menuVisible; }
+    public String getPlayerName() { return playerName.isEmpty() ? Lang.defaultPlayerName() : playerName; }
+    public JButton getBackToMenuButton() { return btnBackToMenu; }
+    public JButton getAchievementsButton() { return btnAchievements; }
 
     /** Trả về modeCombo để test kiểm tra renderer/màu. */
     public JComboBox<BoardPanel.GameMode> getModeCombo() { return modeCombo; }
