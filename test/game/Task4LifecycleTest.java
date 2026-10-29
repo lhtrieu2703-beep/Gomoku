@@ -31,7 +31,7 @@ class Task4LifecycleTest {
     @Test void menuCancelsActualAiWorkerAndItsCompletionCannotChangeNextGame() throws Exception {
         SwingWorker<?, ?>[] oldWorker = new SwingWorker<?, ?>[1];
         SwingUtilities.invokeAndWait(() -> {
-            frame.getDiffCombo().setSelectedItem(MinimaxAI.Difficulty.HARD);
+            frame.beginGame(BoardPanel.GameMode.PV_AI, MinimaxAI.Difficulty.HARD);
             BoardPanel panel = frame.getBoardPanel(); int oldId = panel.getGameId();
             assertTrue(panel.playMove(7, 7)); assertTrue(panel.isAiThinking());
             SwingWorker<?, ?> worker = P2LifecycleTest.field(panel, "aiWorker");
@@ -77,14 +77,14 @@ class Task4LifecycleTest {
             }
         }
         SwingUtilities.invokeAndWait(() -> {
-            assertEquals(BoardPanel.GameMode.PV_AI, frame.getBoardPanel().getGameMode());
+            assertEquals(frame.getSelectedMode(), frame.getBoardPanel().getGameMode());
             assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty());
         });
     }
 
     @Test void menuClosesPendingNetworkDialogAndCannotRestoreOldModeAfterNewStart() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
+            frame.beginGame(BoardPanel.GameMode.PVP, MinimaxAI.Difficulty.MEDIUM);
             frame.getBoardPanel().playMove(7, 7);
             NetworkManager manager = P2LifecycleTest.field(frame, "networkManager");
             SwingUtilities.invokeLater(() -> {
@@ -96,10 +96,10 @@ class Task4LifecycleTest {
                 assertEquals(Boolean.TRUE, P2LifecycleTest.field(oldSession, "closed"));
                 frame.startGame();
             });
-            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.ONLINE);
+            frame.openNetworkDialog();
             assertFalse(frame.isMenuVisible());
-            assertEquals(BoardPanel.GameMode.PV_AI, frame.getModeCombo().getSelectedItem());
-            assertEquals(BoardPanel.GameMode.PV_AI, frame.getBoardPanel().getGameMode());
+            assertEquals(BoardPanel.GameMode.PVP, frame.getSelectedMode());
+            assertEquals(frame.getSelectedMode(), frame.getBoardPanel().getGameMode());
             assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty()); assertFalse(manager.isConnected());
         });
     }
@@ -167,11 +167,10 @@ class Task4LifecycleTest {
 
     @Test void menuClosesResultPopupPreservesEarnedScoreAndRejectsLateResult() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
+            frame.beginGame(BoardPanel.GameMode.PVP, MinimaxAI.Difficulty.MEDIUM);
             BoardPanel panel = frame.getBoardPanel(); int oldId = panel.getGameId();
             for (int c = 0; c < 4; c++) { panel.playMove(7, c); panel.playMove(0, c * 2); }
-            frame.getAchievementsButton().doClick();
-            JDialog scores = P2LifecycleTest.field(frame, "achievementsDialog");
+            JDialog scores = new RulesDialog(frame); scores.setModal(false); scores.setVisible(true);
             SwingUtilities.invokeLater(() -> {
                 JDialog result = P2LifecycleTest.field(frame, "resultDialog");
                 assertNotNull(result); assertTrue(result.isVisible());
@@ -189,7 +188,7 @@ class Task4LifecycleTest {
 
     @Test void undoRemainsAvailableAfterWin() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
+            frame.beginGame(BoardPanel.GameMode.PVP, MinimaxAI.Difficulty.MEDIUM);
             BoardPanel panel = frame.getBoardPanel();
             for (int c = 0; c < 4; c++) { panel.playMove(7, c); panel.playMove(0, c * 2); }
             SwingUtilities.invokeLater(() -> {

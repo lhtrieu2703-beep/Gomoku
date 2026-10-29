@@ -10,7 +10,7 @@ public class ThemedButton extends JButton {
     public enum Style { PRIMARY, SECONDARY }
     private final Style style;
     public ThemedButton(String text, Style style) {
-        super(text); this.style = style;
+        super(text); this.style = style; putClientProperty("html.disable", Boolean.TRUE);
         setFont(Theme.font(Font.BOLD, 14));
         setBorder(new EmptyBorder(10, 14, 10, 14));
         setOpaque(false); setContentAreaFilled(false); setBorderPainted(false); setFocusPainted(false);

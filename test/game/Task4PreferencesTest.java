@@ -30,16 +30,16 @@ class Task4PreferencesTest {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame first = new MainFrame(new AppSettings(node));
             try {
-                first.getStartScreen().getLanguageCombo().setSelectedItem(selected);
-                first.getStartScreen().getNameField().setText("  " + name + "  ");
+                first.selectLanguage(selected);
+                first.updateProfile(new PlayerProfile("  " + name + "  ", 7));
                 first.startGame(); assertEquals(name, first.getPlayerName());
             } finally { first.dispose(); }
             MainFrame reopened = new MainFrame(new AppSettings(node));
             try {
                 assertTrue(reopened.isMenuVisible()); assertEquals(selected, Lang.get());
-                assertEquals(name, reopened.getStartScreen().getNameField().getText());
+                assertEquals(name, reopened.getProfile().name()); assertEquals(7, reopened.getProfile().avatarIndex());
                 assertEquals(name, reopened.getPlayerName());
-                reopened.getStartScreen().getNameField().setText(""); reopened.startGame();
+                reopened.updateProfile(new PlayerProfile("",0)); reopened.startGame();
                 assertEquals(Lang.defaultPlayerName(), reopened.getPlayerName());
                 assertNull(node.get("playerName", null));
                 assertEquals("", new AppSettings(node).loadPlayerName());

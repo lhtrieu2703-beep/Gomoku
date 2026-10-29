@@ -138,26 +138,20 @@ public class UILangSoundTest {
     // =========================================================================
     @Test
     @Order(3)
-    @DisplayName("C2 – modeCombo/diffCombo renderer: bg tối, fg trắng khi không selected; contrast sel >= 3.0")
+    @DisplayName("C2 – Shared custom button painting and contrast >= 4.5")
     void c2_comboRendererContrast() throws Exception {
-        Lang.set(Lang.Language.VI);
-        MainFrame frame = new MainFrame(new AppSettings(
-                PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/c2")));
-        try {
-            frame.startGame();
-            // modeCombo
-            JComboBox<BoardPanel.GameMode> modeCombo = frame.getModeCombo();
-            assertRendererContrast(modeCombo, "modeCombo");
-
-            // diffCombo
-            JComboBox<MinimaxAI.Difficulty> diffCombo = frame.getDiffCombo();
-            assertRendererContrast(diffCombo, "diffCombo");
-
-            System.out.println("[C2] PASS");
-        } finally {
-            frame.dispose();
-            cleanup_pref(TEST_PREF_NODE + "/c2");
-        }
+        SwingUtilities.invokeAndWait(() -> {
+            for (ThemedButton.Style style : ThemedButton.Style.values()) {
+                ThemedButton button = new ThemedButton(Lang.startGame(), style);
+                Color foreground = style == ThemedButton.Style.PRIMARY ? Theme.DARK : Theme.CREAM;
+                assertTrue(contrastRatio(button.fillColor(), foreground) >= 4.5);
+                button.setSize(180, 48);
+                BufferedImage image = new BufferedImage(180,48,BufferedImage.TYPE_INT_RGB);
+                button.paint(image.getGraphics());
+                assertEquals(button.fillColor().getRGB(), image.getRGB(15,15));
+            }
+        });
+        System.out.println("[C2] Shared buttons: actual painted fields and text contrast PASS");
     }
 
     private void assertRendererContrast(JComboBox<?> combo, String name) {
@@ -238,7 +232,8 @@ public class UILangSoundTest {
         MainFrame frame = new MainFrame(new AppSettings(
                 PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/b2")));
         try {
-            JButton btn = frame.getBtnSound();
+            SettingsDialog settings = new SettingsDialog(frame);
+            JButton btn = settings.getSoundButton();
             assertNotNull(btn, "btnSound null");
 
             assertTrue(SoundManager.isSoundEnabled(), "ban đầu phải bật");
@@ -266,7 +261,8 @@ public class UILangSoundTest {
         MainFrame frame = new MainFrame(new AppSettings(
                 PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/b3")));
         try {
-            JButton btn = frame.getBtnSound();
+            SettingsDialog settings = new SettingsDialog(frame);
+            JButton btn = settings.getSoundButton();
 
             // VI + on
             assertEquals(Lang.soundTooltipOn(), btn.getToolTipText(),
@@ -301,34 +297,21 @@ public class UILangSoundTest {
     // =========================================================================
     @Test
     @Order(6)
-    @DisplayName("C3 – MainFrame labels cập nhật đúng sau đổi ngôn ngữ VI→EN→PT")
+    @DisplayName("C3 – Menu and settings update VI/EN/PT immediately")
     void c3_mainFrameLabelsUpdate() throws Exception {
-        Lang.set(Lang.Language.VI);
-        MainFrame frame = new MainFrame(new AppSettings(
-                PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/c3")));
-        try {
-            // VI
-            assertEquals(Lang.mode(), frame.getLblMode().getText(), "VI: lblMode sai");
-
-            // EN
-            Lang.set(Lang.Language.EN);
-            assertEquals(Lang.mode(), frame.getLblMode().getText(), "EN: lblMode sai");
-            assertEquals("Mode:", frame.getLblMode().getText(), "EN: phải là 'Mode:'");
-
-            // PT
-            Lang.set(Lang.Language.PT);
-            assertEquals(Lang.mode(), frame.getLblMode().getText(), "PT: lblMode sai");
-            assertEquals("Modo:", frame.getLblMode().getText(), "PT: phải là 'Modo:'");
-
-            // LangCombo selected item
-            assertEquals(Lang.Language.PT, frame.getLangCombo().getSelectedItem(),
-                "langCombo phải chọn PT");
-
-            System.out.println("[C3] PASS");
-        } finally {
-            frame.dispose();
-            cleanup_pref(TEST_PREF_NODE + "/c3");
-        }
+        SwingUtilities.invokeAndWait(() -> {
+            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
+            SettingsDialog settings = new SettingsDialog(frame);
+            try {
+                for (Lang.Language language : Lang.Language.values()) {
+                    settings.getLanguageCombo().setSelectedItem(language);
+                    assertEquals(Lang.pvAI(), frame.getMainMenu().getAiButton().getText());
+                    assertEquals(Lang.settings(), settings.getTitle());
+                    assertEquals(language, settings.getLanguageCombo().getSelectedItem());
+                }
+            } finally { settings.dispose(); frame.dispose(); }
+        });
+        System.out.println("[C3] Menu and open settings update immediately PASS");
     }
 
     // =========================================================================

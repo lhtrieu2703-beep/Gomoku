@@ -170,3 +170,13 @@ Giao thức v2 qua Socket TCP (chi tiết và sơ đồ: TASK35_PROTOCOL.md):
 - Tests use RAM Preferences (old registry-backed test setup migrated too); production settings only read for comparison.
 - A validation: complete JUnit tree in docs/task4b-results/A-junit.txt.
 - B6 uses the six rule lines supplied in the latest Task 4b prompt, replacing the earlier placeholder request.
+
+
+## Task 4b — B
+- Three fixed-size cards: TITLE -> MENU -> setup -> GAME. Back goes to MENU, preserving selected mode/difficulty and session totals.
+- Title mouse/key input stops the hint timer; dispose removes the global key dispatcher.
+- Profile and player-two setup edit drafts; Escape discards. Settings translate all open localized dialogs immediately.
+- Rules use exactly the six supplied lines and two Java2D examples; no automatic first-use popup.
+- LAN host/join remains the existing modal NetworkDialog and protocol v2; player names/avatars are not transmitted.
+- Game controls no longer contain mode/difficulty/language comboboxes. Phase C replaces the temporary game summary with player cards.
+- Complete JUnit: 238/238, zero skipped/failed; docs/task4b-results/B-junit.txt.

@@ -328,7 +328,6 @@ public class BoardPanel extends JPanel {
         networkManager = null;
         networkRoundId = null;
         myPiece = Piece.X;
-        gameMode = GameMode.PV_AI;
         resetGame();
     }
 

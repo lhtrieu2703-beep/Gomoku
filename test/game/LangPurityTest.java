@@ -151,41 +151,14 @@ public class LangPurityTest {
     // =========================================================================
     @Test
     @Order(3)
-    @DisplayName("C – Combo display field: contrast ratio nền/chữ >= 4.5 (WCAG AA)")
+    @DisplayName("C – Shared theme/button contrast >= 4.5 (WCAG AA)")
     void c_comboContrastRatio() throws Exception {
-        System.setProperty("java.awt.headless", "false");
-        Lang.set(Lang.Language.VI);
-        MainFrame frame = new MainFrame(new AppSettings(
-                PreferencesIsolation.testRoot.node(TEST_NODE + "/c")));
-        try {
-            frame.startGame();
-            // Màu nền ô display (bgColor) và màu chữ (fgColor) từ applyDarkComboUI:
-            //   bgColor = RGB(55, 58, 65)
-            //   fgColor = Theme.DARK = RGB(255, 255, 255)
-            Color bg = Theme.DARK;
-            Color fg = Theme.CREAM;
-
-            double cr = contrastRatio(bg, fg);
-            System.out.printf("[C] bg=RGB(%d,%d,%d) fg=WHITE → contrast ratio = %.2f%n",
-                bg.getRed(), bg.getGreen(), bg.getBlue(), cr);
-
-            assertTrue(cr >= 4.5,
-                "Contrast ratio " + String.format("%.2f", cr) + " < 4.5 (WCAG AA)");
-
-            // Kiểm thêm: selected state (selBg = 80,60,140) vs fgColor = WHITE
-            Color selBg = Theme.BRASS;
-            double crSel = contrastRatio(selBg, Theme.DARK);
-            System.out.printf("[C] selBg=RGB(%d,%d,%d) fg=WHITE → contrast ratio selected = %.2f%n",
-                selBg.getRed(), selBg.getGreen(), selBg.getBlue(), crSel);
-            assertTrue(crSel >= 3.0,
-                "Contrast ratio selected " + String.format("%.2f", crSel) + " < 3.0");
-
-            System.out.println("[C] PASS");
-        } finally {
-            frame.dispose();
-            try { PreferencesIsolation.testRoot.node(TEST_NODE + "/c").removeNode(); }
-            catch (Exception ignored) {}
-        }
+        double normal = contrastRatio(Theme.DARK, Theme.CREAM);
+        double primary = contrastRatio(Theme.BRASS, Theme.DARK);
+        assertTrue(normal >= 4.5); assertTrue(primary >= 4.5);
+        ThemedButton button = new ThemedButton(Lang.startGame(), ThemedButton.Style.PRIMARY);
+        assertEquals(Theme.BRASS, button.fillColor());
+        System.out.println("[C] Theme normal="+normal+" primary="+primary+" PASS");
     }
 
     // =========================================================================

@@ -23,11 +23,11 @@ class Task4LayoutTest {
                 UIManager.setLookAndFeel(nativeLook ? UIManager.getSystemLookAndFeelClassName() : UIManager.getCrossPlatformLookAndFeelClassName());
                 frame = Task4StartScreenTest.frame(language);
                 check(frame); render(frame, (nativeLook ? "native-" : "") + language.name());
-                frame.getStartScreen().getNameField().setText("Á".repeat(16));
+                frame.updateProfile(new PlayerProfile("Á".repeat(16),0));
                 frame.startGame(); check(frame); frame.returnToMenu(); check(frame);
                 for (Lang.Language next : Lang.Language.values()) {
-                    frame.getStartScreen().getLanguageCombo().setSelectedItem(next); check(frame);
-                    assertEquals("Á".repeat(16), frame.getStartScreen().getNameField().getText());
+                    frame.selectLanguage(next); check(frame);
+                    assertEquals("Á".repeat(16), frame.getProfile().name());
                     frame.startGame(); check(frame); frame.returnToMenu(); check(frame);
                 }
                 assertEquals(new Dimension(596, 596), frame.getBoardPanel().getPreferredSize());
@@ -43,6 +43,6 @@ class Task4LayoutTest {
         F4LayoutTest.layout(frame); F4LayoutTest.check(frame.getContentPane());
     }
     private static void render(MainFrame frame, String name) {
-        F4LayoutTest.render(frame, Paths.get("docs", "task4b-results", "A-render", "start"), name);
+        F4LayoutTest.render(frame, Paths.get("docs", "task4b-results", "B-render", "start"), name);
     }
 }

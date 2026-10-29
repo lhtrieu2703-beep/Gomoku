@@ -63,7 +63,7 @@ class P1RegressionTest {
                     assertEquals(7, panel.getLastMoveCol());
                     assertFalse(panel.isGameOver());
                     assertEquals(1, frame.getScoreTracker().getHumanWins());
-                    assertEquals(Lang.mode(), frame.getLblMode().getText());
+                    assertEquals(Lang.pvAI(), frame.getMainMenu().getAiButton().getText());
                     assertEquals(mode == BoardPanel.GameMode.ONLINE ? Lang.onlineOpponentTurn()
                             : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : Lang.p2Turn(),
                             statusText(frame));
