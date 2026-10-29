@@ -180,3 +180,12 @@ Giao thức v2 qua Socket TCP (chi tiết và sơ đồ: TASK35_PROTOCOL.md):
 - LAN host/join remains the existing modal NetworkDialog and protocol v2; player names/avatars are not transmitted.
 - Game controls no longer contain mode/difficulty/language comboboxes. Phase C replaces the temporary game summary with player cards.
 - Complete JUnit: 238/238, zero skipped/failed; docs/task4b-results/B-junit.txt.
+
+
+## Task 4b — C
+- Player cards replace the old score/status stripes; winner/turn borders, opponent avatar and safe Unicode ellipsis.
+- Centring cause: stretched BorderLayout.CENTER BoardPanel (760 wide) paints at fixed OFFSET=32. A GridBag wrapper now keeps BoardPanel 596x596 centred; CELL_SIZE=38 and hit-testing/painting remain unchanged.
+- Scores stay in RAM, reset on actual mode/difficulty change, remain on profile/menu changes. Settings reset affects totals only.
+- Score reset retains recorded game IDs so Undo/replay cannot count the same game again; Undo implementation unchanged.
+- Difficulty enum labels are Vietnamese; presentation now explicitly uses existing Lang.easy/medium/hard for setup and computer name, without changing AI.
+- Complete JUnit: 250/250, zero skipped/failed; docs/task4b-results/C-junit.txt.

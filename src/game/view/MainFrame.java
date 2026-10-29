@@ -38,8 +38,10 @@ public class MainFrame extends JFrame {
     };
     private final JButton btnBackToMenu=new ThemedButton("",ThemedButton.Style.SECONDARY),btnUndo=new ThemedButton("",ThemedButton.Style.SECONDARY),btnNewGame=new ThemedButton("",ThemedButton.Style.PRIMARY);
     private final JButton rulesButton=MainMenu.iconButton(UiIcon.Kind.BOOK),settingsButton=MainMenu.iconButton(UiIcon.Kind.MENU);
-    // Transitional game summary, replaced by player cards in phase C.
-    private final JLabel playerLabel=new JLabel(),turnLabel=new JLabel(),scoresLabel=new JLabel();
+    private final PlayerCard leftPlayer=new PlayerCard(),rightPlayer=new PlayerCard();
+    private final JTextArea turnText=new JTextArea();
+    private final JLabel drawsLabel=new JLabel("",SwingConstants.CENTER);
+    private String statusText="";
 
     public MainFrame() { this(new AppSettings()); }
     public MainFrame(AppSettings settings) {
@@ -48,9 +50,22 @@ public class MainFrame extends JFrame {
         startScreen=new StartScreen(this::showMenu);
         mainMenu=new MainMenu(this::showProfile,() -> showSetup(true),() -> showSetup(false),this::openNetworkDialog,this::showRules,this::showSettings);
         boardPanel.setEnabled(false); initNetworkManager();
-        JPanel header=new JPanel(new GridLayout(3,1)); header.setPreferredSize(new Dimension(760,108));
-        for(JLabel label:new JLabel[]{playerLabel,turnLabel,scoresLabel}) { label.setHorizontalAlignment(SwingConstants.CENTER); label.putClientProperty("html.disable",true); header.add(label); }
-        Theme.styleTree(header); gameCard.setBackground(Theme.DARK); gameCard.add(header,BorderLayout.NORTH); gameCard.add(boardPanel);
+        JPanel header=new JPanel(new GridBagLayout()); header.setBackground(Theme.DARK);
+        header.setPreferredSize(new Dimension(760,108)); header.setBorder(BorderFactory.createEmptyBorder(6,16,6,16));
+        turnText.setEditable(false); turnText.setFocusable(false); turnText.setLineWrap(true); turnText.setWrapStyleWord(true);
+        turnText.setBackground(Theme.DARK); turnText.setForeground(Theme.CREAM); turnText.setFont(Theme.font(Font.PLAIN,13));
+        turnText.setBorder(BorderFactory.createEmptyBorder(2,8,2,8));
+        drawsLabel.setForeground(Theme.BRASS); drawsLabel.setFont(Theme.font(Font.BOLD,13));
+        JPanel middle=new JPanel(new BorderLayout(0,2)); middle.setOpaque(false); middle.add(turnText); middle.add(drawsLabel,BorderLayout.SOUTH);
+        GridBagConstraints cell=new GridBagConstraints(); cell.fill=GridBagConstraints.BOTH; cell.weighty=1;
+        cell.gridx=0; cell.weightx=0; cell.ipadx=0; leftPlayer.setPreferredSize(new Dimension(230,96)); header.add(leftPlayer,cell);
+        cell.gridx=1; cell.weightx=1; header.add(middle,cell);
+        cell.gridx=2; cell.weightx=0; rightPlayer.setPreferredSize(new Dimension(230,96)); header.add(rightPlayer,cell);
+        gameCard.setBackground(Theme.DARK); gameCard.add(header,BorderLayout.NORTH);
+        // BoardPanel paints and hit-tests the same fixed 596x596 coordinates.
+        // Keep that preferred size and centre the panel instead of stretching it to 760px.
+        JPanel boardArea=new JPanel(new GridBagLayout()); boardArea.setBackground(Theme.BOARD); boardArea.add(boardPanel);
+        gameCard.add(boardArea,BorderLayout.CENTER);
         JPanel toolbar=new JPanel(new BorderLayout()); toolbar.setBorder(BorderFactory.createEmptyBorder(6,16,6,16)); toolbar.setBackground(Theme.DARK);
         JPanel actions=new JPanel(new FlowLayout(FlowLayout.LEFT,6,0)); actions.setOpaque(false);
         for(JButton button:new JButton[]{btnBackToMenu,btnUndo,btnNewGame}) actions.add(button);
@@ -87,7 +102,9 @@ public class MainFrame extends JFrame {
     public void startGame() { if(!disposed&&!isGameActive()) beginGame(selectedMode,selectedDifficulty); }
     public void beginGame(BoardPanel.GameMode mode,MinimaxAI.Difficulty difficulty) {
         if(disposed) return;
-        closeResultDialog(); selectedMode=mode; selectedDifficulty=difficulty;
+        closeResultDialog();
+        if(mode!=selectedMode || difficulty!=selectedDifficulty) scoreTracker.resetScores();
+        selectedMode=mode; selectedDifficulty=difficulty;
         boardPanel.setGameMode(mode); boardPanel.setAiDifficulty(difficulty); boardPanel.setEnabled(true);
         showScreen(Screen.GAME); refreshGameStatus(); boardPanel.requestFocusInWindow();
     }
@@ -157,11 +174,19 @@ public class MainFrame extends JFrame {
         refreshGameStatus(); revalidate(); repaint();
     }
     private void refreshGameStatus() {
-        playerLabel.setText(profile.displayName()); Piece turn=boardPanel.getCurrentTurn(); BoardPanel.GameMode mode=boardPanel.getGameMode();
+        Piece turn=boardPanel.getCurrentTurn(); BoardPanel.GameMode mode=boardPanel.getGameMode();
         String status=boardPanel.isRestartWaiting()?Lang.restartWaiting():boardPanel.isGameOver()?boardPanel.getGameOverMessage():
             mode==BoardPanel.GameMode.ONLINE?(turn==boardPanel.getMyPiece()?Lang.onlineYourTurn():Lang.onlineOpponentTurn()):
             boardPanel.isAiThinking()?Lang.aiThinking():mode==BoardPanel.GameMode.PV_AI?(turn==Piece.X?Lang.yourTurn():Lang.aiTurn()):(turn==Piece.X?Lang.p1Turn():Lang.p2Turn());
-        turnLabel.setText(status); scoresLabel.setText(Lang.wins()+": "+scoreTracker.getHumanWins()+" / "+scoreTracker.getAiWins()+"    "+Lang.draws()+": "+scoreTracker.getDraws());
+        if(!boardPanel.isGameOver()&&!boardPanel.isRestartWaiting()&&!boardPanel.isAiThinking()&&mode==BoardPanel.GameMode.PVP)
+            status=Lang.namedTurn(turn==Piece.X?profile.displayName():secondProfile.displayName(true),turn);
+        statusText=status; turnText.setText(status); drawsLabel.setText(Lang.draws()+": "+scoreTracker.getDraws());
+        Piece local=mode==BoardPanel.GameMode.ONLINE?boardPanel.getMyPiece():Piece.X;
+        Piece active=boardPanel.isGameOver()?boardPanel.getWinner():boardPanel.getCurrentTurn();
+        String opponent=mode==BoardPanel.GameMode.PV_AI?Lang.computerName(selectedDifficulty):mode==BoardPanel.GameMode.ONLINE?Lang.opponentName():secondProfile.displayName(true);
+        int opponentAvatar=mode==BoardPanel.GameMode.PV_AI?6:mode==BoardPanel.GameMode.ONLINE?0:secondProfile.avatarIndex();
+        leftPlayer.update(profile.displayName(),profile.avatarIndex(),scoreTracker.getHumanWins(),active!=Piece.NONE&&active==local);
+        rightPlayer.update(opponent,opponentAvatar,scoreTracker.getAiWins(),active!=Piece.NONE&&active!=local);
     }
     @Override public void dispose() {
         disposed=true; screenEpoch++; if(startScreen!=null) startScreen.setActive(false); boardPanel.setEnabled(false);
@@ -176,5 +201,7 @@ public class MainFrame extends JFrame {
     public MinimaxAI.Difficulty getSelectedDifficulty() { return selectedDifficulty; }
     public JButton getBackToMenuButton() { return btnBackToMenu; } public JButton getUndoButton() { return btnUndo; }
     public JButton getRulesButton() { return rulesButton; } public JButton getSettingsButton() { return settingsButton; }
-    public String getStatusText() { return turnLabel.getText(); }
+    public String getStatusText() { return statusText; }
+    public PlayerCard getLeftPlayerCard() { return leftPlayer; } public PlayerCard getRightPlayerCard() { return rightPlayer; }
+    public JLabel getDrawsLabel() { return drawsLabel; }
 }

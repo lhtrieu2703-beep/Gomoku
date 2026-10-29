@@ -1,0 +1,357 @@
+[Preferences] /test/task4/name-05101877-2eb9-42e0-a9de-9ff7411f14db RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[Preferences] /test/task4/name-21ff0af7-5123-4057-a2ef-233e6fc055f4 RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[Preferences] /test/task4/name-d670b4e7-f44b-4a1e-9445-580024e884c2 RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[C1] Tổng hàm String không tham số: 72
+[C1] Allowlist methods (PT có thể == EN): [online]
+[C1] PASS — 72 methods × 3 languages
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[C1b] PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[C2] Shared buttons: actual painted fields and text contrast PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[B2] PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[B3] PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[C3] Menu and open settings update immediately PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[D1] PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[D2] prod path: /game/view
+[D2] test path: /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f
+[D2] PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[I2] PASS
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[Preferences] /test/task3/uiLangSound-b5fc6e8e-45fe-4152-bc39-0de51ab4f12f RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[A] Kiểm 72 methods với bản PT
+[A] PASS – không có ký tự VI trong bản PT
+[Preferences] /test/task3/langPurity-0aff0c59-b9cf-429c-be37-8a22743f248c RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[B] Kiểm 72 methods với bản EN
+[B] PASS – toàn bộ EN là ASCII thuần
+[Preferences] /test/task3/langPurity-0aff0c59-b9cf-429c-be37-8a22743f248c RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[C] Theme normal=11.939820994161197 primary=6.07910030277538 PASS
+[Preferences] /test/task3/langPurity-0aff0c59-b9cf-429c-be37-8a22743f248c RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[Preferences] /test/task3/langPurity-0aff0c59-b9cf-429c-be37-8a22743f248c RAM node removed; production /game/view unchanged: {playerName=a, soundEnabled=true}
+[I1a] PASS – Không còn Lang.isVI() trong view/*.java (trừ Lang.java)
+[I1b] PASS – Không còn string literal tiếng Việt có dấu trong view/*.java
+╷
+├─ JUnit Jupiter ✔
+│  ├─ Task4LifecycleTest ✔
+│  │  ├─ menuClosesResultPopupPreservesEarnedScoreAndRejectsLateResult() ✔
+│  │  ├─ queuedOpponentMoveCannotChangeBoardAfterMenu() ✔
+│  │  ├─ undoRemainsAvailableAfterWin() ✔
+│  │  ├─ menuClosesRealLanSocketAndAllConnectionDialogs() ✔
+│  │  ├─ menuInterruptsAWorkerWhoseBackgroundBodyIsAlreadyRunning() ✔
+│  │  ├─ queuedNetworkUiCallbackCannotRunEvenAfterMenuAndNewStart() ✔
+│  │  ├─ menuRejectsBoardClicksAlreadyQueuedBeforeTheCardChanged() ✔
+│  │  ├─ menuCancelsActualAiWorkerAndItsCompletionCannotChangeNextGame() ✔
+│  │  └─ menuClosesPendingNetworkDialogAndCannotRestoreOldModeAfterNewStart() ✔
+│  ├─ Task4StartScreenTest ✔
+│  │  ├─ profileChangesAndMenuKeepExistingSessionTotals() ✔
+│  │  ├─ normalizeUnicodeWhitespaceAndLongNames(String, String) ✔
+│  │  │  ├─ [1] null,  ✔
+│  │  │  ├─ [2]   ,  ✔
+│  │  │  ├─ [3]   Nguyễn Ánh  , Nguyễn Ánh ✔
+│  │  │  ├─ [4] João Gonçalves, João Gonçalves ✔
+│  │  │  ├─ [5] Conceição, Conceição ✔
+│  │  │  ├─ [6] Ánh, Ánh ✔
+│  │  │  ├─ [7] abcdefghijklmnopXYZ, abcdefghijklmnop ✔
+│  │  │  ├─ [8] 🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯, 🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯 ✔
+│  │  │  ├─ [9] A B, A B ✔
+│  │  │  └─ [10] <html>João, <html>João ✔
+│  │  ├─ profileFieldLimitsUnicodeAndNamesRemainPlainText() ✔
+│  │  ├─ emptyProfileUsesTranslatedDefaultWithoutPersistingIt(Language) ✔
+│  │  │  ├─ [1] VI ✔
+│  │  │  ├─ [2] EN ✔
+│  │  │  └─ [3] PT ✔
+│  │  ├─ settingsApplyLanguageImmediatelyWithoutChangingProfileDraft() ✔
+│  │  └─ titleMenuSetupAndGameUseTheSameFrame() ✔
+│  ├─ F2MoveOrderTest ✔
+│  │  └─ finalMoveIsSentBeforeResultAndResultIsProcessedOnce(boolean) ✔
+│  │     ├─ [1] false ✔
+│  │     └─ [2] true ✔
+│  ├─ Task4LayoutTest ✔
+│  │  └─ bothCardsFitAllLocalesOnStartupAndAfterTransitions(Language, boolean) ✔
+│  │     ├─ [1] VI, false ✔
+│  │     ├─ [2] VI, true ✔
+│  │     ├─ [3] EN, false ✔
+│  │     ├─ [4] EN, true ✔
+│  │     ├─ [5] PT, false ✔
+│  │     └─ [6] PT, true ✔
+│  ├─ Task4PreferencesTest ✔
+│  │  └─ nameAndLanguageRoundTripThroughInjectedNode(Language) ✔
+│  │     ├─ [1] VI ✔
+│  │     ├─ [2] EN ✔
+│  │     └─ [3] PT ✔
+│  ├─ Task4bFoundationTest ✔
+│  │  ├─ buttonsPaintFourDistinctStatesUnderBothLooks(boolean) ✔
+│  │  │  ├─ [1] false ✔
+│  │  │  └─ [2] true ✔
+│  │  ├─ missingImagesRenderAndCoverCacheTracksDevicePixels() ✔
+│  │  ├─ invalidAvatarsDefaultToZero(int) ✔
+│  │  │  ├─ [1] -1 ✔
+│  │  │  ├─ [2] 8 ✔
+│  │  │  ├─ [3] 99 ✔
+│  │  │  └─ [4] 2147483647 ✔
+│  │  ├─ profileNames(String, String) ✔
+│  │  │  ├─ [1] ,  ✔
+│  │  │  ├─ [2] A, A ✔
+│  │  │  ├─ [3] abcdefghijklmnop, abcdefghijklmnop ✔
+│  │  │  ├─ [4] abcdefghijklmnopq, abcdefghijklmnop ✔
+│  │  │  ├─ [5]    ,  ✔
+│  │  │  ├─ [6]  João , João ✔
+│  │  │  └─ [7]  Đặng , Đặng ✔
+│  │  └─ profileRoundTripKeepsLegacyKeyAndImplicitDefault() ✔
+│  ├─ UndoParityTest ✔
+│  │  ├─ P2: X(7,7), undoMove(): size 0, lượt X ✔
+│  │  ├─ P5: Kiểm tra số quân trên bàn luân phiên đúng sau Undo ở P1 ✔
+│  │  ├─ P1: PV_AI, X thắng ở nước thứ 9, Undo chỉ rút đúng 1 nước của X ✔
+│  │  ├─ P3: X(7,7) O(0,0) (AI vừa đi), undoMove(): size 0, lượt X ✔
+│  │  ├─ P1b: Tiếp P1, người chơi đi lại (7,11): ván kết thúc lần 2, điểm vẫn không đổi ✔
+│  │  └─ P4: Hòa ở nước thứ 225 (nước cuối là của X), Undo chỉ rút 1 nước của X ✔
+│  ├─ BoardWinTest ✔
+│  │  ├─ Sanity 3: Kiểm tra invertColors=true đảo màu đúng cả 2 nhánh X và O ✔
+│  │  ├─ Sanity 2: Kiểm tra setupPattern('. O O O O O* .') chỉ có quân O, không có X ✔
+│  │  ├─ T01: . X X X X X* . -> THẮNG ✔
+│  │  ├─ T02: O X X X X* X . -> THẮNG ✔
+│  │  ├─ T03: . X X* X X X O -> THẮNG ✔
+│  │  ├─ T04: O X* X X X X O -> KHÔNG THẮNG ✔
+│  │  ├─ T05: # X X X X X* . -> THẮNG ✔
+│  │  ├─ T06: # X X X X X* O -> THẮNG ✔
+│  │  ├─ T07: O X X X X X* # -> THẮNG ✔
+│  │  ├─ T08: # X X X X X* # (chéo 5 ô góc chạm 2 mép) -> THẮNG ✔
+│  │  ├─ T09: O . X X X X X* . O (O không liền kề) -> THẮNG ✔
+│  │  ├─ T10: O X X X X X* . O (chỉ xét ô liền kề) -> THẮNG ✔
+│  │  ├─ T11: . X X X X X X* . -> THẮNG ✔
+│  │  ├─ T12: O X X X X X X* . -> THẮNG ✔
+│  │  ├─ T13: O X X X X X X* O -> KHÔNG THẮNG ✔
+│  │  ├─ T14: # X X X X X X* . -> THẮNG ✔
+│  │  ├─ T15: # X X X X X X* O -> THẮNG ✔
+│  │  ├─ T16: # X X X X X X* # (chéo 6 ô góc) -> THẮNG ✔
+│  │  ├─ T17: . X X X X X X X* . -> THẮNG ✔
+│  │  ├─ T18: O X X X X X X X* O -> KHÔNG THẮNG ✔
+│  │  ├─ T19: Hàng 9 quân mở 2 đầu -> THẮNG ✔
+│  │  ├─ T20: Cả hàng 15 ô đều là X, 2 đầu là mép -> THẮNG ✔
+│  │  ├─ T21: . X X X* X X . (nối 2+2 thành 5) -> THẮNG ✔
+│  │  ├─ T22: . X X X X* X X X . (nối 3+3 thành 7) -> THẮNG ✔
+│  │  ├─ T23: . X X X* X X X . (nối 3+2 thành 6) -> THẮNG ✔
+│  │  ├─ T24: O X X X* X X O (nối thành 5, O chặn 2 đầu) -> KHÔNG THẮNG ✔
+│  │  ├─ T25: . X X X X* . (chỉ 4 quân) -> KHÔNG THẮNG ✔
+│  │  ├─ T26: . X X . X* X X . (có ô trống ở giữa) -> KHÔNG THẮNG ✔
+│  │  ├─ T27: . X X O X* X X . (bị O ngắt giữa) -> KHÔNG THẮNG ✔
+│  │  ├─ T28: . X X X* . X X . (còn ô trống) -> KHÔNG THẮNG ✔
+│  │  ├─ T29: . X X X O X* X . -> KHÔNG THẮNG ✔
+│  │  ├─ T30: Hàng 5 bị chặn có sẵn, đặt chỗ khác không tạo hàng mới -> KHÔNG THẮNG ✔
+│  │  ├─ T31: Ngang 5 chặn 2 đầu + Dọc 5 mở -> THẮNG ✔
+│  │  ├─ T32: Ngang 5 chặn 2 đầu + Chéo 5 chặn 2 đầu -> KHÔNG THẮNG ✔
+│  │  ├─ T33: Ngang 5 hợp lệ + Dọc 5 hợp lệ -> THẮNG ✔
+│  │  ├─ T34: Ngang 6 hợp lệ + Dọc 5 hợp lệ -> THẮNG ✔
+│  │  ├─ T35: Ngang 6 + Dọc 6 (đều mở) -> THẮNG ✔
+│  │  ├─ T36: Ngang 6 mở + Dọc 5 chặn 2 đầu -> THẮNG (nhờ hàng ngang) ✔
+│  │  ├─ T37: Ngang 7 chặn 2 đầu + Dọc 5 chặn 2 đầu -> KHÔNG THẮNG ✔
+│  │  ├─ T38: Ngang 4 + Dọc 4 + Chéo 4 (đều mở) -> KHÔNG THẮNG ✔
+│  │  ├─ T39: Hàng dọc 5, đặt ở giữa bàn, 2 đầu trống -> THẮNG ✔
+│  │  ├─ T40: Chéo chính (↘) 5 quân, 2 đầu trống -> THẮNG ✔
+│  │  ├─ T41: Chéo phụ (↙) 5 quân, 2 đầu trống -> THẮNG ✔
+│  │  ├─ T42: Ngang 5 quân ở cột 0-4, quân vừa đặt ở cột 0, cột 5 trống -> THẮNG ✔
+│  │  ├─ T43: Ngang 5 quân ở cột 10-14, quân vừa đặt ở cột 14, cột 9 là O -> THẮNG ✔
+│  │  ├─ T44: Quân vừa đặt ở góc (0,0), chéo (0,0)-(4,4) là X, (5,5) là O -> THẮNG ✔
+│  │  ├─ T45: Quân vừa đặt ở góc (14,14), chéo (10,10)-(14,14) là X, (9,9) trống -> THẮNG ✔
+│  │  ├─ T46: Chéo từ (0,0) đến (5,5) là X (6 quân), (6,6) là O -> THẮNG ✔
+│  │  ├─ T47: . O O O O O* . -> O THẮNG ✔
+│  │  ├─ T48: X O O O O O* X -> KHÔNG THẮNG ✔
+│  │  ├─ T49: Bàn cờ đã đầy, nước cuối không tạo hàng hợp lệ -> HÒA ✔
+│  │  ├─ T50: Bàn cờ đã đầy, nước cuối tạo hàng hợp lệ -> THẮNG (thắng ưu tiên hơn hòa) ✔
+│  │  ├─ T51: Đặt vào ô đã có quân -> Từ chối, bàn cờ và lượt giữ nguyên ✔
+│  │  ├─ T52: Đặt ngoài bàn cờ -> Từ chối, không văng lỗi ngoại lệ ✔
+│  │  └─ Sanity 1: Kiểm tra setupPattern('O X X X X* X O') đặt đúng quân ở từng ô ✔
+│  ├─ SoundResourceTest ✔
+│  │  ├─ staleResultClosesClipWithoutStarting() ✔
+│  │  ├─ closesClipWhenStartFails() ✔
+│  │  ├─ closesClipAfterPlaybackStops() ✔
+│  │  ├─ closesClipWhenOpenFails() ✔
+│  │  └─ queuedPieceSoundChecksGameValidityBeforeOpeningAnyAudioDevice() ✔
+│  ├─ P2LifecycleTest ✔
+│  │  ├─ disposingFrameCancelsItsWorkerAndPreservesBoard() ✔
+│  │  ├─ cancellationInsideRecursiveSearchUnwindsAllMoves() ✔
+│  │  ├─ closingDialogCancelsPendingHostAndIgnoresLateResults() ✔
+│  │  ├─ disposedFrameDoesNotReceiveLanguageEvents() ✔
+│  │  ├─ successfulDialogDisposalKeepsConnection() ✔
+│  │  ├─ receivedMoveIsAppliedBeforeNextEdtNetworkCallback() ✔
+│  │  ├─ cancellingOnlineSelectionRestoresModeWithoutResettingGame() ✔
+│  │  ├─ interruptedAiAbortsWithoutMutatingBoard() ✔
+│  │  └─ networkErrorsAreTranslated(ErrorType) ✔
+│  │     ├─ [1] HOST ✔
+│  │     ├─ [2] JOIN ✔
+│  │     ├─ [3] CHANNEL ✔
+│  │     ├─ [4] START_TIMEOUT ✔
+│  │     └─ [5] VERSION ✔
+│  ├─ F4LayoutTest ✔
+│  │  ├─ allTransitionsKeepControlsInsideParents(Language) ✔
+│  │  │  ├─ [1] VI ✔
+│  │  │  ├─ [2] EN ✔
+│  │  │  └─ [3] PT ✔
+│  │  └─ directStartupBoundsAndRender(Language) ✔
+│  │     ├─ [1] VI ✔
+│  │     ├─ [2] EN ✔
+│  │     └─ [3] PT ✔
+│  ├─ NetworkStabilityTest ✔
+│  │  ├─ reconnectCannotBeClosedOrNotifiedByPreviousSession() ✔
+│  │  ├─ staleErrorIsDiscardedWhenNewSessionStarts() ✔
+│  │  ├─ callbacksAlreadyQueuedAreDiscardedAfterCancel() ✔
+│  │  ├─ cancelPendingHostReleasesPortWithoutError() ✔
+│  │  ├─ occupiedPortReportsTypedHostError() ✔
+│  │  ├─ hostAndClientExchangeMovesRestartAndDisconnect() ✔
+│  │  └─ malformedMoveDoesNotKillConnectionAndOrderIsPreserved() ✔
+│  ├─ F1ProtocolTest ✔
+│  │  ├─ wrongRoundDuplicateWrongTurnAndOccupiedSquareAreIgnored() ✔
+│  │  ├─ queuedWireMoveKeepsOldRoundAfterReset() ✔
+│  │  ├─ waitingLocksMovesAndRoundChangeClosesPopupRejectingOldResult() ✔
+│  │  ├─ garbageMissingFieldsOversizedAndWrongColorDoNotDisconnect() ✔
+│  │  ├─ invalidPlyOrColorDoesNotChangeBoard(int) ✔
+│  │  │  ├─ [1] 0 ✔
+│  │  │  ├─ [2] 2 ✔
+│  │  │  ├─ [3] 3 ✔
+│  │  │  └─ [4] 225 ✔
+│  │  ├─ simultaneousSameBaseRestartAndStaleRequestResetOnce(boolean) ✔
+│  │  │  ├─ [1] false ✔
+│  │  │  └─ [2] true ✔
+│  │  ├─ mismatchedVersionClosesSession() ✔
+│  │  ├─ startTimeoutClosesSession() ✔
+│  │  └─ clientSendsOneRequestAcceptsOnlyMatchingBaseAndClearsWaitOnEof() ✔
+│  ├─ UILangSoundTest ✔
+│  │  ├─ C1 – Lang: mọi key VI/EN/PT không null, không rỗng, PT khác EN (trừ allowlist) ✔
+│  │  ├─ C1b – Lang.connectingMsg(ip) chứa ip trong mọi ngôn ngữ ✔
+│  │  ├─ C2 – Shared custom button painting and contrast >= 4.5 ✔
+│  │  ├─ B2 – Click btnSound toggle SoundManager.isSoundEnabled() ✔
+│  │  ├─ B3 – Tooltip btnSound đúng theo ngôn ngữ và trạng thái on/off ✔
+│  │  ├─ C3 – Menu and settings update VI/EN/PT immediately ✔
+│  │  ├─ D1 – AppSettings round-trip: lưu/đọc lang + sound; fallback mặc định; invalid → ... ✔
+│  │  ├─ D2 – Preferences test node khác node production ✔
+│  │  └─ I2 – SpeakerIcon: on≠off, off có pixel đỏ, đọc từ SoundManager ✔
+│  ├─ Task4bFlowTest ✔
+│  │  ├─ titleAcceptsMouseAndAnyKeyAndStopsItsTimer() ✔
+│  │  ├─ enterCommitsProfileAndEscapeCancelsEveryDialogDraft() ✔
+│  │  ├─ rulesHaveAllSixSuppliedLinesAndOpenFromBothMenuAndGame(Language) ✔
+│  │  │  ├─ [1] VI ✔
+│  │  │  ├─ [2] EN ✔
+│  │  │  └─ [3] PT ✔
+│  │  ├─ setupRemembersDifficultyAndPlayerTwoOnlyAfterStart() ✔
+│  │  └─ allCardsAndDialogsFitBothLooksWithStableFrameSize(Language, boolean) ✔
+│  │     ├─ [1] VI, false ✔
+│  │     ├─ [2] VI, true ✔
+│  │     ├─ [3] EN, false ✔
+│  │     ├─ [4] EN, true ✔
+│  │     ├─ [5] PT, false ✔
+│  │     └─ [6] PT, true ✔
+│  ├─ LangPurityTest ✔
+│  │  ├─ A – PT không chứa ký tự tiếng Việt đặc trưng (ă đ ơ ư ...) ✔
+│  │  ├─ B – EN chỉ chứa ASCII (0x00-0x7F) ✔
+│  │  └─ C – Shared theme/button contrast >= 4.5 (WCAG AA) ✔
+│  ├─ UndoScoreTest ✔
+│  │  ├─ U01: AI thắng, ghi nhận thành tích 0-1 (Thắng: 0, Thua: 1, Hòa: 0) ✔
+│  │  ├─ U02: Undo xong, thành tích vẫn 0-1, isGameOver = false ✔
+│  │  ├─ 6e: PvP undo 1 nước, PvAI undo tối đa 2 nước, Online cấm Undo (canUndo = false) ✔
+│  │  ├─ U04 / 6a: Undo khi chưa có nước đi không lỗi, không đổi gì, canUndo = false ✔
+│  │  ├─ U08: Race condition AI - token cũ bị vô hiệu hóa khi resetGame hoặc undoMove ✔
+│  │  ├─ 8 & 9 (End-to-End): AI thắng (0-1) -> Undo -> người chơi thắng cùng ván -> điểm ... ✔
+│  │  ├─ U06 / 6d: Reset/ván mới tạo gameId mới, kết quả ván mới được ghi, dữ liệu cũ giữ... ✔
+│  │  ├─ U05 / 6b: Undo nhiều lần liên tiếp đến hết lịch sử, bàn cờ và lượt khôi phục đún... ✔
+│  │  ├─ 7: Online - Gói MOVE đến khi isGameOver = true phải bị bỏ qua ✔
+│  │  ├─ U07: Kết thúc bằng hòa rồi Undo: thành tích hòa không bị xóa, không ghi trùng ✔
+│  │  └─ U03: Chơi tiếp rồi kết thúc lần nữa trong cùng ván: không ghi trùng điểm ✔
+│  ├─ I18nSourceScanTest ✔
+│  │  ├─ I1a – Không còn 'Lang.isVI()' trong view/*.java (trừ Lang.java) ✔
+│  │  └─ I1b – Không còn string literal tiếng Việt có dấu trong view/*.java (trừ Lang.jav... ✔
+│  ├─ Task4bGameplayTest ✔
+│  │  ├─ resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain() ✔
+│  │  ├─ computerAndSetupUseTranslatedDifficultyInsteadOfEnumLabel(Language) ✔
+│  │  │  ├─ [1] VI ✔
+│  │  │  ├─ [2] EN ✔
+│  │  │  └─ [3] PT ✔
+│  │  ├─ boardIsCentredAndMouseUsesUnchangedCoordinates(Language) ✔
+│  │  │  ├─ [1] VI ✔
+│  │  │  ├─ [2] EN ✔
+│  │  │  └─ [3] PT ✔
+│  │  ├─ resetScoreConfirmationClearsNumbersWithoutChangingCurrentGame() ✔
+│  │  ├─ scoresResetOnlyOnModeOrDifficultyChangeAndKeepOnProfileAndMenu() ✔
+│  │  └─ realGameResultsUpdateBothCardsAndDrawCount(Piece) ✔
+│  │     ├─ [1] - ✔
+│  │     ├─ [2] X ✔
+│  │     └─ [3] O ✔
+│  ├─ P1RegressionTest ✔
+│  │  ├─ languageChangePreservesFinishedGameAndTranslatesResult(Piece) ✔
+│  │  │  ├─ [1] - ✔
+│  │  │  ├─ [2] X ✔
+│  │  │  └─ [3] O ✔
+│  │  ├─ pvpUndoAfterWinRestoresWinningPlayerTurn(Piece) ✔
+│  │  │  ├─ [1] X ✔
+│  │  │  └─ [2] O ✔
+│  │  ├─ onlineRejectsQueuedMoveAfterNewGame() ✔
+│  │  ├─ onlineAcceptsOnlyOneMoveFromCorrectOpponent(Piece) ✔
+│  │  │  ├─ [1] X ✔
+│  │  │  └─ [2] O ✔
+│  │  ├─ onlineRejectsOpponentMoveOnLocalTurn() ✔
+│  │  ├─ languageChangePreservesActiveGame(GameMode) ✔
+│  │  │  ├─ [1] 2 jogadores no mesmo computador ✔
+│  │  │  ├─ [2] Jogar contra o computador ✔
+│  │  │  └─ [3] Jogar em rede (LAN) ✔
+│  │  ├─ onlineRejectsMoveAfterSwitchingMode(GameMode) ✔
+│  │  │  ├─ [1] 2 jogadores no mesmo computador ✔
+│  │  │  └─ [2] Jogar contra o computador ✔
+│  │  ├─ onlineRejectsInvalidSquaresAndMovesAfterGameOver() ✔
+│  │  └─ pvpUndoAfterDrawRestoresLastPlayerTurn() ✔
+│  └─ F3HeuristicTest ✔
+│     ├─ blockedSixIsNotFive(WinRule, Piece) ✔
+│     │  ├─ [1] RULE_A, X ✔
+│     │  ├─ [2] RULE_A, O ✔
+│     │  ├─ [3] RULE_B, X ✔
+│     │  └─ [4] RULE_B, O ✔
+│     ├─ edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece) ✔
+│     │  ├─ [1] RULE_A, X ✔
+│     │  ├─ [2] RULE_A, O ✔
+│     │  ├─ [3] RULE_B, X ✔
+│     │  └─ [4] RULE_B, O ✔
+│     ├─ singleThreeIsNotDoubleThree(WinRule, Piece) ✔
+│     │  ├─ [1] RULE_A, X ✔
+│     │  ├─ [2] RULE_A, O ✔
+│     │  ├─ [3] RULE_B, X ✔
+│     │  └─ [4] RULE_B, O ✔
+│     ├─ nonTerminalThreatsNeverOutrankWin(WinRule, Piece) ✔
+│     │  ├─ [1] RULE_A, X ✔
+│     │  ├─ [2] RULE_A, O ✔
+│     │  ├─ [3] RULE_B, X ✔
+│     │  └─ [4] RULE_B, O ✔
+│     ├─ openSixMatchesSelectedRule(WinRule, Piece) ✔
+│     │  ├─ [1] RULE_A, X ✔
+│     │  ├─ [2] RULE_A, O ✔
+│     │  ├─ [3] RULE_B, X ✔
+│     │  └─ [4] RULE_B, O ✔
+│     ├─ openFourIsThreatButNotTerminal(WinRule, Piece) ✔
+│     │  ├─ [1] RULE_A, X ✔
+│     │  ├─ [2] RULE_A, O ✔
+│     │  ├─ [3] RULE_B, X ✔
+│     │  └─ [4] RULE_B, O ✔
+│     └─ actualCrossDoubleThreeIsRecognized(WinRule, Piece) ✔
+│        ├─ [1] RULE_A, X ✔
+│        ├─ [2] RULE_A, O ✔
+│        ├─ [3] RULE_B, X ✔
+│        └─ [4] RULE_B, O ✔
+├─ JUnit Vintage ✔
+└─ JUnit Platform Suite ✔
+
+Test run finished after 10082 ms
+[        54 containers found      ]
+[         0 containers skipped    ]
+[        54 containers started    ]
+[         0 containers aborted    ]
+[        54 containers successful ]
+[         0 containers failed     ]
+[       250 tests found           ]
+[         0 tests skipped         ]
+[       250 tests started         ]
+[         0 tests aborted         ]
+[       250 tests successful      ]
+[         0 tests failed          ]
+

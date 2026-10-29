@@ -73,6 +73,7 @@ public class ScoreTracker {
         humanWins = 0;
         aiWins = 0;
         draws = 0;
-        recordedGameIds.clear();
+        // Reset the displayed totals only. Undo/replay in an already recorded game
+        // must still not record a second result after the user resets the score.
     }
 }

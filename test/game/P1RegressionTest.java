@@ -65,7 +65,7 @@ class P1RegressionTest {
                     assertEquals(1, frame.getScoreTracker().getHumanWins());
                     assertEquals(Lang.pvAI(), frame.getMainMenu().getAiButton().getText());
                     assertEquals(mode == BoardPanel.GameMode.ONLINE ? Lang.onlineOpponentTurn()
-                            : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : Lang.p2Turn(),
+                            : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : Lang.namedTurn(frame.getSecondProfile().displayName(true), Piece.O),
                             statusText(frame));
                 }
             } finally {
@@ -265,15 +265,7 @@ class P1RegressionTest {
         });
     }
 
-    private static String statusText(MainFrame frame) {
-        try {
-            var field = MainFrame.class.getDeclaredField("turnLabel");
-            field.setAccessible(true);
-            return ((JLabel) field.get(frame)).getText();
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
-    }
+    private static String statusText(MainFrame frame) { return frame.getStatusText(); }
 
     private static final class MemoryPreferences extends AbstractPreferences {
         private final Map<String, String> values = new HashMap<>();

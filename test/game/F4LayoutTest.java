@@ -49,7 +49,7 @@ class F4LayoutTest {
         }
     }
     static void render(MainFrame frame, String name) {
-        render(frame, Paths.get("docs", "task4b-results", "B-render", "game"), name);
+        render(frame, Paths.get("docs", "task4b-results", "C-render", "game"), name);
     }
     static void render(MainFrame frame, Path folder, String name) {
         try {
@@ -62,7 +62,7 @@ class F4LayoutTest {
             try {
                 graphics.scale(scale.getScaleX(), scale.getScaleY());
                 if (!frame.isMenuVisible()) {
-                    JLabel player = P2LifecycleTest.field(frame, "playerLabel");
+                    JLabel player = frame.getLeftPlayerCard().getNameLabel();
                     assertTrue(graphics.getFontMetrics(player.getFont()).stringWidth(player.getText()) <= player.getWidth(),
                             "Player name must fit using the same DPI transform as the window");
                 }

@@ -30,7 +30,8 @@ public class Lang {
     public static String clearName() { return text("Xóa tên","Clear name","Limpar nome"); }
     public static String avatarLabel(int index) { return text("Ảnh đại diện ","Avatar ","Imagem de perfil ")+index; }
     public static String characterCount(int count) { return count+"/"+AppSettings.MAX_PLAYER_NAME_LENGTH; }
-    public static String computerName(game.ai.MinimaxAI.Difficulty difficulty) { return text("Máy","Computer","Computador")+" ("+difficulty+")"; }
+    public static String difficultyName(game.ai.MinimaxAI.Difficulty difficulty) { return switch(difficulty) { case EASY -> easy(); case MEDIUM -> medium(); case HARD -> hard(); }; }
+    public static String computerName(game.ai.MinimaxAI.Difficulty difficulty) { return text("Máy","Computer","Computador")+" ("+difficultyName(difficulty)+")"; }
     public static String opponentName() { return text("Đối thủ","Opponent","Adversário"); }
     public static String pieceName(game.model.Piece piece) { return piece==game.model.Piece.X?text("Quân Đen","Black","Pretas"):text("Quân Trắng","White","Brancas"); }
     public static String namedTurn(String name,game.model.Piece piece) { return name+" ("+pieceName(piece)+")"; }

@@ -43,6 +43,6 @@ class Task4LayoutTest {
         F4LayoutTest.layout(frame); F4LayoutTest.check(frame.getContentPane());
     }
     private static void render(MainFrame frame, String name) {
-        F4LayoutTest.render(frame, Paths.get("docs", "task4b-results", "B-render", "start"), name);
+        F4LayoutTest.render(frame, Paths.get("docs", "task4b-results", "C-render", "start"), name);
     }
 }

@@ -16,6 +16,13 @@ public final class SetupDialog extends LocalizedDialog {
             if(ai) owner.beginGame(BoardPanel.GameMode.PV_AI,(MinimaxAI.Difficulty)difficulty.getSelectedItem());
             else { owner.setSecondProfile(second.value()); owner.beginGame(BoardPanel.GameMode.PVP,owner.getSelectedDifficulty()); } dispose();
         }); cancel.addActionListener(e -> dispose()); if(second!=null) second.getNameField().addActionListener(e -> start.doClick()); finishLayout(start);
+        difficulty.setRenderer(new DefaultListCellRenderer() {
+            public Component getListCellRendererComponent(JList<?> list,Object value,int index,boolean selected,boolean focus) {
+                JLabel label=(JLabel)super.getListCellRendererComponent(list,value,index,selected,focus);
+                if(value instanceof MinimaxAI.Difficulty level) label.setText(Lang.difficultyName(level));
+                label.setBackground(selected?Theme.BRASS:Theme.DARK); label.setForeground(selected?Theme.DARK:Theme.CREAM); return label;
+            }
+        });
     }
     protected void refreshLanguage() { setTitle(ai?Lang.pvAI():Lang.pvp()); label.setText(Lang.difficulty()); start.setText(Lang.startGame()); cancel.setText(Lang.cancel());
         if(second!=null) second.refreshLanguage(); difficulty.repaint(); repack(); }
