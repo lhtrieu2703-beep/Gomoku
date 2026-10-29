@@ -31,7 +31,7 @@ public class NetworkDialog extends JDialog {
 
         setLayout(new BorderLayout());
         setResizable(false);
-        getContentPane().setBackground(new Color(245, 245, 248));
+        getContentPane().setBackground(Theme.CREAM);
 
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
@@ -42,7 +42,7 @@ public class NetworkDialog extends JDialog {
         JLabel lblTitle = new JLabel(Lang.networkDialogHeader());
         lblTitle.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lblTitle.setForeground(new Color(40, 45, 55));
+        lblTitle.setForeground(Theme.DARK);
         content.add(lblTitle);
         content.add(Box.createVerticalStrut(12));
 
@@ -67,7 +67,7 @@ public class NetworkDialog extends JDialog {
         // IP máy mình
         JLabel lblMyIp = new JLabel(Lang.myIpLabel() + NetworkManager.getLocalIP());
         lblMyIp.setFont(new Font("Segoe UI", Font.ITALIC, 11));
-        lblMyIp.setForeground(new Color(100, 100, 110));
+        lblMyIp.setForeground(Theme.MUTED);
         lblMyIp.setAlignmentX(Component.CENTER_ALIGNMENT);
         content.add(Box.createVerticalStrut(8));
         content.add(lblMyIp);
@@ -76,11 +76,11 @@ public class NetworkDialog extends JDialog {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 0));
         btnPanel.setOpaque(false);
 
-        btnHost = new JButton(Lang.hostBtn());
-        styleButton(btnHost, new Color(46, 160, 67), Color.WHITE);
+        btnHost = new ThemedButton(Lang.hostBtn(), ThemedButton.Style.PRIMARY);
+        styleButton(btnHost, Theme.BRASS, Color.WHITE);
 
-        btnJoin = new JButton(Lang.joinBtn());
-        styleButton(btnJoin, new Color(33, 113, 195), Color.WHITE);
+        btnJoin = new ThemedButton(Lang.joinBtn(), ThemedButton.Style.SECONDARY);
+        styleButton(btnJoin, Theme.BRASS, Color.WHITE);
 
         btnPanel.add(btnHost);
         btnPanel.add(btnJoin);
@@ -91,7 +91,7 @@ public class NetworkDialog extends JDialog {
         lblStatus = new JLabel(" ");
         lblStatus.setFont(new Font("Segoe UI", Font.BOLD, 12));
         lblStatus.setAlignmentX(Component.CENTER_ALIGNMENT);
-        lblStatus.setForeground(new Color(220, 100, 20));
+        lblStatus.setForeground(Theme.ERROR);
         content.add(Box.createVerticalStrut(10));
         content.add(lblStatus);
 
@@ -114,6 +114,7 @@ public class NetworkDialog extends JDialog {
             networkManager.joinGame(ip, port);
         });
 
+        Theme.styleTree(getContentPane());
         pack();
         setLocationRelativeTo(parent);
     }
@@ -136,7 +137,7 @@ public class NetworkDialog extends JDialog {
         txtIp.setEnabled(!loading);
         txtPort.setEnabled(!loading);
         lblStatus.setText(statusText);
-        lblStatus.setForeground(new Color(21, 101, 192));
+        lblStatus.setForeground(Theme.BRASS);
     }
 
     public void onConnectionSuccess() {
@@ -152,7 +153,7 @@ public class NetworkDialog extends JDialog {
         runOnEdt(() -> {
             if (finished) return;
             setLoadingState(false, error);
-            lblStatus.setForeground(new Color(200, 40, 40));
+            lblStatus.setForeground(Theme.ERROR);
         });
     }
 

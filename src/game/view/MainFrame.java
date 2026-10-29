@@ -95,7 +95,7 @@ public class MainFrame extends JFrame {
         // 1. HEADER TỐI
         // =====================================================================
         JPanel header = new JPanel(new BorderLayout(0, 8));
-        header.setBackground(new Color(34, 36, 40));
+        header.setBackground(Theme.DARK);
         header.setBorder(new EmptyBorder(10, 14, 10, 14));
 
         JPanel ctrlRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
@@ -114,8 +114,8 @@ public class MainFrame extends JFrame {
         diffCombo.setRenderer(makeDiffRenderer());
         styleCombo(diffCombo);
 
-        btnNewGame = makeDarkBtn(Lang.newGame(), new Color(46, 160, 67), Color.WHITE);
-        btnUndo    = makeDarkBtn(Lang.undo(),    new Color(33, 113, 195), Color.WHITE);
+        btnNewGame = makeDarkBtn(Lang.newGame(), Theme.BRASS, Color.WHITE);
+        btnUndo    = makeDarkBtn(Lang.undo(),    Theme.BRASS, Color.WHITE);
         btnUndo.setEnabled(false);
 
         // Nút âm thanh — icon Java2D
@@ -123,8 +123,8 @@ public class MainFrame extends JFrame {
 
         // Combo ngôn ngữ
         langCombo = makeLangCombo();
-        btnBackToMenu = makeDarkBtn(Lang.backToMenu(), new Color(55, 58, 65), Color.WHITE);
-        btnAchievements = makeDarkBtn("", new Color(55, 58, 65), Color.WHITE);
+        btnBackToMenu = makeDarkBtn(Lang.backToMenu(), Theme.DARK, Color.WHITE);
+        btnAchievements = makeDarkBtn("", Theme.DARK, Color.WHITE);
         btnAchievements.setIcon(new AchievementIcon(20));
         btnAchievements.setToolTipText(Lang.achievementsTooltip());
         btnAchievements.getAccessibleContext().setAccessibleName(Lang.achievementsTooltip());
@@ -159,12 +159,12 @@ public class MainFrame extends JFrame {
         // 3. THANH LƯỢT CHƠI
         // =====================================================================
         JPanel turnBar = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 8));
-        turnBar.setBackground(new Color(245, 241, 232));
-        turnBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 175, 120)));
+        turnBar.setBackground(Theme.CREAM);
+        turnBar.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Theme.BRASS));
 
         turnLabel = new JLabel(Lang.yourTurn());
         turnLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        turnLabel.setForeground(new Color(30, 30, 30));
+        turnLabel.setForeground(Theme.DARK);
         playerLabel = new JLabel();
         playerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         playerLabel.putClientProperty("html.disable", Boolean.TRUE);
@@ -285,6 +285,7 @@ public class MainFrame extends JFrame {
         gameCard.add(boardPanel, BorderLayout.CENTER);
         screenCards.add(startScreen, MENU_CARD);
         screenCards.add(gameCard, GAME_CARD);
+        screenCards.setPreferredSize(new Dimension(760, 758));
         add(screenCards, BorderLayout.CENTER);
         screenLayout.show(screenCards, MENU_CARD);
         getRootPane().setDefaultButton(startScreen.getStartButton());
@@ -384,9 +385,10 @@ public class MainFrame extends JFrame {
     // =========================================================================
     private JButton makeSoundButton() {
         SpeakerIcon icon = new SpeakerIcon(18);
-        JButton btn = new JButton(icon);
+        JButton btn = new ThemedButton("", ThemedButton.Style.SECONDARY);
+        btn.setIcon(icon);
         btn.setOpaque(true);
-        btn.setBackground(new Color(55, 58, 65));
+        btn.setBackground(Theme.DARK);
         btn.setBorderPainted(false);
         btn.setFocusPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
@@ -422,10 +424,10 @@ public class MainFrame extends JFrame {
                 // Luôn đặt màu rõ ràng
                 lbl.setOpaque(true);
                 if (isSelected) {
-                    lbl.setBackground(new Color(80, 60, 140));
-                    lbl.setForeground(Color.WHITE);
+                    lbl.setBackground(Theme.BRASS);
+                    lbl.setForeground(Theme.DARK);
                 } else {
-                    lbl.setBackground(new Color(55, 58, 65));
+                    lbl.setBackground(Theme.DARK);
                     lbl.setForeground(Color.WHITE);
                 }
                 return lbl;
@@ -450,16 +452,16 @@ public class MainFrame extends JFrame {
      * vẽ nền ô display + nút mũi tên đúng màu tối, chữ trắng.
      */
     private void applyDarkComboUI(JComboBox<?> c) {
-        final Color bgColor  = new Color(55, 58, 65);
+        final Color bgColor  = Theme.DARK;
         final Color fgColor  = Color.WHITE;
-        final Color selBg    = new Color(80, 60, 140);
-        final Color arrowBg  = new Color(70, 74, 82);
-        final Color borderC  = new Color(90, 95, 105);
+        final Color selBg    = Theme.BRASS;
+        final Color arrowBg  = Theme.DARK;
+        final Color borderC  = Theme.DARK;
 
         c.setUI(new javax.swing.plaf.basic.BasicComboBoxUI() {
             @Override
             protected JButton createArrowButton() {
-                JButton btn = new JButton("▾");
+                JButton btn = new javax.swing.plaf.basic.BasicArrowButton(SwingConstants.SOUTH);
                 btn.setFont(new Font("Segoe UI", Font.PLAIN, 10));
                 btn.setBackground(arrowBg);
                 btn.setForeground(fgColor);
@@ -508,7 +510,7 @@ public class MainFrame extends JFrame {
         if (!(c.getRenderer() instanceof DefaultListCellRenderer r &&
               r.getClass().getEnclosingClass() == MainFrame.class)) {
             // Chỉ đặt renderer mặc định nếu chưa có renderer tùy biến
-            if (c.getRenderer() == null || c.getRenderer().getClass().getName().contains("Windows")) {
+            if (true) {
                 c.setRenderer(new DefaultListCellRenderer() {
                     @Override
                     public Component getListCellRendererComponent(JList<?> list, Object value,
@@ -518,7 +520,7 @@ public class MainFrame extends JFrame {
                         lbl.setOpaque(true);
                         if (isSelected) {
                             lbl.setBackground(selBg);
-                            lbl.setForeground(fgColor);
+                            lbl.setForeground(Theme.DARK);
                         } else {
                             lbl.setBackground(bgColor);
                             lbl.setForeground(fgColor);
@@ -549,10 +551,10 @@ public class MainFrame extends JFrame {
                 }
                 lbl.setOpaque(true);
                 if (isSelected) {
-                    lbl.setBackground(new Color(80, 60, 140));
-                    lbl.setForeground(Color.WHITE);
+                    lbl.setBackground(Theme.BRASS);
+                    lbl.setForeground(Theme.DARK);
                 } else {
-                    lbl.setBackground(new Color(55, 58, 65));
+                    lbl.setBackground(Theme.DARK);
                     lbl.setForeground(Color.WHITE);
                 }
                 return lbl;
@@ -737,30 +739,30 @@ public class MainFrame extends JFrame {
     // =========================================================================
     private JPanel buildScoreBar() {
         JPanel bar = new JPanel(new FlowLayout(FlowLayout.CENTER, 28, 7));
-        bar.setBackground(new Color(44, 47, 55));
-        bar.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(100, 75, 165)));
+        bar.setBackground(Theme.DARK);
+        bar.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, Theme.BRASS));
 
         lblScoreTitle = new JLabel(Lang.scoreboard());
         lblScoreTitle.setFont(new Font("Segoe UI", Font.BOLD, 11));
-        lblScoreTitle.setForeground(new Color(180, 155, 230));
+        lblScoreTitle.setForeground(Theme.BRASS);
         bar.add(lblScoreTitle);
 
         bar.add(makeSep());
 
-        lblWinTxt = makeScoreLabel(Lang.wins(),   new Color(100, 200, 120), false);
-        lblWinVal = makeScoreLabel("0",            new Color(100, 200, 120), true);
+        lblWinTxt = makeScoreLabel(Lang.wins(),   Theme.BRASS, false);
+        lblWinVal = makeScoreLabel("0",            Theme.BRASS, true);
         bar.add(lblWinTxt); bar.add(lblWinVal);
 
         bar.add(makeSep());
 
-        lblLossTxt = makeScoreLabel(Lang.losses(), new Color(220, 100, 100), false);
-        lblLossVal = makeScoreLabel("0",            new Color(220, 100, 100), true);
+        lblLossTxt = makeScoreLabel(Lang.losses(), Theme.ERROR, false);
+        lblLossVal = makeScoreLabel("0",            Theme.ERROR, true);
         bar.add(lblLossTxt); bar.add(lblLossVal);
 
         bar.add(makeSep());
 
-        lblDrawTxt = makeScoreLabel(Lang.draws(),  new Color(220, 185, 80), false);
-        lblDrawVal = makeScoreLabel("0",            new Color(220, 185, 80), true);
+        lblDrawTxt = makeScoreLabel(Lang.draws(),  Theme.BRASS, false);
+        lblDrawVal = makeScoreLabel("0",            Theme.BRASS, true);
         bar.add(lblDrawTxt); bar.add(lblDrawVal);
 
         return bar;
@@ -787,25 +789,25 @@ public class MainFrame extends JFrame {
         BoardPanel.GameMode mode = boardPanel.getGameMode();
         Piece turn = boardPanel.getCurrentTurn();
         if (boardPanel.isRestartWaiting()) {
-            setTurnLabel(Lang.restartWaiting(), new Color(200, 100, 20));
+            setTurnLabel(Lang.restartWaiting(), Theme.ERROR);
         } else if (boardPanel.isGameOver()) {
             Piece winner = boardPanel.getWinner();
             Piece local = mode == BoardPanel.GameMode.ONLINE ? boardPanel.getMyPiece() : Piece.X;
-            Color color = winner == Piece.NONE ? new Color(120, 80, 20)
-                    : winner == local ? new Color(30, 130, 50) : new Color(160, 30, 30);
+            Color color = winner == Piece.NONE ? Theme.MUTED
+                    : winner == local ? Theme.MUTED : Theme.ERROR;
             setTurnLabel(boardPanel.getGameOverMessage(), color);
         } else if (mode == BoardPanel.GameMode.ONLINE) {
             boolean localTurn = turn == boardPanel.getMyPiece();
             setTurnLabel(localTurn ? Lang.onlineYourTurn() : Lang.onlineOpponentTurn(),
-                    localTurn ? new Color(20, 120, 50) : new Color(200, 100, 20));
+                    localTurn ? Theme.MUTED : Theme.ERROR);
         } else if (boardPanel.isAiThinking()) {
-            setTurnLabel(Lang.aiThinking(), new Color(200, 100, 20));
+            setTurnLabel(Lang.aiThinking(), Theme.ERROR);
         } else if (mode == BoardPanel.GameMode.PV_AI) {
             setTurnLabel(turn == Piece.X ? Lang.yourTurn() : Lang.aiTurn(),
-                    turn == Piece.X ? new Color(20, 80, 170) : new Color(160, 30, 30));
+                    turn == Piece.X ? Theme.BRASS : Theme.ERROR);
         } else {
             setTurnLabel(turn == Piece.X ? Lang.p1Turn() : Lang.p2Turn(),
-                    turn == Piece.X ? new Color(20, 80, 170) : new Color(160, 30, 30));
+                    turn == Piece.X ? Theme.BRASS : Theme.ERROR);
         }
     }
 
@@ -815,7 +817,7 @@ public class MainFrame extends JFrame {
     private JLabel makeHeaderLabel(String text) {
         JLabel l = new JLabel(text);
         l.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        l.setForeground(new Color(190, 190, 200));
+        l.setForeground(Theme.BRASS);
         return l;
     }
 
@@ -829,12 +831,12 @@ public class MainFrame extends JFrame {
     private JLabel makeSep() {
         JLabel sep = new JLabel("|");
         sep.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        sep.setForeground(new Color(80, 85, 100));
+        sep.setForeground(Theme.DARK);
         return sep;
     }
 
     private JButton makeDarkBtn(String text, Color bg, Color fg) {
-        JButton b = new JButton(text);
+        JButton b = new ThemedButton(text, bg.equals(Theme.BRASS) ? ThemedButton.Style.PRIMARY : ThemedButton.Style.SECONDARY);
         b.setFont(new Font("Segoe UI", Font.BOLD, 12));
         b.setBackground(bg); b.setForeground(fg);
         b.setFocusPainted(false);

@@ -11,6 +11,7 @@ public class AppSettings {
     private static final String KEY_LANG  = "language";
     private static final String KEY_SOUND = "soundEnabled";
     private static final String KEY_PLAYER_NAME = "playerName";
+    private static final String KEY_AVATAR = "avatarIndex";
     public static final int MAX_PLAYER_NAME_LENGTH = 16;
 
     private final Preferences prefs;
@@ -58,6 +59,17 @@ public class AppSettings {
     public String loadPlayerName() {
         try { return normalizePlayerName(prefs.get(KEY_PLAYER_NAME, "")); }
         catch (Exception ignored) { return ""; }
+    }
+
+    public PlayerProfile loadProfile() {
+        int index;
+        try { index = prefs.getInt(KEY_AVATAR, 0); } catch (Exception ignored) { index = 0; }
+        return new PlayerProfile(loadPlayerName(), index);
+    }
+
+    public void saveProfile(PlayerProfile profile) {
+        savePlayerName(profile.name());
+        try { prefs.putInt(KEY_AVATAR, profile.avatarIndex()); } catch (Exception ignored) {}
     }
 
     /** Count Unicode code points after NFC normalization; never split a surrogate pair. */

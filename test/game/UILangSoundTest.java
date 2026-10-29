@@ -142,7 +142,7 @@ public class UILangSoundTest {
     void c2_comboRendererContrast() throws Exception {
         Lang.set(Lang.Language.VI);
         MainFrame frame = new MainFrame(new AppSettings(
-                Preferences.userRoot().node(TEST_PREF_NODE + "/c2")));
+                PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/c2")));
         try {
             frame.startGame();
             // modeCombo
@@ -163,7 +163,7 @@ public class UILangSoundTest {
     private void assertRendererContrast(JComboBox<?> combo, String name) {
         JList<?> dummyList = new JList<>();
         // Thiết lập dummyList với màu tối để renderer không lấy màu hệ thống
-        dummyList.setBackground(new Color(55, 58, 65));
+        dummyList.setBackground(Theme.DARK);
         dummyList.setForeground(Color.WHITE);
         Object item = combo.getItemAt(0);
         @SuppressWarnings({"unchecked", "rawtypes"})
@@ -176,7 +176,7 @@ public class UILangSoundTest {
         int h = Math.max(combo.getHeight(), 22);
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2 = img.createGraphics();
-        g2.setColor(new Color(34, 36, 40)); // nền header
+        g2.setColor(Theme.DARK); // nền header
         g2.fillRect(0, 0, w, h);
         combo.paint(g2);
         g2.dispose();
@@ -236,7 +236,7 @@ public class UILangSoundTest {
     void b2_soundButtonToggle() throws Exception {
         SoundManager.setSoundEnabled(true);
         MainFrame frame = new MainFrame(new AppSettings(
-                Preferences.userRoot().node(TEST_PREF_NODE + "/b2")));
+                PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/b2")));
         try {
             JButton btn = frame.getBtnSound();
             assertNotNull(btn, "btnSound null");
@@ -264,7 +264,7 @@ public class UILangSoundTest {
         Lang.set(Lang.Language.VI);
         SoundManager.setSoundEnabled(true);
         MainFrame frame = new MainFrame(new AppSettings(
-                Preferences.userRoot().node(TEST_PREF_NODE + "/b3")));
+                PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/b3")));
         try {
             JButton btn = frame.getBtnSound();
 
@@ -305,7 +305,7 @@ public class UILangSoundTest {
     void c3_mainFrameLabelsUpdate() throws Exception {
         Lang.set(Lang.Language.VI);
         MainFrame frame = new MainFrame(new AppSettings(
-                Preferences.userRoot().node(TEST_PREF_NODE + "/c3")));
+                PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/c3")));
         try {
             // VI
             assertEquals(Lang.mode(), frame.getLblMode().getText(), "VI: lblMode sai");
@@ -338,7 +338,7 @@ public class UILangSoundTest {
     @Order(7)
     @DisplayName("D1 – AppSettings round-trip: lưu/đọc lang + sound; fallback mặc định; invalid → VI")
     void d1_appSettingsRoundTrip() throws Exception {
-        Preferences testNode = Preferences.userRoot().node(TEST_PREF_NODE + "/d1");
+        Preferences testNode = PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/d1");
         testNode.clear();
         AppSettings s = new AppSettings(testNode);
 
@@ -377,10 +377,9 @@ public class UILangSoundTest {
     @Order(8)
     @DisplayName("D2 – Preferences test node khác node production")
     void d2_testNodeDifferentFromProduction() {
-        AppSettings prod = new AppSettings();
-        String prodPath = prod.getPrefs().absolutePath();
+        String prodPath = "/game/view";
 
-        Preferences testNode = Preferences.userRoot().node(TEST_PREF_NODE);
+        Preferences testNode = PreferencesIsolation.testRoot.node(TEST_PREF_NODE);
         assertNotEquals(prodPath, testNode.absolutePath(),
             "Test node phải khác production node");
 
@@ -427,7 +426,7 @@ public class UILangSoundTest {
     private BufferedImage renderIcon(Icon icon, int w, int h) {
         BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g2 = img.createGraphics();
-        g2.setColor(new Color(55, 58, 65)); // nền header tối
+        g2.setColor(Theme.DARK); // nền header tối
         g2.fillRect(0, 0, w, h);
         icon.paintIcon(null, g2, 0, 0);
         g2.dispose();
@@ -457,6 +456,6 @@ public class UILangSoundTest {
     }
 
     private void cleanup_pref(String path) {
-        try { Preferences.userRoot().node(path).removeNode(); } catch (Exception ignored) {}
+        try { PreferencesIsolation.testRoot.node(path).removeNode(); } catch (Exception ignored) {}
     }
 }

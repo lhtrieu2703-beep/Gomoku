@@ -76,9 +76,17 @@ public class Lang {
 
     public static String defaultPlayerName() {
         return switch (current) {
-            case VI -> "Người chơi";
-            case EN -> "Player";
-            case PT -> "Jogador";
+            case VI -> "Người chơi 1";
+            case EN -> "Player 1";
+            case PT -> "Jogador 1";
+        };
+    }
+
+    public static String defaultPlayerTwo() {
+        return switch (current) {
+            case VI -> "Người chơi 2";
+            case EN -> "Player 2";
+            case PT -> "Jogador 2";
         };
     }
 

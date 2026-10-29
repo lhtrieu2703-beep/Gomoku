@@ -14,7 +14,7 @@ public final class StartScreen extends JPanel {
     private final JLabel hint = new JLabel();
     private final JLabel languageLabel = new JLabel();
     private final JTextField nameField = new JTextField(20);
-    private final JButton startButton = new JButton();
+    private final JButton startButton = new ThemedButton("", ThemedButton.Style.PRIMARY);
     private final JComboBox<Lang.Language> languageCombo = new JComboBox<>(Lang.Language.values());
     private boolean updatingLanguage;
 
@@ -22,19 +22,19 @@ public final class StartScreen extends JPanel {
         setLayout(new GridBagLayout());
         setPreferredSize(new Dimension(760, 700));
         JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(new Color(245, 241, 232));
+        form.setBackground(Theme.CREAM);
         form.setBorder(new EmptyBorder(30, 38, 32, 38));
         title.setFont(new Font("Segoe UI", Font.BOLD, 38));
-        title.setForeground(new Color(27, 64, 50));
+        title.setForeground(Theme.DARK);
         subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        subtitle.setForeground(new Color(66, 75, 70));
+        subtitle.setForeground(Theme.DARK);
         nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
-        nameLabel.setForeground(new Color(38, 47, 42));
+        nameLabel.setForeground(Theme.DARK);
         nameLabel.setLabelFor(nameField);
         hint.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        hint.setForeground(new Color(83, 90, 85));
+        hint.setForeground(Theme.DARK);
         languageLabel.setLabelFor(languageCombo);
-        languageLabel.setForeground(new Color(38, 47, 42));
+        languageLabel.setForeground(Theme.DARK);
         nameField.setFont(new Font("Segoe UI", Font.PLAIN, 20));
         nameField.setMargin(new Insets(9, 10, 9, 10));
         ((AbstractDocument) nameField.getDocument()).setDocumentFilter(new DocumentFilter() {
@@ -53,7 +53,7 @@ public final class StartScreen extends JPanel {
         nameField.setText(savedName);
         startButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
         startButton.setForeground(Color.WHITE);
-        startButton.setBackground(new Color(36, 115, 72));
+        startButton.setBackground(Theme.MUTED);
         startButton.setOpaque(true);
         startButton.setBorderPainted(false);
         startButton.setBorder(new EmptyBorder(11, 24, 11, 24));
@@ -113,24 +113,9 @@ public final class StartScreen extends JPanel {
         revalidate(); repaint();
     }
 
+    private final BackgroundPanel background = new BackgroundPanel();
     @Override protected void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-        Graphics2D g = (Graphics2D) graphics.create();
-        try {
-            g.setPaint(new GradientPaint(0, 0, new Color(22, 40, 42), getWidth(), getHeight(), new Color(43, 78, 59)));
-            g.fillRect(0, 0, getWidth(), getHeight());
-            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            int cell = 40, originX = getWidth() - 9 * cell, originY = getHeight() - 8 * cell;
-            g.setColor(new Color(223, 190, 118, 36));
-            for (int i = 0; i < 10; i++) {
-                g.drawLine(originX + i * cell, originY, originX + i * cell, getHeight());
-                g.drawLine(originX, originY + i * cell, getWidth(), originY + i * cell);
-            }
-            for (int i = 0; i < 5; i++) {
-                g.setColor(i % 2 == 0 ? new Color(10, 19, 19, 120) : new Color(242, 231, 203, 90));
-                g.fillOval(originX + i * cell - 13, getHeight() - 52, 26, 26);
-            }
-        } finally { g.dispose(); }
+        background.setSize(getSize()); background.paint(graphics);
     }
 
     public JTextField getNameField() { return nameField; }

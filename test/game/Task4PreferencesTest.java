@@ -24,7 +24,7 @@ class Task4PreferencesTest {
     }
     @ParameterizedTest @EnumSource(Lang.Language.class)
     void nameAndLanguageRoundTripThroughInjectedNode(Lang.Language selected) throws Exception {
-        Preferences node = Preferences.userRoot().node(path);
+        Preferences node = PreferencesIsolation.testRoot.node(path);
         node.putBoolean("soundEnabled", false);
         String name = switch (selected) { case VI -> "Đặng Minh"; case EN -> "Alex"; case PT -> "João Gonçalves"; };
         SwingUtilities.invokeAndWait(() -> {

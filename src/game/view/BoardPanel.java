@@ -96,7 +96,7 @@ public class BoardPanel extends JPanel {
 
         int panelSize = OFFSET * 2 + (Board.SIZE - 1) * CELL_SIZE;
         setPreferredSize(new Dimension(panelSize, panelSize));
-        setBackground(new Color(200, 155, 75));
+        setBackground(Theme.BOARD);
 
         // Click chuột
         addMouseListener(new MouseAdapter() {

@@ -156,14 +156,14 @@ public class LangPurityTest {
         System.setProperty("java.awt.headless", "false");
         Lang.set(Lang.Language.VI);
         MainFrame frame = new MainFrame(new AppSettings(
-                Preferences.userRoot().node(TEST_NODE + "/c")));
+                PreferencesIsolation.testRoot.node(TEST_NODE + "/c")));
         try {
             frame.startGame();
             // Màu nền ô display (bgColor) và màu chữ (fgColor) từ applyDarkComboUI:
             //   bgColor = RGB(55, 58, 65)
-            //   fgColor = Color.WHITE = RGB(255, 255, 255)
-            Color bg = new Color(55, 58, 65);
-            Color fg = Color.WHITE;
+            //   fgColor = Theme.DARK = RGB(255, 255, 255)
+            Color bg = Theme.DARK;
+            Color fg = Theme.CREAM;
 
             double cr = contrastRatio(bg, fg);
             System.out.printf("[C] bg=RGB(%d,%d,%d) fg=WHITE → contrast ratio = %.2f%n",
@@ -173,8 +173,8 @@ public class LangPurityTest {
                 "Contrast ratio " + String.format("%.2f", cr) + " < 4.5 (WCAG AA)");
 
             // Kiểm thêm: selected state (selBg = 80,60,140) vs fgColor = WHITE
-            Color selBg = new Color(80, 60, 140);
-            double crSel = contrastRatio(selBg, fg);
+            Color selBg = Theme.BRASS;
+            double crSel = contrastRatio(selBg, Theme.DARK);
             System.out.printf("[C] selBg=RGB(%d,%d,%d) fg=WHITE → contrast ratio selected = %.2f%n",
                 selBg.getRed(), selBg.getGreen(), selBg.getBlue(), crSel);
             assertTrue(crSel >= 3.0,
@@ -183,7 +183,7 @@ public class LangPurityTest {
             System.out.println("[C] PASS");
         } finally {
             frame.dispose();
-            try { Preferences.userRoot().node(TEST_NODE + "/c").removeNode(); }
+            try { PreferencesIsolation.testRoot.node(TEST_NODE + "/c").removeNode(); }
             catch (Exception ignored) {}
         }
     }

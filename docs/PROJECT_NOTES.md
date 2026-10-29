@@ -159,3 +159,14 @@ Giao thức v2 qua Socket TCP (chi tiết và sơ đồ: TASK35_PROTOCOL.md):
 - Đo có giới hạn: Hard 1 quân median 38.30 ms/max 40.82 ms; 10 lượt Hard qua BoardPanel median 35.28 ms/max 109.69 ms; heartbeat EDT max 3.19 ms. Không xem đây là kiểm thử đầy đủ UI/audio/mạng hai máy.
 - Đã khảo sát nguồn RIF, Gomocup 2026, Rapfi, BGA, PlayOK và các sản phẩm có replay/puzzle/study. Đề xuất ưu tiên sửa đúng luật/giao thức/UI, rồi replay/lưu ván, gợi ý có giải thích và iterative deepening.
 - Báo cáo và nguồn: REVIEW_AND_UPGRADE_PLAN.md. Probe tái hiện: tools/audit; ảnh render: docs/audit-2026-10-26. Lượt review này chưa thay logic sản phẩm, chưa commit/push.
+
+
+## Task 4b — A (2026-10-29)
+- Palette: Theme; custom ThemedButton paints four states independently of look and feel.
+- Profile: playerName key retained; avatarIndex added; implicit empty name follows locale.
+- Images: /images/background.png and /avatars/avatar_0.png .. avatar_7.png; all optional.
+- javac does not copy resources. build.ps1 and run.bat copy resources/* into bin/.
+- Fixed card content 760x758; no setSize/setMinimumSize on MainFrame.
+- Tests use RAM Preferences (old registry-backed test setup migrated too); production settings only read for comparison.
+- A validation: complete JUnit tree in docs/task4b-results/A-junit.txt.
+- B6 uses the six rule lines supplied in the latest Task 4b prompt, replacing the earlier placeholder request.
