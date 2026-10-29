@@ -30,7 +30,9 @@ public class ThemedButton extends JButton {
     @Override protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        if(style==Style.SECONDARY) g.setComposite(AlphaComposite.SrcOver.derive(0.88f));
         g.setColor(fillColor()); g.fillRoundRect(3, 3, getWidth()-6, getHeight()-6, 16, 16);
+        g.setComposite(AlphaComposite.SrcOver);
         g.setColor(isEnabled() ? Theme.BRASS : Theme.MUTED);
         g.drawRoundRect(3, 3, getWidth()-7, getHeight()-7, 16, 16);
         if (hasFocus()) { g.setStroke(new BasicStroke(2)); g.drawRoundRect(1,1,getWidth()-3,getHeight()-3,18,18); }
@@ -38,7 +40,7 @@ public class ThemedButton extends JButton {
         FontMetrics fm = g.getFontMetrics(getFont()); g.setFont(getFont());
         String text = getText() == null ? "" : getText(); Icon icon = getIcon();
         int total = fm.stringWidth(text) + (icon == null ? 0 : icon.getIconWidth() + (text.isEmpty() ? 0 : getIconTextGap()));
-        int x = (getWidth()-total)/2;
+        int x = getHorizontalAlignment()==SwingConstants.LEFT ? getInsets().left+6 : (getWidth()-total)/2;
         if (icon != null) { icon.paintIcon(this,g,x,(getHeight()-icon.getIconHeight())/2); x += icon.getIconWidth()+getIconTextGap(); }
         g.setColor(ink); g.drawString(text,x,(getHeight()-fm.getHeight())/2+fm.getAscent()); g.dispose();
     }

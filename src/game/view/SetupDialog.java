@@ -25,7 +25,9 @@ public final class SetupDialog extends LocalizedDialog {
         });
     }
     protected void refreshLanguage() { setTitle(ai?Lang.pvAI():Lang.pvp()); label.setText(Lang.difficulty()); start.setText(Lang.startGame()); cancel.setText(Lang.cancel());
-        if(second!=null) second.refreshLanguage(); difficulty.repaint(); repack(); }
+        if(second!=null) second.refreshLanguage();
+        int width=java.util.Arrays.stream(MinimaxAI.Difficulty.values()).map(Lang::difficultyName).mapToInt(t -> difficulty.getFontMetrics(difficulty.getFont()).stringWidth(t)).max().orElse(100);
+        difficulty.setPreferredSize(new Dimension(width+48,36)); difficulty.repaint(); repack(); }
     public JComboBox<MinimaxAI.Difficulty> getDifficultyCombo() { return difficulty; } public ProfileEditor getSecondEditor() { return second; }
     public JButton getStartButton() { return start; } public JButton getCancelButton() { return cancel; }
 }

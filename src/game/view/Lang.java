@@ -33,9 +33,17 @@ public class Lang {
     public static String difficultyName(game.ai.MinimaxAI.Difficulty difficulty) { return switch(difficulty) { case EASY -> easy(); case MEDIUM -> medium(); case HARD -> hard(); }; }
     public static String computerName(game.ai.MinimaxAI.Difficulty difficulty) { return text("Máy","Computer","Computador")+" ("+difficultyName(difficulty)+")"; }
     public static String opponentName() { return text("Đối thủ","Opponent","Adversário"); }
-    public static String pieceName(game.model.Piece piece) { return piece==game.model.Piece.X?text("Quân Đen","Black","Pretas"):text("Quân Trắng","White","Brancas"); }
+    public static String pieceName(game.model.Piece piece) { return piece==game.model.Piece.X?text("Quân Đen","Black","Preto"):text("Quân Trắng","White","Branco"); }
     public static String namedTurn(String name,game.model.Piece piece) { return name+" ("+pieceName(piece)+")"; }
     public static String ruleExample(boolean win) { return win?text("Thắng","Win","Vitória"):text("Không thắng (bị chặn hai đầu)","No win (both ends blocked)","Sem vitória (as duas extremidades bloqueadas)"); }
+    public static String rules(String key) {
+        return switch(key) {
+            case "rules.l1" -> rulesLine(1); case "rules.l2" -> rulesLine(2); case "rules.l3" -> rulesLine(3);
+            case "rules.l4" -> rulesLine(4); case "rules.l5" -> rulesLine(5); case "rules.l6" -> rulesLine(6);
+            case "rules.winExample" -> ruleExample(true); case "rules.noWinExample" -> ruleExample(false);
+            default -> throw new IllegalArgumentException("Unknown rule key: "+key);
+        };
+    }
     public static String rulesLine(int index) {
         String[][] lines={
             {"Bàn cờ 15×15. Hai người luân phiên đặt quân vào ô trống; Quân Đen đi trước.","15×15 board. Players take turns placing a stone on an empty cell; Black goes first.","Tabuleiro 15×15. Os jogadores alternam colocando uma peça numa casa vazia; as Pretas começam."},

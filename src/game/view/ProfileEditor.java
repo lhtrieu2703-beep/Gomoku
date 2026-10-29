@@ -26,7 +26,7 @@ public final class ProfileEditor extends JPanel {
             public void insertString(FilterBypass fb,int offset,String text,AttributeSet attrs) throws BadLocationException { replace(fb,offset,0,text,attrs); }
             public void replace(FilterBypass fb,int offset,int length,String text,AttributeSet attrs) throws BadLocationException {
                 String old=fb.getDocument().getText(0,fb.getDocument().getLength()); String candidate=old.substring(0,offset)+(text==null?"":text)+old.substring(offset+length);
-                if(candidate.codePointCount(0,candidate.length())>16) candidate=candidate.substring(0,candidate.offsetByCodePoints(0,16)); fb.replace(0,old.length(),candidate,attrs);
+                if(candidate.codePointCount(0,candidate.length())>16) candidate=AppSettings.normalizePlayerName(candidate); fb.replace(0,old.length(),candidate,attrs);
             }
         });
         name.setText(player.name()); name.addFocusListener(new FocusAdapter() { public void focusGained(FocusEvent e) { name.selectAll(); } });
@@ -34,7 +34,9 @@ public final class ProfileEditor extends JPanel {
             public void insertUpdate(DocumentEvent e) { update(); } public void removeUpdate(DocumentEvent e) { update(); } public void changedUpdate(DocumentEvent e) { update(); }
             private void update() { count.setText(Lang.characterCount(name.getText().codePointCount(0,name.getText().length()))); refreshAvatars(); }
         });
-        clear.addActionListener(e -> { name.setText(""); name.requestFocusInWindow(); }); field.add(name); field.add(clear,BorderLayout.EAST);
+        clear.addActionListener(e -> { name.setText(""); name.requestFocusInWindow(); });
+        name.setBorder(BorderFactory.createEmptyBorder(4,4,4,0)); field.setBorder(BorderFactory.createLineBorder(Theme.MUTED));
+        field.add(name); field.add(clear,BorderLayout.EAST);
         JPanel south=new JPanel(new BorderLayout(0,4)); south.setOpaque(false); south.add(field); south.add(count,BorderLayout.SOUTH);
         add(grid); add(south,BorderLayout.SOUTH); refreshLanguage();
     }

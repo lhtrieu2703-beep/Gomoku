@@ -139,7 +139,7 @@ public class UILangSoundTest {
     @Test
     @Order(3)
     @DisplayName("C2 – Shared custom button painting and contrast >= 4.5")
-    void c2_comboRendererContrast() throws Exception {
+    void c2_sharedButtonPaintAndContrast() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
             for (ThemedButton.Style style : ThemedButton.Style.values()) {
                 ThemedButton button = new ThemedButton(Lang.startGame(), style);
@@ -147,58 +147,12 @@ public class UILangSoundTest {
                 assertTrue(contrastRatio(button.fillColor(), foreground) >= 4.5);
                 button.setSize(180, 48);
                 BufferedImage image = new BufferedImage(180,48,BufferedImage.TYPE_INT_RGB);
-                button.paint(image.getGraphics());
+                Graphics2D canvas=image.createGraphics(); canvas.setColor(Theme.DARK); canvas.fillRect(0,0,180,48);
+                button.paint(canvas); canvas.dispose();
                 assertEquals(button.fillColor().getRGB(), image.getRGB(15,15));
             }
         });
         System.out.println("[C2] Shared buttons: actual painted fields and text contrast PASS");
-    }
-
-    private void assertRendererContrast(JComboBox<?> combo, String name) {
-        JList<?> dummyList = new JList<>();
-        // Thiết lập dummyList với màu tối để renderer không lấy màu hệ thống
-        dummyList.setBackground(Theme.DARK);
-        dummyList.setForeground(Color.WHITE);
-        Object item = combo.getItemAt(0);
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        ListCellRenderer renderer = combo.getRenderer();
-        System.out.printf("[C2] %s renderer class: %s%n", name, renderer.getClass().getName());
-
-        // index=-1: ô display — kiểm tra qua paintCurrentValue (BasicComboBoxUI)
-        // Thay vì gọi renderer trực tiếp, vẽ combo ra ảnh và kiểm pixel
-        int w = Math.max(combo.getWidth(), 100);
-        int h = Math.max(combo.getHeight(), 22);
-        BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2 = img.createGraphics();
-        g2.setColor(Theme.DARK); // nền header
-        g2.fillRect(0, 0, w, h);
-        combo.paint(g2);
-        g2.dispose();
-
-        // Lấy pixel ở giữa vùng display (loại bỏ 20px arrow button bên phải)
-        int displayW = w - 22;
-        int midY = h / 2;
-        int sumR=0, sumG=0, sumB=0, cnt=0;
-        for (int x = 4; x < displayW - 4; x += 3) {
-            int rgb = img.getRGB(x, midY);
-            sumR += (rgb>>16)&0xFF; sumG += (rgb>>8)&0xFF; sumB += rgb&0xFF; cnt++;
-        }
-        int avgR = sumR/cnt, avgG = sumG/cnt, avgB = sumB/cnt;
-        System.out.printf("[C2] %s painted field avg pixel: RGB(%d,%d,%d)%n", name, avgR, avgG, avgB);
-        assertTrue(avgR + avgG + avgB < 400,
-            name + " display field bg không đủ tối (painted): RGB(" + avgR+","+avgG+","+avgB+")");
-
-        // index=0, isSelected=true: popup selected — kiểm qua renderer
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        Component cSel = ((ListCellRenderer)renderer).getListCellRendererComponent(dummyList, item, 0, true, false);
-        Color bgS = cSel.getBackground();
-        Color fgS = cSel.getForeground();
-        System.out.printf("[C2] %s selected: bg=RGB(%d,%d,%d) fg=RGB(%d,%d,%d)%n",
-            name, bgS.getRed(), bgS.getGreen(), bgS.getBlue(),
-            fgS.getRed(), fgS.getGreen(), fgS.getBlue());
-        double cr = contrastRatio(bgS, fgS);
-        System.out.printf("[C2] %s contrast ratio selected: %.2f%n", name, cr);
-        assertTrue(cr >= 3.0, name + " contrast ratio selected < 3.0: " + cr);
     }
 
     /** Tính contrast ratio theo WCAG 2.x */
@@ -227,7 +181,7 @@ public class UILangSoundTest {
     @Test
     @Order(4)
     @DisplayName("B2 – Click btnSound toggle SoundManager.isSoundEnabled()")
-    void b2_soundButtonToggle() throws Exception {
+    void b2_settingsSoundToggle() throws Exception {
         SoundManager.setSoundEnabled(true);
         MainFrame frame = new MainFrame(new AppSettings(
                 PreferencesIsolation.testRoot.node(TEST_PREF_NODE + "/b2")));
@@ -255,7 +209,7 @@ public class UILangSoundTest {
     @Test
     @Order(5)
     @DisplayName("B3 – Tooltip btnSound đúng theo ngôn ngữ và trạng thái on/off")
-    void b3_soundTooltipByLang() throws Exception {
+    void b3_settingsSoundTooltipByLang() throws Exception {
         Lang.set(Lang.Language.VI);
         SoundManager.setSoundEnabled(true);
         MainFrame frame = new MainFrame(new AppSettings(
@@ -298,7 +252,7 @@ public class UILangSoundTest {
     @Test
     @Order(6)
     @DisplayName("C3 – Menu and settings update VI/EN/PT immediately")
-    void c3_mainFrameLabelsUpdate() throws Exception {
+    void c3_menuAndSettingsUpdateImmediately() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
             SettingsDialog settings = new SettingsDialog(frame);
@@ -359,7 +313,7 @@ public class UILangSoundTest {
     @Test
     @Order(8)
     @DisplayName("D2 – Preferences test node khác node production")
-    void d2_testNodeDifferentFromProduction() {
+    void d2_inMemoryNodeIsDifferentFromProduction() {
         String prodPath = "/game/view";
 
         Preferences testNode = PreferencesIsolation.testRoot.node(TEST_PREF_NODE);

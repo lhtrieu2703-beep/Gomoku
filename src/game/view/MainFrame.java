@@ -66,7 +66,7 @@ public class MainFrame extends JFrame {
         // Keep that preferred size and centre the panel instead of stretching it to 760px.
         JPanel boardArea=new JPanel(new GridBagLayout()); boardArea.setBackground(Theme.BOARD); boardArea.add(boardPanel);
         gameCard.add(boardArea,BorderLayout.CENTER);
-        JPanel toolbar=new JPanel(new BorderLayout()); toolbar.setBorder(BorderFactory.createEmptyBorder(6,16,6,16)); toolbar.setBackground(Theme.DARK);
+        JPanel toolbar=new JPanel(new BorderLayout()); toolbar.setBorder(BorderFactory.createEmptyBorder(6,16,6,12)); toolbar.setBackground(Theme.DARK);
         JPanel actions=new JPanel(new FlowLayout(FlowLayout.LEFT,6,0)); actions.setOpaque(false);
         for(JButton button:new JButton[]{btnBackToMenu,btnUndo,btnNewGame}) actions.add(button);
         JPanel right=new JPanel(new FlowLayout(FlowLayout.RIGHT,8,0)); right.setOpaque(false); right.add(rulesButton); right.add(settingsButton);

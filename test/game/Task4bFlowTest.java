@@ -9,6 +9,43 @@ import java.awt.*;
 import java.awt.event.*;
 import static org.junit.jupiter.api.Assertions.*;
 class Task4bFlowTest {
+    @Test void lanMenuJoinUsesRealSocketAndStartsTheExistingOnlineGame() throws Exception {
+        try(java.net.ServerSocket server=new java.net.ServerSocket(0)) {
+            server.setSoTimeout(3000);
+            var accepted=java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                try {
+                    java.net.Socket peer=server.accept(); new java.io.PrintWriter(peer.getOutputStream(),true).println("START 2 "+java.util.UUID.randomUUID()); return peer;
+                } catch(java.io.IOException e) { throw new java.util.concurrent.CompletionException(e); }
+            });
+            MainFrame[] slot=new MainFrame[1];
+            try {
+                SwingUtilities.invokeAndWait(() -> {
+                    MainFrame f=Task4StartScreenTest.frame(Lang.Language.EN); slot[0]=f; f.showMenu(); f.updateProfile(new PlayerProfile("Local only",7));
+                    int[] ticks={0}; Timer closeNotice=new Timer(20,null);
+                    closeNotice.addActionListener(e -> {
+                        boolean ready=f.getScreen()==MainFrame.Screen.GAME;
+                        if(ready||++ticks[0]>250) {
+                            for(Window w:f.getOwnedWindows()) if(w instanceof JDialog&&w.isVisible()) w.dispose();
+                            closeNotice.stop();
+                        }
+                    });
+                    SwingUtilities.invokeLater(() -> {
+                        game.view.NetworkDialog dialog=P2LifecycleTest.field(f,"networkDialog");
+                        JTextField port=P2LifecycleTest.field(dialog,"txtPort"); port.setText(Integer.toString(server.getLocalPort()));
+                        JButton join=P2LifecycleTest.field(dialog,"btnJoin"); join.doClick();
+                    });
+                    closeNotice.start(); try { f.getMainMenu().getLanButton().doClick(); } finally { closeNotice.stop(); }
+                    assertEquals(MainFrame.Screen.GAME,f.getScreen()); assertEquals(BoardPanel.GameMode.ONLINE,f.getSelectedMode());
+                    assertEquals(game.model.Piece.O,f.getBoardPanel().getMyPiece()); assertEquals("Local only",f.getPlayerName());
+                    assertEquals(Lang.opponentName(),f.getRightPlayerCard().getFullName());
+                });
+                try(java.net.Socket peer=accepted.get(3,java.util.concurrent.TimeUnit.SECONDS)) {
+                    peer.setSoTimeout(3000); assertEquals(0,peer.getInputStream().available(),"No name/avatar packets added");
+                    SwingUtilities.invokeAndWait(() -> slot[0].returnToMenu()); assertEquals(-1,peer.getInputStream().read());
+                }
+            } finally { if(slot[0]!=null) SwingUtilities.invokeAndWait(slot[0]::dispose); }
+        }
+    }
     @ParameterizedTest @EnumSource(Lang.Language.class)
     void rulesHaveAllSixSuppliedLinesAndOpenFromBothMenuAndGame(Lang.Language language) throws Exception {
         SwingUtilities.invokeAndWait(() -> {

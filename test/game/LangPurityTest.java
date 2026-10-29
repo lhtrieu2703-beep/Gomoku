@@ -152,7 +152,7 @@ public class LangPurityTest {
     @Test
     @Order(3)
     @DisplayName("C – Shared theme/button contrast >= 4.5 (WCAG AA)")
-    void c_comboContrastRatio() throws Exception {
+    void c_sharedThemeContrast() throws Exception {
         double normal = contrastRatio(Theme.DARK, Theme.CREAM);
         double primary = contrastRatio(Theme.BRASS, Theme.DARK);
         assertTrue(normal >= 4.5); assertTrue(primary >= 4.5);

@@ -46,7 +46,7 @@ class Task4StartScreenTest {
             Arguments.of("João Gonçalves","João Gonçalves"),Arguments.of("Conceição","Conceição"),Arguments.of("A\u0301nh","Ánh"),
             Arguments.of("abcdefghijklmnopXYZ","abcdefghijklmnop"),Arguments.of("🎯".repeat(17),"🎯".repeat(16)),Arguments.of("A\nB","A B"),Arguments.of("<html>João","<html>João"));
     }
-    @ParameterizedTest @MethodSource("names") void normalizeUnicodeWhitespaceAndLongNames(String input,String expected) { assertEquals(expected,AppSettings.normalizePlayerName(input)); }
+    @ParameterizedTest @MethodSource("names") void normalizeUnicodeWhitespaceAndLongNames(String input,String expected) { assertEquals(expected,AppSettings.normalizePlayerName(input)); assertTrue(expected.codePointCount(0,expected.length())<=16); }
     @Test void profileFieldLimitsUnicodeAndNamesRemainPlainText() throws Exception {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame f=frame(Lang.Language.PT); ProfileDialog d=new ProfileDialog(f);

@@ -71,13 +71,15 @@ class Task4LifecycleTest {
                     assertEquals(Piece.X, frame.getBoardPanel().getMyPiece());
                     assertEquals(gameId + 1, frame.getBoardPanel().getGameId());
                     for (Window window : frame.getOwnedWindows()) assertFalse(window.isDisplayable());
-                    frame.startGame();
+                    assertEquals(BoardPanel.GameMode.ONLINE, frame.getSelectedMode());
+                    SetupDialog setup = new SetupDialog(frame, true); setup.getStartButton().doClick();
                 });
                 assertEquals(-1, peer.getInputStream().read());
             }
         }
         SwingUtilities.invokeAndWait(() -> {
-            assertEquals(frame.getSelectedMode(), frame.getBoardPanel().getGameMode());
+            assertEquals(BoardPanel.GameMode.PV_AI, frame.getSelectedMode());
+            assertEquals(BoardPanel.GameMode.PV_AI, frame.getBoardPanel().getGameMode());
             assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty());
         });
     }

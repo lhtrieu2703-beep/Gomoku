@@ -189,3 +189,16 @@ Giao thức v2 qua Socket TCP (chi tiết và sơ đồ: TASK35_PROTOCOL.md):
 - Score reset retains recorded game IDs so Undo/replay cannot count the same game again; Undo implementation unchanged.
 - Difficulty enum labels are Vietnamese; presentation now explicitly uses existing Lang.easy/medium/hard for setup and computer name, without changing AI.
 - Complete JUnit: 250/250, zero skipped/failed; docs/task4b-results/C-junit.txt.
+
+
+## Task 4b — D (2026-10-29)
+- Final JUnit: 267/267, 0 skipped/aborted/failed. Counts independently checked against all tree leaves; CSV and full raw A/B/C/D outputs in docs/task4b-results and TASK4B_REPORT.md.
+- Old-test migration ledger: docs/TASK4B_TEST_MIGRATION.md; all old class invocation counts retained, no @Disabled.
+- All 18 required renders in docs/task4b-render; nine displayed-frame measurements: 774x795 outer, 760x758 content at native Windows DPI125%.
+- Palette centralized, board/rule illustrations share StonePainter; no change to stone/cell sizes or Undo logic.
+- Visual QA fixed clipped language selector, enum difficulty localization and exact menu/game action-button alignment; button labels in score confirmation use Lang.
+- Source line endings follow repository LF. AI/Board/network sources remain byte-identical to f61e2d5.
+- RuleAndDrawTest 17/17; FullGomokuTestSuite 54 executed scenarios/77 assertions PASS, T55-T57 remain 3 PENDING and are excluded from PASS.
+- Runtime assets remain optional: resources/images/background.png and resources/avatars/avatar_0.png .. avatar_7.png; build/run copy to bin. No real images supplied.
+- Production Preferences unchanged {playerName=a, soundEnabled=true}; test writes only RAM. No score persistence.
+- Manual checks still required: native display DPI150%, two-machine LAN, real speaker/audio device. Image cache transform1.5 unit test is not a native DPI150% claim.

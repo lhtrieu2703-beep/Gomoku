@@ -77,10 +77,10 @@ public class NetworkDialog extends JDialog {
         btnPanel.setOpaque(false);
 
         btnHost = new ThemedButton(Lang.hostBtn(), ThemedButton.Style.PRIMARY);
-        styleButton(btnHost, Theme.BRASS, Color.WHITE);
+        styleButton(btnHost, Theme.BRASS, Theme.CREAM);
 
         btnJoin = new ThemedButton(Lang.joinBtn(), ThemedButton.Style.SECONDARY);
-        styleButton(btnJoin, Theme.BRASS, Color.WHITE);
+        styleButton(btnJoin, Theme.BRASS, Theme.CREAM);
 
         btnPanel.add(btnHost);
         btnPanel.add(btnJoin);
@@ -126,7 +126,7 @@ public class NetworkDialog extends JDialog {
             return port;
         } catch (Exception ex) {
             lblStatus.setText(Lang.invalidPort());
-            lblStatus.setForeground(Color.RED);
+            lblStatus.setForeground(Theme.ERROR);
             return -1;
         }
     }

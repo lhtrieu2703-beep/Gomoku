@@ -23,7 +23,7 @@ class Task4PreferencesTest {
         finally { SwingUtilities.invokeAndWait(() -> { Lang.set(language); SoundManager.setSoundEnabled(sound); }); }
     }
     @ParameterizedTest @EnumSource(Lang.Language.class)
-    void nameAndLanguageRoundTripThroughInjectedNode(Lang.Language selected) throws Exception {
+    void profileAndLanguageRoundTripThroughInMemoryNode(Lang.Language selected) throws Exception {
         Preferences node = PreferencesIsolation.testRoot.node(path);
         node.putBoolean("soundEnabled", false);
         String name = switch (selected) { case VI -> "Đặng Minh"; case EN -> "Alex"; case PT -> "João Gonçalves"; };

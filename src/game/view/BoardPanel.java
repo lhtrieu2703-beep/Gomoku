@@ -26,17 +26,13 @@ public class BoardPanel extends JPanel {
     public static final int OFFSET = 32;
 
     // Màu bàn cờ gỗ
-    private static final Color BOARD_COLOR      = new Color(220, 170, 90);
-    private static final Color BOARD_DARK       = new Color(195, 145, 65);
-    private static final Color LINE_COLOR       = new Color(140, 90, 35);
-    private static final Color STAR_COLOR       = new Color(90, 50, 10);
+    private static final Color BOARD_COLOR      = Theme.BOARD_FACE;
+    private static final Color BOARD_DARK       = Theme.BOARD_EDGE;
+    private static final Color LINE_COLOR       = Theme.GRID;
+    private static final Color STAR_COLOR       = Theme.STAR;
 
     // Màu quân cờ
-    private static final Color BLACK_STONE      = new Color(28, 28, 28);
-    private static final Color BLACK_HIGHLIGHT  = new Color(80, 80, 80);
-    private static final Color WHITE_STONE      = new Color(250, 250, 248);
-    private static final Color WHITE_BORDER     = new Color(160, 155, 145);
-    private static final Color LAST_MARKER      = new Color(230, 60, 60);
+    private static final Color LAST_MARKER      = Theme.MOVE_MARKER;
 
     private static final int STONE_RADIUS = CELL_SIZE / 2 - 3;
 
@@ -460,7 +456,7 @@ public class BoardPanel extends JPanel {
         int x0 = OFFSET - 8, y0 = OFFSET - 8;
         int bw = boardPx + 16, bh = boardPx + 16;
 
-        g2.setColor(new Color(0, 0, 0, 40));
+        g2.setColor(Theme.SHADOW);
         g2.fillRoundRect(x0 + 4, y0 + 4, bw, bh, 10, 10);
 
         g2.setColor(BOARD_COLOR);
@@ -529,21 +525,6 @@ public class BoardPanel extends JPanel {
         int cy = OFFSET + row * CELL_SIZE;
         int r  = STONE_RADIUS;
 
-        if (piece == Piece.X) {
-            g2.setColor(BLACK_STONE);
-            g2.fillOval(cx - r, cy - r, r * 2, r * 2);
-            g2.setColor(BLACK_HIGHLIGHT);
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.drawArc(cx - r + 3, cy - r + 3, r, r, 45, 120);
-        } else {
-            g2.setColor(WHITE_STONE);
-            g2.fillOval(cx - r, cy - r, r * 2, r * 2);
-            g2.setColor(WHITE_BORDER);
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.drawOval(cx - r, cy - r, r * 2, r * 2);
-            g2.setColor(new Color(230, 230, 230, 180));
-            g2.setStroke(new BasicStroke(2.0f));
-            g2.drawArc(cx - r + 4, cy - r + 4, r, r, 50, 100);
-        }
+        StonePainter.paint(g2, cx, cy, r, piece);
     }
 }

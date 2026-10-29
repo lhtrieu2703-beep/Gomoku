@@ -18,12 +18,26 @@ public final class SettingsDialog extends LocalizedDialog {
         });
         language.addActionListener(e -> { if(!refreshing) owner.selectLanguage((Lang.Language)language.getSelectedItem()); });
         sound.setIcon(new SpeakerIcon(20)); sound.addActionListener(e -> { owner.toggleSound(); refreshLanguage(); });
-        reset.addActionListener(e -> { if(JOptionPane.showConfirmDialog(this,Lang.confirmResetScore(),Lang.resetScore(),JOptionPane.YES_NO_OPTION)==JOptionPane.YES_OPTION) owner.resetSessionScores(); });
+        reset.addActionListener(e -> { if(confirmReset()) owner.resetSessionScores(); });
         close.addActionListener(e -> dispose()); finishLayout(close);
     }
     protected void refreshLanguage() {
         setTitle(Lang.settings()); languageLabel.setText(Lang.languageLabel()); refreshing=true; language.setSelectedItem(Lang.get()); refreshing=false;
+        int width=java.util.Arrays.stream(Lang.Language.values()).map(Lang::langName).mapToInt(t -> language.getFontMetrics(language.getFont()).stringWidth(t)).max().orElse(100);
+        language.setPreferredSize(new Dimension(width+48,36));
         sound.setText(Lang.sound()); sound.setToolTipText(SoundManager.isSoundEnabled()?Lang.soundTooltipOn():Lang.soundTooltipOff()); reset.setText(Lang.resetScore()); close.setText(Lang.close()); repack();
+    }
+    private boolean confirmReset() {
+        JButton yes=new ThemedButton(Lang.done(),ThemedButton.Style.PRIMARY),no=new ThemedButton(Lang.cancel(),ThemedButton.Style.SECONDARY);
+        JOptionPane pane=new JOptionPane(Lang.confirmResetScore(),JOptionPane.PLAIN_MESSAGE,JOptionPane.DEFAULT_OPTION,null,new Object[]{yes,no},no);
+        JDialog dialog=pane.createDialog(this,Lang.resetScore());
+        yes.addActionListener(e -> { pane.setValue(JOptionPane.YES_OPTION); dialog.dispose(); });
+        no.addActionListener(e -> { pane.setValue(JOptionPane.NO_OPTION); dialog.dispose(); });
+        dialog.getRootPane().setDefaultButton(no);
+        dialog.getRootPane().registerKeyboardAction(e -> no.doClick(),KeyStroke.getKeyStroke("ESCAPE"),JComponent.WHEN_IN_FOCUSED_WINDOW);
+        Theme.styleTree(pane); dialog.pack(); dialog.setLocationRelativeTo(this);
+        try { dialog.setVisible(true); return Integer.valueOf(JOptionPane.YES_OPTION).equals(pane.getValue()); }
+        finally { dialog.dispose(); }
     }
     public JComboBox<Lang.Language> getLanguageCombo() { return language; } public JButton getSoundButton() { return sound; }
     public JButton getResetButton() { return reset; } public JButton getCloseButton() { return close; }

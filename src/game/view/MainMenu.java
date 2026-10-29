@@ -6,6 +6,7 @@ public final class MainMenu extends BackgroundPanel {
     private final JButton rules=iconButton(UiIcon.Kind.BOOK),settings=iconButton(UiIcon.Kind.MENU);
     private final Logo logo=new Logo();
     public MainMenu(Runnable edit,Runnable playAi,Runnable playPvp,Runnable playLan,Runnable showRules,Runnable showSettings) {
+        profile.setHorizontalAlignment(SwingConstants.LEFT);
         setLayout(null); for(Component c:new Component[]{profile,rules,settings,logo,ai,pvp,lan}) add(c);
         profile.addActionListener(e -> edit.run()); ai.addActionListener(e -> playAi.run()); pvp.addActionListener(e -> playPvp.run());
         lan.addActionListener(e -> playLan.run()); rules.addActionListener(e -> showRules.run()); settings.addActionListener(e -> showSettings.run());
