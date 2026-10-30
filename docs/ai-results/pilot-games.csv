@@ -1,0 +1,4 @@
+game_id,pair,actor_a,actor_b,first_actor,x_actor,o_actor,result,moves,total_ms,a_moves,a_mean_ms,a_max_ms,b_moves,b_mean_ms,b_max_ms,anomaly,easy_seed
+pilot-1,HARD-HARD,HARD,HARD,A,A,B,A_WIN,19,1386.717000,10,73.464880,158.559700,9,72.181122,265.539300,"","uncontrolled: production Random has no seed API; src unchanged"
+pilot-2,EASY-HARD,EASY,HARD,B,B,A,B_WIN,9,186.710300,4,0.347825,0.534400,5,37.026920,106.259300,"","uncontrolled: production Random has no seed API; src unchanged"
+pilot-3,MEDIUM-HARD,MEDIUM,HARD,A,A,B,A_WIN,69,6056.776800,35,27.625377,61.761200,34,149.627274,439.601500,"","uncontrolled: production Random has no seed API; src unchanged"
