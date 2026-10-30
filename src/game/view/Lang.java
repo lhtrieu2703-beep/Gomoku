@@ -23,6 +23,7 @@ public class Lang {
     public static String done() { return text("Xong","Done","Concluir"); }
     public static String cancel() { return text("Hủy","Cancel","Cancelar"); }
     public static String settings() { return text("Cài đặt","Settings","Configurações"); }
+    public static String duplicatePlayerNames() { return text("Tên hai người chơi phải khác nhau.","Player names must be different.","Os nomes dos jogadores devem ser diferentes."); }
     public static String resetScore() { return text("Đặt lại tỉ số","Reset score","Zerar placar"); }
     public static String confirmResetScore() { return text("Đặt lại tỉ số về 0?","Reset the score to zero?","Zerar o placar?"); }
     public static String rulesTitle() { return text("Luật chơi","Rules","Regras"); }
