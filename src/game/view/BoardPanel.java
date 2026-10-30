@@ -92,6 +92,8 @@ public class BoardPanel extends JPanel {
 
         int panelSize = OFFSET * 2 + (Board.SIZE - 1) * CELL_SIZE;
         setPreferredSize(new Dimension(panelSize, panelSize));
+        // Painting uses fixed coordinates; GridBag must not collapse this to JPanel's 10x10 minimum.
+        setMinimumSize(new Dimension(panelSize, panelSize));
         setBackground(Theme.BOARD);
 
         // Click chuột
