@@ -1,171 +1,121 @@
-"""Read-only independent replay/statistics checks; Python standard library only.
-
-Does not call Board.checkWin, MinimaxAI, or the arena's aggregation code.
-Run after the arena completes: python tools/ai/verify-ai-results.py
-"""
-import argparse
-import csv
-import math
-import re
-import statistics
-from collections import Counter, defaultdict
+"""Read-only independent replay, deduplication and summary checks for arena v2."""
+import argparse,csv,hashlib,math,statistics,re
+from collections import Counter,defaultdict
 from pathlib import Path
 
-
-def require(condition, message):
-    if not condition:
-        raise AssertionError(message)
-
-
-def rows(path):
-    with path.open(encoding="utf-8", newline="") as source:
-        return list(csv.DictReader(source))
-
-
-def wins(grid, row, col):
-    piece = grid[row][col]
-    if piece == ".":
-        return False
-    opponent = "O" if piece == "X" else "X"
-    for dr, dc in ((0, 1), (1, 0), (1, 1), (1, -1)):
-        line = 1
-        blocked = 0
-        for sign in (-1, 1):
-            r, c = row + sign * dr, col + sign * dc
-            while 0 <= r < 15 and 0 <= c < 15 and grid[r][c] == piece:
-                line += 1
-                r, c = r + sign * dr, c + sign * dc
-            blocked += int(0 <= r < 15 and 0 <= c < 15 and grid[r][c] == opponent)
-        if line >= 5 and blocked < 2:
-            return True
+def require(c,m):
+    if not c:raise AssertionError(m)
+def load(p):
+    with p.open(encoding='utf-8',newline='') as f:return list(csv.DictReader(f))
+def wins(g,r,c):
+    p=g[r][c]
+    if p=='.':return False
+    other='O' if p=='X' else 'X'
+    for dr,dc in [(1,0),(0,1),(1,1),(1,-1)]:
+        n=1;blocked=0
+        for sign in [-1,1]:
+            y,x=r+dr*sign,c+dc*sign
+            while 0<=y<15 and 0<=x<15 and g[y][x]==p:n+=1;y+=dr*sign;x+=dc*sign
+            blocked+=int(0<=y<15 and 0<=x<15 and g[y][x]==other)
+        if n>=5 and blocked<2:return True
     return False
-
-
-def close(actual, expected, context):
-    require(math.isfinite(actual) and abs(actual - expected) <= 0.000002,
-            f"{context}: {actual} != {expected}")
-
-
-def markdown_rows(path):
-    return [[cell.strip() for cell in line.strip().strip("|").split("|")]
-            for line in path.read_text(encoding="utf-8").splitlines() if line.startswith("| ")]
-
-
-def check_arena(output):
-    games = rows(output / "arena-games.csv")
-    traces = defaultdict(list)
-    for move in rows(output / "arena-moves.csv"):
-        traces[move["game_id"]].append(move)
-    require(len({g["game_id"] for g in games}) == len(games), "Duplicate game id")
-    require(set(traces) == {g["game_id"] for g in games}, "Missing/extra move trace")
-    by_pair = defaultdict(list)
-    example = None
+def sequence(s):return [tuple(map(int,c.split(':'))) for c in s.split(';')]
+def canonical(cells):
+    variants=[]
+    for flip in [-1,1]:
+        for rot in range(4):
+            stones=[]
+            for i,(r,c) in enumerate(cells):
+                x,y=(r-7)*flip,c-7
+                for _ in range(rot):x,y=-y,x
+                stones.append(('X' if i%2==0 else 'O',x,y))
+            variants.append(tuple(sorted(stones)))
+    return min(variants)
+def table(p):return [[x.strip() for x in line.strip().strip('|').split('|')] for line in p.read_text(encoding='utf-8').splitlines() if line.startswith('| ')]
+def close(a,b):
+    if b is None:require(a=='NA','Expected NA');return
+    require(abs(float(a)-b)<=2e-6,f'{a} != {b}')
+def wilson(w,n):
+    if not n:return None
+    z=1.959963984540054;z2=z*z;den=2*(n+z2);root=math.sqrt(z2*(z2+4*w*(1-w/n)))
+    return ((2*w+z2-root)/den,(2*w+z2+root)/den)
+def binomial(w,l):
+    n=w+l
+    if not n:return None
+    threshold=math.comb(n,w)
+    return sum(math.comb(n,k) for k in range(n+1) if math.comb(n,k)<=threshold)/2**n
+def check_ci(text,w,n):
+    v=wilson(w,n)
+    if v is None:require(text=='NA','Expected NA interval');return
+    a,b=text.strip('[]').split(',');close(a,v[0]);close(b,v[1])
+def counts(gs,a='A'):
+    return [sum(g['result']==a+'_WIN' for g in gs),sum(g['result']=='DRAW' for g in gs),sum(g['result']==('B' if a=='A' else 'A')+'_WIN' for g in gs)]
+def check_arena(out):
+    games=load(out/'arena-games.csv');require(len({g['game_id'] for g in games})==len(games),'Duplicate ids')
+    openings={};groups=defaultdict(list)
     for game in games:
-        gid = game["game_id"]
-        by_pair[game["pair"]].append(game)
-        trace = traces[gid]
-        grid = [["."] * 15 for _ in range(15)]
-        require(1 <= len(trace) == int(game["moves"]) <= 225, f"{gid}: move count")
-        require(not game["anomaly"], f"{gid}: recorded anomaly {game['anomaly']}")
-        require(game["x_actor"] == game["first_actor"] and game["o_actor"] != game["x_actor"], f"{gid}: color mapping")
-        times = defaultdict(list)
-        for ply, move in enumerate(trace, 1):
-            require(int(move["ply"]) == ply, f"{gid}: nonconsecutive ply")
-            color = "X" if ply % 2 else "O"
-            actor = game["x_actor"] if color == "X" else game["o_actor"]
-            require(move["color"] == color and move["actor"] == actor, f"{gid}: wrong actor/color")
-            r, c = int(move["row"]), int(move["col"])
-            require(0 <= r < 15 and 0 <= c < 15 and grid[r][c] == ".", f"{gid}: illegal placement")
-            if ply == len(trace) and game["pair"] == "MEDIUM-HARD" and game["result"] == "A_WIN" and example is None:
-                example = (gid, [row.copy() for row in grid], (r, c), color)
-            grid[r][c] = color
-            won = wins(grid, r, c)
-            require(not won or ply == len(trace), f"{gid}: continued after terminal win")
-            if ply == len(trace):
-                expected = actor + "_WIN" if won else "DRAW" if ply == 225 else "NONTERMINAL"
-                require(game["result"] == expected, f"{gid}: wrong outcome {expected}")
-            value = float(move["elapsed_ms"])
-            require(math.isfinite(value) and value >= 0, f"{gid}: invalid timing")
-            require(int(move["minimax_nodes"]) >= 0 and int(move["alpha_beta_prunes"]) >= 0, f"{gid}: negative counters")
-            times[actor].append(value)
-        for actor in ("A", "B"):
-            prefix = actor.lower()
-            values = times[actor]
-            require(int(game[prefix + "_moves"]) == len(values), f"{gid}: {actor} count")
-            close(float(game[prefix + "_mean_ms"]), statistics.mean(values), f"{gid}: {actor} mean")
-            close(float(game[prefix + "_max_ms"]), max(values), f"{gid}: {actor} max")
-        require(float(game["total_ms"]) + .001 >= sum(sum(v) for v in times.values()), f"{gid}: total time")
-    expected_pairs = {"EASY-MEDIUM", "EASY-HARD", "MEDIUM-HARD", "EASY-EASY", "MEDIUM-MEDIUM", "HARD-HARD"}
-    require(set(by_pair) == expected_pairs, "Missing/extra pairs")
-    summary = {r[0]: r for r in markdown_rows(output / "arena-summary.md") if r[0] in expected_pairs}
-    for pair, group in by_pair.items():
-        n = len(group)
-        require(n in (30, 50), f"{pair}: expected 30 or 50 games")
-        require(Counter(g["first_actor"] for g in group) == {"A": n // 2, "B": n // 2}, f"{pair}: unbalanced starters")
-        counts = Counter(g["result"] for g in group)
-        aw, draw, bw = counts["A_WIN"], counts["DRAW"], counts["B_WIN"]
-        xw = sum(g["result"] == g["first_actor"] + "_WIN" for g in group)
-        require([int(v) for v in summary[pair][1:6]] == [n, aw, draw, bw, 0], f"{pair}: summary counts")
-        for index, count in ((6, aw), (7, draw), (8, bw)):
-            close(float(summary[pair][index]), count * 100 / n, f"{pair}: percentage")
-        require([int(v) for v in summary[pair][9:11]] == [xw, aw + bw - xw], f"{pair}: X/O summary")
-    print(f"ARENA VERIFIED: {len(games)} games; {sum(len(t) for t in traces.values())} legal placements; balanced starters; RULE_B outcomes; timing aggregates; summary percentages")
-    if example:
-        gid, grid, move, color = example
-        print(f"OBSERVATION {gid}: board BEFORE final {color} move {move}; observed outcome, not a tactical expectation")
-        print("    012345678901234")
-        for r, row in enumerate(grid):
-            print(f"{r:02d}  {''.join(row)}")
-
-
-def check_benchmark(output):
-    samples = rows(output / "benchmark.csv")
-    require(len(samples) == 210, "Expected 60 warmup + 150 measured benchmark rows")
-    groups = defaultdict(list)
-    for sample in samples:
-        groups[(sample["position"], sample["level"])].append(sample)
-        for field in ("elapsed_ms", "minimax_nodes", "alpha_beta_prunes"):
-            value = float(sample[field])
-            require(math.isfinite(value) and value >= 0, f"Invalid benchmark {field}")
-    require(len(groups) == 30, "Expected ten positions x three levels")
-    positions = {}
-    text = (output / "benchmark-positions.md").read_text(encoding="utf-8")
-    for pid, stones, turn, board_text in re.findall(r"## ([\w-]+); stones=(\d+); turn=([XO])\n.*?```text\n(.*?)```", text, re.S):
-        grid = [list(line[4:]) for line in board_text.splitlines()[1:]]
-        require(len(grid) == 15 and all(len(row) == 15 for row in grid), f"{pid}: board shape")
-        require(sum(cell != "." for row in grid for cell in row) == int(stones), f"{pid}: stone count")
-        require(all(not wins(grid, r, c) for r in range(15) for c in range(15)), f"{pid}: pre-existing win")
-        positions[pid] = (grid, int(stones), turn)
-    require(len(positions) == 10, "Missing ASCII positions")
-    summaries = {r[0]: r for r in markdown_rows(output / "benchmark-summary.md") if r[0] != "Level" and r[0] != "Position / level"}
-    for (pid, level), group in groups.items():
-        require(Counter(s["phase"] for s in group) == {"warmup": 2, "measured": 5}, f"{pid}/{level}: repetition count")
-        require(sorted(int(s["repetition"]) for s in group if s["phase"] == "measured") == [1, 2, 3, 4, 5], f"{pid}/{level}: repetitions")
-        grid, stones, turn = positions[pid]
-        for sample in group:
-            require(int(sample["stones"]) == stones and sample["side_to_move"] == turn, f"{pid}: metadata")
-            r, c = int(sample["row"]), int(sample["col"])
-            require(0 <= r < 15 and 0 <= c < 15 and grid[r][c] == ".", f"{pid}: illegal benchmark move")
-    measured = [s for s in samples if s["phase"] == "measured"]
-    for name, table in summaries.items():
-        if " / " in name:
-            pid, level = name.split(" / ")
-            selected = [s for s in measured if s["position"] == pid and s["level"] == level]
-        else:
-            selected = [s for s in measured if s["level"] == name]
-        require(int(table[1]) == len(selected), f"{name}: summary n")
-        for col, field in enumerate(("elapsed_ms", "minimax_nodes", "alpha_beta_prunes"), 2):
-            actual_median, actual_sd = map(float, table[col].split(" ± "))
-            values = [float(s[field]) for s in selected]
-            close(actual_median, statistics.median(values), f"{name}: {field} median")
-            close(actual_sd, statistics.pstdev(values), f"{name}: {field} population SD")
-    require(len(summaries) == 33, "Expected 30 per-position and three pooled summaries")
-    print("BENCHMARK VERIFIED: 10 nonterminal ASCII positions; 60 warm-ups + 150 measured samples; legal choices; 33 median/SD summary rows")
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output", type=Path, default=Path(__file__).resolve().parents[2] / "docs" / "ai-results")
-    arguments = parser.parse_args()
-    check_arena(arguments.output)
-    check_benchmark(arguments.output)
+        cells=sequence(game['sequence']);prefix=sequence(game['opening_sequence']);oid=game['opening_id'];require(2<=len(prefix)<=4,'Opening length')
+        require(prefix[0]==(7,7),'Opening centre');require(all(5<=r<=9 and 5<=c<=9 for r,c in prefix),'Opening region')
+        require(oid not in openings or openings[oid]==prefix,'Opening changed');openings[oid]=prefix
+        require(cells[:len(prefix)]==prefix,'Wrong opening prefix');require(len(cells)==int(game['moves'])<=225,'Move limit')
+        grid=[['.']*15 for _ in range(15)]
+        for i,(r,c) in enumerate(cells):
+            require(0<=r<15 and 0<=c<15 and grid[r][c]=='.','Illegal move');grid[r][c]='X' if i%2==0 else 'O'
+            won=wins(grid,r,c);require(not won or i==len(cells)-1,'Played after win')
+            if i==len(cells)-1:
+                actor=game['first_actor'] if i%2==0 else ('B' if game['first_actor']=='A' else 'A')
+                require(game['result']==(actor+'_WIN' if won else 'DRAW' if len(cells)==225 else 'NONTERMINAL'),'Wrong RULE_B result')
+        require(not game['anomaly'],'Abnormal game');require(game['sequence_sha256']==hashlib.sha256(game['sequence'].encode()).hexdigest(),'Hash')
+        require(int(game['a_moves'])+int(game['b_moves'])==len(cells)-len(prefix),'Search count includes forced moves')
+        for a in ['a','b']:require(0<=float(game[a+'_mean_ms'])<=float(game[a+'_max_ms'])+1e-6,'Timing aggregate')
+        groups[game['sequence']].append(game)
+    require(len({canonical(v) for v in openings.values()})==len(openings),'Symmetry-equivalent openings')
+    for group in groups.values():
+        def key(g):return g['pair'],g['opening_id'],int(g['first_actor']!=('A' if int(g['opening_id'][1:])%2 else 'B')),g['game_id']
+        representative=min(group,key=key)
+        for g in group:
+            require(g['included']==('1' if g is representative else '0'),'Wrong representative')
+            require(g['duplicate_of']==('' if g is representative else representative['game_id']),'Wrong duplicate reference')
+    pairs={'EASY-MEDIUM','EASY-HARD','MEDIUM-HARD','MEDIUM-MEDIUM','HARD-HARD'}
+    require({g['pair'] for g in games}==pairs,'Wrong pairs')
+    for pair in pairs:
+        for oid in openings:require(Counter(g['first_actor'] for g in games if g['pair']==pair and g['opening_id']==oid)=={'A':1,'B':1},'Unpaired opening')
+    rows={r[0]:r for r in table(out/'arena-summary.md') if r[0] in pairs and len(r)==11}
+    sides={r[0]:r for r in table(out/'arena-summary.md') if r[0] in pairs and len(r)==5}
+    included=[g for g in games if g['included']=='1']
+    for pair in pairs:
+        gs=[g for g in included if g['pair']==pair];w,d,l=counts(gs);n=w+l;r=rows[pair]
+        require(int(r[1])==sum(g['pair']==pair for g in games) and int(r[2])==len(gs),'Summary n')
+        require(r[3]==f'{w}/{d}/{l}' and r[4]==f'{l}/{d}/{w}','WDL');close(r[5],w/len(gs) if gs else None);close(r[6],w/n if n else None);check_ci(r[7],w,n);close(r[8],l/n if n else None);check_ci(r[9],l,n);require(math.isclose(float(r[10]),binomial(w,l),rel_tol=1e-7,abs_tol=1e-15) if n else r[10]=='NA','Exact binomial p')
+        for index,(actor,first) in enumerate([('A',True),('A',False),('B',True),('B',False)],1):
+            sub=[g for g in gs if (g['first_actor']==actor)==first];sw,sd,sl=counts(sub,actor);wdl,rate=sides[pair][index].split('; ')
+            require(wdl==f'{sw}/{sd}/{sl}','Side WDL');close(rate,sw/len(sub) if sub else None)
+        iv=wilson(w,n)
+        if iv is None or iv[0]<=.5<=iv[1]:require(any(pair in line and 'chưa đủ bằng chứng' in line for line in (out/'arena-summary.md').read_text(encoding='utf-8').splitlines()),'Missing cautious conclusion')
+    print(f'ARENA VERIFIED: openings={len(openings)}, attempted={len(games)}, unique_included={len(included)}, unique_global={len({g["sequence"] for g in games})}; legal replay, paired sides, hashes/dedup, WDL, Wilson, exact binomial, side tables')
+def check_benchmark(out):
+    raw=load(out/'benchmark.csv');groups=defaultdict(list)
+    protocol=re.search(r'Warmups per position/level: (\d+); measured: (\d+)',(out/'environment.md').read_text(encoding='utf-8'));require(protocol is not None,'Missing benchmark protocol');warmups,repetitions=map(int,protocol.groups())
+    for s in raw:groups[(s['position'],s['level'])].append(s)
+    require(len(groups)==30,'Expected 10 positions x 3 levels')
+    positions={}
+    for pid,stones,turn,board in re.findall(r'## ([\w-]+); stones=(\d+); turn=([XO])\n.*?```text\n(.*?)```',(out/'benchmark-positions.md').read_text(encoding='utf-8'),re.S):
+        grid=[list(line[4:]) for line in board.splitlines()[1:]];require(len(grid)==15 and all(len(r)==15 for r in grid),'Board dimensions')
+        require(sum(c!='.' for r in grid for c in r)==int(stones),'Stone count');require(not any(wins(grid,r,c) for r in range(15) for c in range(15)),'Already won');positions[pid]=grid
+    rows={(r[0],r[1]):r for r in table(out/'benchmark-summary.md') if len(r)==7 and r[0] in positions}
+    for (pid,level),g in groups.items():
+        require(Counter(s['phase'] for s in g)=={'warmup':warmups,'measured':repetitions},'Wrong repetition count')
+        require(sorted(int(s['repetition']) for s in g if s['phase']=='measured')==list(range(1,repetitions+1)),'Repetition indices')
+        for s in g:
+            r,c=int(s['row']),int(s['col']);require(0<=r<15 and 0<=c<15 and positions[pid][r][c]=='.','Illegal benchmark move')
+            require(int(s['depth'])=={'EASY':1,'MEDIUM':2,'HARD':3}[level],'Depth metadata')
+        values=[float(s['elapsed_ms']) for s in g if s['phase']=='measured'];require(all(math.isfinite(v) and v>=0 for v in values),'Timing');r=rows[(pid,level)]
+        require(int(r[2])==int(g[0]['depth']) and int(r[3])==repetitions,'Benchmark n/depth')
+        for a,b in zip(r[4:],(statistics.median(values),sorted(values)[math.ceil(.95*repetitions)-1],max(values))):close(a,b)
+    pooled={r[0]:r for r in table(out/'benchmark-summary.md') if len(r)==6 and r[0] in ['EASY','MEDIUM','HARD']}
+    for level,r in pooled.items():
+        v=[float(s['elapsed_ms']) for s in raw if s['phase']=='measured' and s['level']==level];require(int(r[1])==len(v),'Pooled n')
+        for a,b in zip(r[2:],(statistics.median(v),sorted(v)[math.ceil(.95*len(v))-1],max(v),statistics.pstdev(v))):close(a,b)
+    require(len(pooled)==3,'Pooled rows');print(f'BENCHMARK VERIFIED: 10 boards, {30*warmups} discarded warmups + {30*repetitions} measured; 30 per-position median/p95/max rows; pooled warning/statistics')
+if __name__=='__main__':
+    p=argparse.ArgumentParser();p.add_argument('--output',type=Path,default=Path(__file__).resolve().parents[2]/'docs'/'ai-results');out=p.parse_args().output;check_arena(out);check_benchmark(out)

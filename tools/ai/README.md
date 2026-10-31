@@ -1,65 +1,17 @@
-# AI validation (Task 5)
+# AI validation v2 (commit C)
 
-Production AI, Board and existing tests are unchanged. The new JUnit class is
-`game.ai.AITacticsTest`; the standalone arena is excluded from normal test discovery.
+Run `./tools/ai/run-ai-validation.ps1` from the repo root. Requires JDK and Python 3.10+ (standard library only). It compiles production sources in an external temporary copy; all searches call MinimaxAI directly, never BoardPanel/AiMoveDelay. Default: 16 openings, five pairs, two color assignments per opening (160 attempts), two independent game workers. Sequential benchmark: ten fixed boards x three levels x five discarded warmups plus twenty measured repetitions. CLI options: -Openings, -Measurements, -Warmups, -Threads, -OutputDirectory. The verifier reads the recorded warmup/measurement protocol from environment.md.
 
-From the repository root, run:
+Openings use construction seed 20261031, X at centre plus 2/3 alternating moves in the central 5x5. Reject duplicate colored board states modulo rotations/reflections BEFORE any engine search. Every opening is played twice with actors swapping X/O. EASY's private unseeded Random is unchanged; only openings and corpus construction are exactly reproducible. Full move sequences are embedded compactly in arena-games.csv for independent replay.
 
-```powershell
-./tools/ai/run-ai-validation.ps1
-```
+summarize-ai-results.py builds Markdown summaries and annotates all attempted games with SHA-256, included, duplicate_of. Exact colored move sequences are deduplicated globally, even across different pairings; a repeated sequence contributes only once. Deterministic representatives sort first by pair then opening id, prefer odd opening ids A-first / even ids B-first, never based on result. Retained side counts can be unbalanced and are reported explicitly. Self-play A/B labels are seats, not different engines.
 
-The script compiles an external temporary source copy, then writes only measurement
-outputs to `docs/ai-results/`. It retains the temporary build for inspection; it
-never cleans, compiles into, or renders images in the original repository.
-Options: `-Phase pilot|benchmark|all`, `-GamesPerPair 50`, `-Threads 2`, and
-`-OutputDirectory PATH`. An even game count is required. Defaults run three pilot
-games, a sequential benchmark, then all six pairs. If the conservative pilot
-estimate exceeds two hours, the tool reduces the count to 30 per pair and prints
-the decision. This is not a hard AI timeout.
+Draws stay in W/D/L and win/all rates but are excluded from decisive win rates, Wilson 95% intervals and exact two-sided binomial H0 p=0.5. Statistical independence is not guaranteed by paired deterministic games: p-values/intervals are nominal descriptive diagnostics, unadjusted for five comparisons, not confirmatory strength/Elo evidence. A CI containing 0.5 is explicitly labelled "chưa đủ bằng chứng".
 
-EASY has an inaccessible unseeded Random. The user chose to preserve src and accept
-non-reproducible random choices. No reflection, custom seed injection, or behavior
-changes are used. Fixed benchmark construction seeds do not seed EASY. Full arena
-move traces permit replay of observed games, not reproduction of future searches.
+Benchmark summaries report every position/level separately (median, nearest-rank p95, max); pooled level statistics carry a dispersion warning and are not used for speed/strength conclusions. Dense boards are synthetic controlled subsets, not typical human endgames. EASY depth=1 is an enum label, not recursive search.
 
-Output:
+After running: `python tools/ai/verify-ai-results.py`. The read-only verifier independently replays RULE_B, verifies paired openings/symmetry uniqueness, dedup representatives, WDL, Wilson, exact-binomial p-values, side counts, benchmark positions and timing summaries. No AI, UI, rules, audio or network source is modified.
 
-- `pilot-games.csv`, `pilot-summary.md`: three games and pre-run time estimate.
-- `arena-games.csv`: result, starters, moves, wall time, each actor's move mean/max.
-- `arena-moves.csv`: exact played moves, color/actor, time, nodes and cutoffs.
-- `arena-summary.md`: A/B and X/O wins, draws, abnormalities and percentages.
-- `benchmark.csv`: 60 warm-ups plus 150 measured samples, with `phase` column.
-- `benchmark-summary.md`: median and population SD, per position and pooled.
-- `benchmark-positions.md`: all ten ASCII positions and independent construction.
-- `environment.md`: timestamp, Java/OS/logical CPU count, thread and seed policy.
+Results: arena-games.csv, arena-summary.md, benchmark.csv, benchmark-summary.md, benchmark-positions.md, environment.md. Old pilot files are obsolete (fixed sample protocol, actual elapsed time recorded); arena-moves.csv is replaced by compact full sequences within arena-games.csv.
 
-After completion, `python tools/ai/verify-ai-results.py` independently replays every
-placement with a Python RULE_B oracle and recomputes CSV/Markdown counts, percentages,
-timing aggregates, medians and population SD. It reads files and prints checks only.
-Python is optional for running the Java arena itself.
-
-The arena uses exclusive Board/MinimaxAI instances per game. Up to two independent
-games run concurrently; the source has no mutable shared heuristic state. Benchmark
-and pilot run sequentially before the arena to avoid arena CPU contention. Measured
-search time excludes board copying/invariant verification. Arena total game time
-includes bookkeeping and invariant checks. Invalid moves and board mutation are
-abnormal results, never silently converted into draws or wins.
-
-The stone-count corpus contains opening (3/4/5), middle (10/14/18/20), and denser
-(40/60/100) positions. Dense draw-pattern subsets are controlled synthetic positions,
-not claims about typical human endgames. Every fixture is checked for pre-existing
-wins. No fixture or expected answer is chosen from AI output.
-
-MEDIUM/HARD use deterministic search from the same empty board. Repeating a pairing
-does not provide independent opening diversity, Elo, or a general strength ranking.
-Five timing repetitions per position are a small sample; pooled distributions mix
-different positions and tactical early exits. All these limits accompany results.
-
-Run the complete JUnit suite only in an external source/test/resource/library copy:
-existing UI tests overwrite their render images. Use the unchanged `build.ps1`, then
-the JUnit console runner with `--scan-class-path`. The new test reports its fixed
-expectations, actual selected moves and full ASCII boards; a tactical failure remains
-a real failure. No `@Disabled` is added. EASY's blocked-five case checks nonterminal
-classification and legality, not deterministic defense: a random legal choice of the
-blocked gap alone does not expose the engine's internal belief about winning.
+Run all JUnit only in an external src/test/resources/lib/build.ps1 copy. Use unchanged recursive build.ps1 and --scan-class-path, including test/game/ai/AITacticsTest.java. Legacy UI tests write images.

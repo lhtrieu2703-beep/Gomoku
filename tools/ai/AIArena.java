@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -31,14 +30,15 @@ public final class AIArena {
     private static final int MAX_MOVES = Board.SIZE * Board.SIZE;
     private static final String SEED_NOTE = "uncontrolled: production Random has no seed API; src unchanged";
     private static final List<Pair> PAIRS = List.of(new Pair(E,M),new Pair(E,H),new Pair(M,H),
-            new Pair(E,E),new Pair(M,M),new Pair(H,H));
+            new Pair(M,M),new Pair(H,H));
     record Pair(MinimaxAI.Difficulty a, MinimaxAI.Difficulty b) {
         String id() { return a.name() + "-" + b.name(); }
     }
     record Turn(int ply, String actor, Piece color, int row, int col, double ms, long nodes, long prunes) {}
     record Game(String id, Pair pair, String first, String outcome, int moves, double totalMs,
                 int aMoves, double aTotal, double aMax, int bMoves, double bTotal, double bMax,
-                String anomaly, List<Turn> trace) {}
+                String anomaly, List<Turn> trace, Opening opening) {}
+    record Opening(String id,int[][] cells) {}
     record Position(String id, String stage, Board board, Piece turn, String construction) {}
     record Sample(String position, String stage, int stones, Piece turn, MinimaxAI.Difficulty level,
                   String phase, int repetition, double ms, long nodes, long prunes, int row, int col) {}
@@ -78,7 +78,7 @@ public final class AIArena {
             if(b.checkWin(r,c)) throw new IllegalStateException("Corpus already won at " + r + "," + c);
     }
 
-    private static Game play(String id, Pair pair, boolean aFirst) {
+    private static Game play(String id, Pair pair, boolean aFirst, Opening opening) {
         Board b=board();
         Piece aColor=aFirst?Piece.X:Piece.O;
         // Exclusive ownership: no Board or engine is ever shared across games/tasks.
@@ -87,7 +87,12 @@ public final class AIArena {
         int aMoves=0,bMoves=0; double aTotal=0,bTotal=0,aMax=0,bMax=0;
         String outcome="ABNORMAL",anomaly="";
         long start=System.nanoTime();
-        for(int ply=1;ply<=MAX_MOVES;ply++) {
+        for(int i=0;i<opening.cells.length;i++) {
+            int[] cell=opening.cells[i];Piece color=i%2==0?Piece.X:Piece.O;
+            if(!b.makeMove(cell[0],cell[1],color)||b.checkWin(cell[0],cell[1])) throw new IllegalStateException("Invalid opening");
+            trace.add(new Turn(i+1,color==aColor?"A":"B",color,cell[0],cell[1],0,0,0));
+        }
+        for(int ply=opening.cells.length+1;ply<=MAX_MOVES;ply++) {
             Piece color=ply%2==1?Piece.X:Piece.O;
             boolean actorA=color==aColor;
             Board before=b.copy(); Move m;
@@ -115,43 +120,44 @@ public final class AIArena {
         }
         if(outcome.equals("ABNORMAL") && anomaly.isEmpty()) anomaly="MOVE_LIMIT_WITHOUT_TERMINAL";
         return new Game(id,pair,aFirst?"A":"B",outcome,b.getMoveCount(),(System.nanoTime()-start)/1e6,
-                aMoves,aTotal,aMax,bMoves,bTotal,bMax,anomaly,trace);
+                aMoves,aTotal,aMax,bMoves,bTotal,bMax,anomaly,trace,opening);
     }
     private static void gameHeader(BufferedWriter w) throws IOException {
-        w.write("game_id,pair,actor_a,actor_b,first_actor,x_actor,o_actor,result,moves,total_ms,a_moves,a_mean_ms,a_max_ms,b_moves,b_mean_ms,b_max_ms,anomaly,easy_seed\n");
+        w.write("game_id,pair,actor_a,actor_b,first_actor,x_actor,o_actor,result,moves,total_ms,a_moves,a_mean_ms,a_max_ms,b_moves,b_mean_ms,b_max_ms,anomaly,easy_seed,opening_id,opening_sequence,sequence\n");
     }
     private static void gameRow(BufferedWriter w,Game g) throws IOException {
         w.write(String.join(",",g.id,g.pair.id(),g.pair.a.name(),g.pair.b.name(),g.first,g.first,
                 g.first.equals("A")?"B":"A",g.outcome,Integer.toString(g.moves),number(g.totalMs),
                 Integer.toString(g.aMoves),number(g.aMoves==0?0:g.aTotal/g.aMoves),number(g.aMax),
                 Integer.toString(g.bMoves),number(g.bMoves==0?0:g.bTotal/g.bMoves),number(g.bMax),
-                csv(g.anomaly),csv(SEED_NOTE))+"\n");
+                csv(g.anomaly),csv(SEED_NOTE),g.opening.id,csv(cells(g.opening.cells)),csv(g.trace.stream().map(t->t.row+":"+t.col).collect(java.util.stream.Collectors.joining(";"))))+"\n");
         w.flush();
     }
 
-    private static int pilot(Path output,int requested) throws IOException {
-        List<Game> games=new ArrayList<>();
-        List<Pair> selected=List.of(new Pair(H,H),new Pair(E,H),new Pair(M,H));
-        try(BufferedWriter w=writer(output,"pilot-games.csv")) {
-            gameHeader(w);
-            for(int i=0;i<3;i++) {
-                Game g=play("pilot-"+(i+1),selected.get(i),i%2==0); games.add(g);gameRow(w,g);
-                System.out.printf(Locale.ROOT,"PILOT %s %s %d moves %.3fs anomaly=%s%n",g.pair.id(),g.outcome,g.moves,g.totalMs/1000,g.anomaly);
-                if(!g.anomaly.isEmpty()) throw new IllegalStateException("Pilot anomaly: "+g.anomaly);
+    private static String cells(int[][] cells) {
+        return Arrays.stream(cells).map(c->c[0]+":"+c[1]).collect(java.util.stream.Collectors.joining(";"));
+    }
+    private static String canonical(int[][] cells) {
+        List<String> variants=new ArrayList<>();
+        for(int flip:new int[]{-1,1})for(int rotation=0;rotation<4;rotation++) {
+            List<String> stones=new ArrayList<>();
+            for(int i=0;i<cells.length;i++) {
+                int x=(cells[i][0]-7)*flip,y=cells[i][1]-7;
+                for(int j=0;j<rotation;j++){int tmp=x;x=-y;y=tmp;}
+                stones.add((i%2==0?"X":"O")+":"+(x+7)+":"+(y+7));
             }
+            Collections.sort(stones);variants.add(String.join(";",stones));
         }
-        double maxMs=games.stream().mapToDouble(Game::totalMs).max().orElseThrow();
-        double estimate=maxMs*PAIRS.size()*requested/1000;
-        int actual=estimate>7200?Math.min(requested,30):requested;
-        StringBuilder text=new StringBuilder("# Three-game pilot\n\n| Pair | Result | Moves | Seconds |\n|---|---|---:|---:|\n");
-        for(Game g:games) text.append("| ").append(g.pair.id()).append(" | ").append(g.outcome).append(" | ").append(g.moves).append(" | ").append(number(g.totalMs/1000)).append(" |\n");
-        text.append("\nConservative estimate = slowest measured pilot game × 6 pairs × ").append(requested)
-                .append(" games = ").append(number(estimate)).append(" seconds (").append(number(estimate/60)).append(" minutes), ignoring any parallel speedup.\n")
-                .append("Selected games per pair: ").append(actual).append(". Pilot games are excluded from arena standings.\n")
-                .append("This is an estimate from three games, not an upper bound or search timeout. EASY seed: ").append(SEED_NOTE).append(".\n");
-        markdown(output,"pilot-summary.md",text.toString());
-        System.out.printf(Locale.ROOT,"ESTIMATE %.2f minutes; selected=%d games/pair%n",estimate/60,actual);
-        return actual;
+        return Collections.min(variants);
+    }
+    private static List<Opening> openings(int count) {
+        Random random=new Random(20261031L);List<Opening> out=new ArrayList<>();java.util.Set<String> seen=new java.util.HashSet<>();
+        for(int attempts=0;out.size()<count&&attempts<100000;attempts++) {
+            int n=out.size()%2==0?3:4;int[][] cells=new int[n][2];cells[0]=new int[]{7,7};Board b=board();b.makeMove(7,7,Piece.X);
+            for(int i=1;i<n;i++){int r,c;do{r=5+random.nextInt(5);c=5+random.nextInt(5);}while(!b.isValidMove(r,c));cells[i]=new int[]{r,c};b.makeMove(r,c,i%2==0?Piece.X:Piece.O);}
+            if(seen.add(canonical(cells)))out.add(new Opening(String.format(Locale.ROOT,"O%02d",out.size()+1),cells));
+        }
+        if(out.size()!=count)throw new IllegalStateException("Opening generation exhausted");return out;
     }
 
     private static List<Position> corpus() {
@@ -183,126 +189,69 @@ public final class AIArena {
         for(Position p:positions) noWin(p.board);
         return positions;
     }
-    private static double median(double[] values) {
-        double[] sorted=values.clone();Arrays.sort(sorted);int n=sorted.length;
-        return n%2==1?sorted[n/2]:(sorted[n/2-1]+sorted[n/2])/2;
-    }
-    private static double sd(double[] values) {
-        double mean=Arrays.stream(values).average().orElseThrow();double sum=0;
-        for(double value:values) sum+=(value-mean)*(value-mean);
-        return Math.sqrt(sum/values.length); // Population SD, denominator n (not n-1).
-    }
-    private static String stats(double[] values) { return number(median(values))+" ± "+number(sd(values)); }
-    private static void statsRow(StringBuilder text,String prefix,List<Sample> samples) {
-        text.append("| ").append(prefix).append(" | ").append(samples.size()).append(" | ")
-                .append(stats(samples.stream().mapToDouble(Sample::ms).toArray())).append(" | ")
-                .append(stats(samples.stream().mapToDouble(Sample::nodes).toArray())).append(" | ")
-                .append(stats(samples.stream().mapToDouble(Sample::prunes).toArray())).append(" |\n");
-    }
-    private static void benchmark(Path output) throws IOException {
-        List<Position> positions=corpus();List<Sample> samples=new ArrayList<>();
+    private static void benchmark(Path output,int warmups,int measurements) throws IOException {
+        List<Position> positions=corpus();
         StringBuilder corpusText=new StringBuilder("# Fixed benchmark corpus\n\nCoordinates: zero-based row/column. X starts; side to move follows parity. RULE_B. No position contains a pre-existing win.\n\n"+
                 "Construction is fixed independently of AI answers. Late 40/60/100 are stone-count categories, not claims of realistic endgame difficulty. No positions are filtered by runtime, nodes, or engine choice.\n");
         for(Position p:positions) corpusText.append("\n## ").append(p.id).append("; stones=").append(p.board.getMoveCount()).append("; turn=").append(p.turn.name()).append("\n\n")
                 .append(p.construction).append("\n\n```text\n").append(ascii(p.board)).append("```\n");
         markdown(output,"benchmark-positions.md",corpusText.toString());
         try(BufferedWriter w=writer(output,"benchmark.csv")) {
-            w.write("position,stage,stones,side_to_move,level,phase,repetition,elapsed_ms,minimax_nodes,alpha_beta_prunes,row,col,easy_seed\n");
+            w.write("position,stage,stones,side_to_move,level,depth,phase,repetition,elapsed_ms,minimax_nodes,alpha_beta_prunes,row,col,easy_seed\n");
             for(Position p:positions) for(MinimaxAI.Difficulty level:MinimaxAI.Difficulty.values()) {
                 MinimaxAI ai=new MinimaxAI(p.turn,level);
-                for(int repetition=0;repetition<7;repetition++) {
+                for(int repetition=0;repetition<warmups+measurements;repetition++) {
                     Board before=p.board.copy();long start=System.nanoTime();Move m=ai.findBestMove(p.board);
                     double ms=(System.nanoTime()-start)/1e6;unchanged(before,p.board);
                     if(m==null || !p.board.isValidMove(m.row,m.col)) throw new IllegalStateException("Illegal benchmark result "+p.id+" "+level);
-                    Sample sample=new Sample(p.id,p.stage,p.board.getMoveCount(),p.turn,level,repetition<2?"warmup":"measured",
-                            repetition<2?repetition+1:repetition-1,ms,ai.getNodesEvaluated(),ai.getPruningCount(),m.row,m.col);
-                    if(repetition>=2) samples.add(sample);
-                    w.write(String.join(",",sample.position,sample.stage,Integer.toString(sample.stones),sample.turn.name(),sample.level.name(),sample.phase,Integer.toString(sample.repetition),
+                    Sample sample=new Sample(p.id,p.stage,p.board.getMoveCount(),p.turn,level,repetition<warmups?"warmup":"measured",
+                            repetition<warmups?repetition+1:repetition-warmups+1,ms,ai.getNodesEvaluated(),ai.getPruningCount(),m.row,m.col);
+                    w.write(String.join(",",sample.position,sample.stage,Integer.toString(sample.stones),sample.turn.name(),sample.level.name(),Integer.toString(level.depth),sample.phase,Integer.toString(sample.repetition),
                             number(ms),Long.toString(sample.nodes),Long.toString(sample.prunes),Integer.toString(m.row),Integer.toString(m.col),csv(SEED_NOTE))+"\n");
                 }
-                w.flush();System.out.println("BENCHMARK "+p.id+" "+level.name()+" completed 2 warmup + 5 measured");
+                w.flush();System.out.println("BENCHMARK "+p.id+" "+level.name()+" completed "+warmups+" warmup + "+measurements+" measured");
             }
         }
-        StringBuilder text=new StringBuilder("# Benchmark\n\n10 fixed positions × 3 levels × (2 warm-up + 5 measured). Raw CSV includes both phases; summaries exclude all 60 warm-ups (150 measured samples).\n\n"+
-                "Each cell is median ± population standard deviation (denominator n). Wall-clock search time uses System.nanoTime; board copy and invariant checks are outside the timed region. Sequential benchmark, before concurrent arena. EASY seed uncontrolled. Nodes count recursive minimax entries only; 0 nodes does not mean no computation.\n\n"+
-                "## Pooled measurements across the ten positions\n\nThese distributions mix different positions and tactical early returns; they are not a single-position confidence interval or playing-strength estimate.\n\n"+
-                "| Level | n | ms median ± SD | Nodes median ± SD | Prunes median ± SD |\n|---|---:|---:|---:|---:|\n");
-        for(MinimaxAI.Difficulty level:MinimaxAI.Difficulty.values()) statsRow(text,level.name(),samples.stream().filter(s->s.level==level).toList());
-        text.append("\n## Per position and level\n\n| Position / level | n | ms median ± SD | Nodes median ± SD | Prunes median ± SD |\n|---|---:|---:|---:|---:|\n");
-        for(Position p:positions) for(MinimaxAI.Difficulty level:MinimaxAI.Difficulty.values())
-            statsRow(text,p.id+" / "+level.name(),samples.stream().filter(s->s.position.equals(p.id)&&s.level==level).toList());
-        text.append("\nFull ASCII boards and construction seeds are in benchmark-positions.md. Position seeds do not seed production EASY. Only five measured repetitions per cell; timing variance includes JIT/GC/OS effects.\n");
-        markdown(output,"benchmark-summary.md",text.toString());
     }
 
-    private static void arena(Path output,int gamesPerPair,int threads) throws Exception {
-        long started=System.nanoTime();List<Game> games=new ArrayList<>();
-        var executor=Executors.newFixedThreadPool(threads);
+    private static void arena(Path output,int count,int threads) throws Exception {
+        List<Opening> openingSet=openings(count);var executor=Executors.newFixedThreadPool(threads);
         var completed=new ExecutorCompletionService<Game>(executor);
-        try(BufferedWriter w=writer(output,"arena-games.csv");BufferedWriter moves=writer(output,"arena-moves.csv")) {
-            gameHeader(w);moves.write("game_id,ply,actor,color,row,col,elapsed_ms,minimax_nodes,alpha_beta_prunes\n");
-            for(Pair pair:PAIRS) for(int i=0;i<gamesPerPair;i++) {
-                final int index=i;String id=pair.id()+"-"+String.format(Locale.ROOT,"%03d",i+1);
-                completed.submit(()->play(id,pair,index%2==0));
+        try(BufferedWriter w=writer(output,"arena-games.csv")) {
+            gameHeader(w);
+            for(Pair pair:PAIRS)for(Opening opening:openingSet)for(int side=0;side<2;side++) {
+                final boolean first=side==0;String id=pair.id()+"-"+opening.id+"-"+(first?"A":"B");
+                completed.submit(()->play(id,pair,first,opening));
             }
-            int total=gamesPerPair*PAIRS.size();
+            int total=count*2*PAIRS.size();
             for(int i=1;i<=total;i++) {
-                Game g=completed.take().get();games.add(g);gameRow(w,g);
-                for(Turn t:g.trace) moves.write(String.join(",",g.id,Integer.toString(t.ply),t.actor,t.color.name(),Integer.toString(t.row),Integer.toString(t.col),number(t.ms),Long.toString(t.nodes),Long.toString(t.prunes))+"\n");
-                moves.flush();
-                System.out.printf(Locale.ROOT,"ARENA %d/%d %s first=%s %s moves=%d %.3fs anomaly=%s%n",i,total,g.id,g.first,g.outcome,g.moves,g.totalMs/1000,g.anomaly);
+                Game g=completed.take().get();gameRow(w,g);
+                System.out.printf(Locale.ROOT,"ARENA %d/%d %s %s %d moves %.3fs%n",i,total,g.id,g.outcome,g.moves,g.totalMs/1000);
+                if(!g.anomaly.isEmpty())throw new IllegalStateException(g.id+": "+g.anomaly);
             }
-        } finally { executor.shutdownNow(); }
-        games.sort(Comparator.comparing(Game::id));
-        StringBuilder text=new StringBuilder("# AI arena\n\nRULE_B, 15×15, X starts, >=5 wins unless both ends are blocked by opponent; an edge is not a blocker. Win checked before 225-move draw. Start from an empty board; no randomized opening book.\n\n"+
-                "A/B are distinct actors even in self-play. Each pair has "+gamesPerPair+" games, A starts "+(gamesPerPair/2)+", B starts "+(gamesPerPair/2)+". Three pilot games excluded. EASY seed: "+SEED_NOTE+". Exact played moves are saved in arena-moves.csv.\n\n"+
-                "| Pair (A–B) | Games | A wins | Draws | B wins | Abnormal | A win % | Draw % | B win % | X wins | O wins |\n|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|\n");
-        for(Pair pair:PAIRS) {
-            List<Game> group=games.stream().filter(g->g.pair.equals(pair)).toList();
-            long aw=group.stream().filter(g->g.outcome.equals("A_WIN")).count(),bw=group.stream().filter(g->g.outcome.equals("B_WIN")).count();
-            long draw=group.stream().filter(g->g.outcome.equals("DRAW")).count(),bad=group.size()-aw-bw-draw;
-            long xwins=group.stream().filter(g->g.outcome.equals(g.first+"_WIN")).count(),owins=aw+bw-xwins;
-            text.append("| ").append(pair.id()).append(" | ").append(group.size()).append(" | ").append(aw).append(" | ").append(draw).append(" | ").append(bw).append(" | ").append(bad)
-                    .append(" | ").append(number(100.0*aw/group.size())).append(" | ").append(number(100.0*draw/group.size())).append(" | ").append(number(100.0*bw/group.size()))
-                    .append(" | ").append(xwins).append(" | ").append(owins).append(" |\n");
-        }
-        text.append("\nPercentages use all scheduled games in each pair, including any abnormal games in the denominator; abnormalities are never counted as draws/wins.\n\n")
-                .append("Arena wall time: ").append(number((System.nanoTime()-started)/1e9)).append(" seconds; worker threads: ").append(threads).append(". Per-move arena timings include CPU contention; use sequential benchmark for timing comparisons.\n\n")
-                .append("At most 225 legal placements per game. Invalid/null move, mutation, runtime exception, or nonterminal move-limit result is recorded as ABNORMAL, with details below. No hard time limit is injected into AI; a very slow individual search can delay completion.\n\n")
-                .append("Self-play MEDIUM/HARD is deterministic from the empty board; 50 repetitions are not 50 independent opening positions. Win percentages describe this protocol, not Elo or general superiority.\n\n## Anomalies\n\n");
-        List<Game> abnormal=games.stream().filter(g->!g.anomaly.isEmpty()).toList();
-        if(abnormal.isEmpty()) text.append("None observed.\n");
-        for(Game g:abnormal) text.append("- ").append(g.id).append(": ").append(g.anomaly).append('\n');
-        markdown(output,"arena-summary.md",text.toString());
-        if(!abnormal.isEmpty()) throw new IllegalStateException("Arena completed with "+abnormal.size()+" abnormal games; see summary");
+        }finally{executor.shutdownNow();}
     }
-
     public static void main(String[] args) throws Exception {
-        Locale.setDefault(Locale.ROOT);
-        Path output=null;int requested=50,threads=Math.min(2,Runtime.getRuntime().availableProcessors());String phase="all",revision="unspecified";
-        for(int i=0;i<args.length;i++) switch(args[i]) {
-            case "--output" -> output=Path.of(args[++i]).toAbsolutePath();
+        Locale.setDefault(Locale.ROOT);long start=System.nanoTime();
+        Path output=null;int count=16,threads=2,warmups=5,measurements=20;String revision="unspecified";
+        for(int i=0;i<args.length;i++)switch(args[i]) {
             case "--output-base64" -> output=Path.of(new String(Base64.getDecoder().decode(args[++i]),StandardCharsets.UTF_8)).toAbsolutePath();
-            case "--games" -> requested=Integer.parseInt(args[++i]);
+            case "--openings" -> count=Integer.parseInt(args[++i]);
             case "--threads" -> threads=Integer.parseInt(args[++i]);
-            case "--phase" -> phase=args[++i];
+            case "--warmups" -> warmups=Integer.parseInt(args[++i]);
+            case "--measurements" -> measurements=Integer.parseInt(args[++i]);
             case "--revision" -> revision=args[++i];
-            default -> throw new IllegalArgumentException("Unknown argument "+args[i]);
+            default -> throw new IllegalArgumentException(args[i]);
         }
-        if(output==null || requested<2 || requested%2!=0 || threads<1 || !List.of("all","pilot","benchmark").contains(phase))
-            throw new IllegalArgumentException("Use --output PATH [--games EVEN_COUNT] [--threads N] [--phase all|pilot|benchmark] [--revision SHA]");
+        if(output==null||count<1||count>64||threads<1||warmups<1||measurements<2)throw new IllegalArgumentException("Invalid run arguments");
         Files.createDirectories(output);
-        markdown(output,"environment.md","# Measurement environment\n\n- Timestamp (Asia/Ho_Chi_Minh): "+ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))+"\n- Source revision before measurement: "+revision+
-                "\n- Java: "+System.getProperty("java.runtime.version")+"\n- Vendor: "+System.getProperty("java.vendor")+
-                "\n- VM: "+System.getProperty("java.vm.name")+"\n- OS: "+System.getProperty("os.name")+" "+System.getProperty("os.version")+
-                "\n- Architecture: "+System.getProperty("os.arch")+"\n- Available logical processors: "+Runtime.getRuntime().availableProcessors()+
-                "\n- Arena workers: "+threads+"; pilot and benchmark sequential.\n- EASY seed: "+SEED_NOTE+
-                "\n- Each game owns its Board and two MinimaxAI instances; heuristic methods have no mutable shared state. No engine is searched concurrently. Production Board/AI source is not modified.\n"+
-                "- Headless tool: no Swing UI, network, audio, or user Preferences. Compilation occurs in an external temporary copy.\n");
-        if(phase.equals("benchmark")) { benchmark(output);return; }
-        int games=pilot(output,requested);
-        if(phase.equals("pilot")) return;
-        benchmark(output);
-        arena(output,games,threads);
+        markdown(output,"environment.md","# Environment v2\n\n- Timestamp: "+ZonedDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"))+"\n- Base revision: "+revision+
+            "\n- Java: "+System.getProperty("java.runtime.version")+" "+System.getProperty("java.vendor")+
+            "\n- CPU: "+System.getenv("ARENA_CPU_NAME")+"\n- CPU identifier: "+System.getenv("PROCESSOR_IDENTIFIER")+
+            "\n- Logical processors: "+Runtime.getRuntime().availableProcessors()+"\n- OS: "+System.getProperty("os.name")+" "+System.getProperty("os.version")+" "+System.getProperty("os.arch")+
+            "\n- Opening seed: 20261031; openings: "+count+"; two color assignments each; five pairs.\n- Arena workers: "+threads+" (exclusive Board/engine ownership); benchmark sequential before arena.\n- Warmups per position/level: "+warmups+"; measured: "+measurements+
+            "\n- EASY seed: "+SEED_NOTE+". Only openings/corpus are exactly reproducible.\n- Calls direct MinimaxAI.findBestMove: no BoardPanel, AiMoveDelay, Swing, audio, or LAN.\n");
+        benchmark(output,warmups,measurements);arena(output,count,threads);
+        Files.writeString(output.resolve("environment.md"),"\n- Java measurement wall time seconds: "+number((System.nanoTime()-start)/1e9)+"\n",StandardCharsets.UTF_8,java.nio.file.StandardOpenOption.APPEND);
     }
 }
