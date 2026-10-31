@@ -35,7 +35,6 @@ public class Lang {
     public static String computerName(game.ai.MinimaxAI.Difficulty difficulty) { return text("Máy","Computer","Computador")+" ("+difficultyName(difficulty)+")"; }
     public static String opponentName() { return text("Đối thủ","Opponent","Adversário"); }
     public static String pieceName(game.model.Piece piece) { return piece==game.model.Piece.X?text("Quân Đen","Black","Preto"):text("Quân Trắng","White","Branco"); }
-    public static String namedTurn(String name,game.model.Piece piece) { return name+" ("+pieceName(piece)+")"; }
     public static String ruleExample(boolean win) { return win?text("Thắng","Win","Vitória"):text("Không thắng (bị chặn hai đầu)","No win (both ends blocked)","Sem vitória (as duas extremidades bloqueadas)"); }
     public static String rules(String key) {
         return switch(key) {
@@ -361,22 +360,6 @@ public class Lang {
             case VI -> "Lượt: Máy (Quân Trắng)";
             case EN -> "Turn: AI (White)";
             case PT -> "Vez: IA (Branco)";
-        };
-    }
-
-    public static String p1Turn() {
-        return switch (current) {
-            case VI -> "Lượt: Người chơi 1 (Quân Đen)";
-            case EN -> "Turn: Player 1 (Black)";
-            case PT -> "Vez: Jogador 1 (Preto)";
-        };
-    }
-
-    public static String p2Turn() {
-        return switch (current) {
-            case VI -> "Lượt: Người chơi 2 (Quân Trắng)";
-            case EN -> "Turn: Player 2 (White)";
-            case PT -> "Vez: Jogador 2 (Branco)";
         };
     }
 

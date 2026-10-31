@@ -65,8 +65,10 @@ class P1RegressionTest {
                     assertEquals(1, frame.getScoreTracker().getHumanWins());
                     assertEquals(Lang.pvAI(), frame.getMainMenu().getAiButton().getText());
                     assertEquals(mode == BoardPanel.GameMode.ONLINE ? Lang.onlineOpponentTurn()
-                            : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : Lang.namedTurn(frame.getSecondProfile().displayName(true), Piece.O),
+                            : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : "",
                             statusText(frame));
+                    assertEquals(Lang.pieceName(Piece.X),frame.getLeftPlayerCard().getPieceBadge().getAccessibleContext().getAccessibleName());
+                    assertEquals(Lang.pieceName(Piece.O),frame.getRightPlayerCard().getPieceBadge().getAccessibleContext().getAccessibleName());
                 }
             } finally {
                 frame.getBoardPanel().resetGame(); // cancel a possible AI worker

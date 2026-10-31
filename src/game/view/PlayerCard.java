@@ -1,26 +1,32 @@
 package game.view;
+import game.model.Piece;
 import javax.swing.*;
 import java.awt.*;
 
 /** Fixed-width card with explicit, code-point-safe name ellipsis. */
 public final class PlayerCard extends JPanel {
-    private final JLabel avatar=new JLabel(),name=new JLabel(),wins=new JLabel();
+    private final JLabel avatar=new JLabel(),name=new JLabel(),wins=new JLabel(),pieceBadge=new JLabel();
+    private final JPanel text=new JPanel(new GridLayout(2,1,0,2));
     private String fullName="";
     private boolean highlighted;
     public PlayerCard() {
         super(new BorderLayout(10,0)); setBackground(Theme.DARK); setBorder(BorderFactory.createEmptyBorder(10,12,10,12));
         name.setFont(Theme.font(Font.BOLD,15)); name.setForeground(Theme.CREAM); name.putClientProperty("html.disable",true);
         wins.setFont(Theme.font(Font.PLAIN,13)); wins.setForeground(Theme.MUTED);
-        JPanel text=new JPanel(new GridLayout(2,1,0,2)); text.setOpaque(false); text.add(name); text.add(wins);
+        JPanel nameRow=new JPanel(new BorderLayout(6,0)); nameRow.setOpaque(false);
+        nameRow.add(pieceBadge,BorderLayout.WEST); nameRow.add(name);
+        text.setOpaque(false); text.add(nameRow); text.add(wins);
         add(avatar,BorderLayout.WEST); add(text);
     }
-    public void update(String fullName,int index,int count,boolean highlighted) {
+    public void update(String fullName,int index,int count,boolean highlighted,Piece piece) {
         this.fullName=fullName; this.highlighted=highlighted;
         avatar.setIcon(new AvatarIcon(index,fullName,48)); wins.setText(Lang.wins()+": "+count); name.setToolTipText(fullName);
+        pieceBadge.setIcon(new PieceBadgeIcon(piece)); pieceBadge.setToolTipText(Lang.pieceName(piece));
+        pieceBadge.getAccessibleContext().setAccessibleName(Lang.pieceName(piece));
         revalidate(); repaint();
     }
     @Override public void doLayout() {
-        super.doLayout(); FontMetrics fm=name.getFontMetrics(name.getFont()); int available=name.getParent().getWidth();
+        super.doLayout(); FontMetrics fm=name.getFontMetrics(name.getFont()); int available=Math.max(0,text.getWidth()-PieceBadgeIcon.SIZE-6);
         String visible=fullName;
         if(fm.stringWidth(visible)>available) {
             while(!visible.isEmpty()&&fm.stringWidth(visible+"...")>available) visible=visible.substring(0,visible.offsetByCodePoints(visible.length(),-1));
@@ -36,5 +42,6 @@ public final class PlayerCard extends JPanel {
     }
     public boolean isHighlighted() { return highlighted; }
     public JLabel getNameLabel() { return name; } public JLabel getWinsLabel() { return wins; }
+    public JLabel getPieceBadge() { return pieceBadge; }
     public String getFullName() { return fullName; }
 }

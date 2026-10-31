@@ -177,16 +177,14 @@ public class MainFrame extends JFrame {
         Piece turn=boardPanel.getCurrentTurn(); BoardPanel.GameMode mode=boardPanel.getGameMode();
         String status=boardPanel.isRestartWaiting()?Lang.restartWaiting():boardPanel.isGameOver()?boardPanel.getGameOverMessage():
             mode==BoardPanel.GameMode.ONLINE?(turn==boardPanel.getMyPiece()?Lang.onlineYourTurn():Lang.onlineOpponentTurn()):
-            boardPanel.isAiThinking()?Lang.aiThinking():mode==BoardPanel.GameMode.PV_AI?(turn==Piece.X?Lang.yourTurn():Lang.aiTurn()):(turn==Piece.X?Lang.p1Turn():Lang.p2Turn());
-        if(!boardPanel.isGameOver()&&!boardPanel.isRestartWaiting()&&!boardPanel.isAiThinking()&&mode==BoardPanel.GameMode.PVP)
-            status=Lang.namedTurn(turn==Piece.X?profile.displayName():secondProfile.displayName(true),turn);
+            boardPanel.isAiThinking()?Lang.aiThinking():mode==BoardPanel.GameMode.PV_AI?(turn==Piece.X?Lang.yourTurn():Lang.aiTurn()):"";
         statusText=status; turnText.setText(status); drawsLabel.setText(Lang.draws()+": "+scoreTracker.getDraws());
-        Piece local=mode==BoardPanel.GameMode.ONLINE?boardPanel.getMyPiece():Piece.X;
+        Piece local=PieceBadgeIcon.pieceForCard(mode,boardPanel.getMyPiece(),true);
         Piece active=boardPanel.isGameOver()?boardPanel.getWinner():boardPanel.getCurrentTurn();
         String opponent=mode==BoardPanel.GameMode.PV_AI?Lang.computerName(selectedDifficulty):mode==BoardPanel.GameMode.ONLINE?Lang.opponentName():secondProfile.displayName(true);
         int opponentAvatar=mode==BoardPanel.GameMode.PV_AI?6:mode==BoardPanel.GameMode.ONLINE?0:secondProfile.avatarIndex();
-        leftPlayer.update(profile.displayName(),profile.avatarIndex(),scoreTracker.getHumanWins(),active!=Piece.NONE&&active==local);
-        rightPlayer.update(opponent,opponentAvatar,scoreTracker.getAiWins(),active!=Piece.NONE&&active!=local);
+        leftPlayer.update(profile.displayName(),profile.avatarIndex(),scoreTracker.getHumanWins(),active!=Piece.NONE&&active==local,local);
+        rightPlayer.update(opponent,opponentAvatar,scoreTracker.getAiWins(),active!=Piece.NONE&&active!=local,local.opposite());
     }
     @Override public void dispose() {
         disposed=true; screenEpoch++; if(startScreen!=null) startScreen.setActive(false); boardPanel.setEnabled(false);

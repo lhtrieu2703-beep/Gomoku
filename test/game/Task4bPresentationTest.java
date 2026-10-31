@@ -47,6 +47,9 @@ class Task4bPresentationTest {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); f=Task4StartScreenTest.frame(language); f.setVisible(true);
                 Dimension outer=f.getSize();
+                var nativeScale=f.getGraphicsConfiguration().getDefaultTransform();
+                if(nativeScale.getScaleX()==1.25&&nativeScale.getScaleY()==1.25)
+                    assertEquals(new Dimension(774,795),outer,"Native Windows frame at DPI 125%");
                 for(MainFrame.Screen screen:MainFrame.Screen.values()) {
                     if(screen==MainFrame.Screen.MENU) f.showMenu(); else if(screen==MainFrame.Screen.GAME) f.startGame();
                     f.validate(); F4LayoutTest.layout(f); assertEquals(outer,f.getSize());
