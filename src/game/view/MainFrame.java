@@ -12,7 +12,7 @@ import java.util.Objects;
 public class MainFrame extends JFrame {
     public enum Screen { TITLE, MENU, GAME }
     private final Board board=new Board();
-    private final BoardPanel boardPanel=new BoardPanel(board);
+    private final BoardPanel boardPanel;
     private final AppSettings appSettings;
     private final ScoreTracker scoreTracker=new ScoreTracker();
     private final CardLayout screenLayout=new CardLayout();
@@ -45,6 +45,10 @@ public class MainFrame extends JFrame {
 
     public MainFrame() { this(new AppSettings()); }
     public MainFrame(AppSettings settings) {
+        this(settings,AiMoveDelay.DEFAULT_MINIMUM_MS);
+    }
+    public MainFrame(AppSettings settings,int minimumAiMoveDelayMs) {
+        boardPanel=new BoardPanel(board,minimumAiMoveDelayMs);
         appSettings=settings; Lang.set(settings.loadLang()); SoundManager.setSoundEnabled(settings.loadSound()); profile=settings.loadProfile();
         setTitle(Lang.startTitle()); setDefaultCloseOperation(DISPOSE_ON_CLOSE); setResizable(false);
         startScreen=new StartScreen(this::showMenu);

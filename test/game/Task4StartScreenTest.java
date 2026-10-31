@@ -13,7 +13,7 @@ class Task4StartScreenTest {
     @BeforeEach void remember() { language=Lang.get(); sound=SoundManager.isSoundEnabled(); }
     @AfterEach void restore() throws Exception { SwingUtilities.invokeAndWait(() -> { Lang.set(language); SoundManager.setSoundEnabled(sound); }); }
     static MainFrame frame(Lang.Language language) {
-        var node=new MemoryPreferences(); node.put("language",language.name()); node.putBoolean("soundEnabled",false); return new MainFrame(new AppSettings(node));
+        var node=new MemoryPreferences(); node.put("language",language.name()); node.putBoolean("soundEnabled",false); return new MainFrame(new AppSettings(node),0);
     }
     @Test void titleMenuSetupAndGameUseTheSameFrame() throws Exception {
         SwingUtilities.invokeAndWait(() -> {

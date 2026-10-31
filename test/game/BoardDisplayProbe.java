@@ -107,7 +107,7 @@ public final class BoardDisplayProbe {
         try {
             SwingUtilities.invokeAndWait(()->{
                 try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch(Exception ex) { throw new AssertionError(ex); }
-                Memory prefs=new Memory();prefs.put("soundEnabled","false");prefs.put("language","VI");frame=new MainFrame(new AppSettings(prefs));frame.setVisible(true);
+                Memory prefs=new Memory();prefs.put("soundEnabled","false");prefs.put("language","VI");frame=new MainFrame(new AppSettings(prefs),0);frame.setVisible(true);
             });settle();
             SwingUtilities.invokeAndWait(()->{
                 frame.showMenu();

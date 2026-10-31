@@ -40,7 +40,7 @@ class P1RegressionTest {
     @EnumSource(BoardPanel.GameMode.class)
     void languageChangePreservesActiveGame(BoardPanel.GameMode mode) throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
+            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()),0);
             try {
                 frame.startGame();
                 BoardPanel panel = frame.getBoardPanel();

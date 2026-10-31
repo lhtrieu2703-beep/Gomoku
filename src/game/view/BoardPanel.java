@@ -12,6 +12,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 
 /**
  * Bàn cờ Gomoku kiểu cổ điển:
@@ -61,6 +63,10 @@ public class BoardPanel extends JPanel {
     private volatile int gameId = 1; // also captured when a network callback is queued
     private SwingWorker<Move, Void> aiWorker = null;
     private int aiExecutionToken = 0;
+    private final int minimumAiMoveDelayMs;
+    private final LongSupplier nanoClock;
+    private Timer aiMoveTimer;
+    private long aiTurnStartedNanos;
 
     private final List<Move> moveHistory = new ArrayList<>();
     private GameMode gameMode = GameMode.PV_AI;
@@ -87,6 +93,18 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     public BoardPanel(Board board) {
+        this(board,AiMoveDelay.DEFAULT_MINIMUM_MS);
+    }
+
+    public BoardPanel(Board board,int minimumAiMoveDelayMs) {
+        this(board,minimumAiMoveDelayMs,System::nanoTime);
+    }
+
+    /** Injectable monotonic clock lets tests advance the deadline without real waits. */
+    public BoardPanel(Board board,int minimumAiMoveDelayMs,LongSupplier nanoClock) {
+        if(minimumAiMoveDelayMs<0) throw new IllegalArgumentException("Delay must be nonnegative");
+        this.minimumAiMoveDelayMs=minimumAiMoveDelayMs;
+        this.nanoClock=java.util.Objects.requireNonNull(nanoClock);
         this.board = board;
         this.ai    = new MinimaxAI(Piece.O, MinimaxAI.Difficulty.MEDIUM);
 
@@ -138,12 +156,20 @@ public class BoardPanel extends JPanel {
 
     public GameMode getGameMode() { return gameMode; }
 
-    public void setAiDifficulty(MinimaxAI.Difficulty d) { ai.setDifficulty(d); }
+    public void setAiDifficulty(MinimaxAI.Difficulty d) {
+        if(ai.getDifficulty()==d) return;
+        ai.setDifficulty(d);
+        if(gameMode==GameMode.PV_AI&&isAiThinking) {
+            long started=aiTurnStartedNanos;
+            cancelAiComputation();
+            triggerAI(started);
+        }
+    }
 
     public boolean canUndo() {
         // Trong chế độ Online không cho phép Undo 1 phía
         if (gameMode == GameMode.ONLINE) return false;
-        return !isAiThinking && !moveHistory.isEmpty();
+        return (!isAiThinking || aiMoveTimer!=null) && !moveHistory.isEmpty();
     }
 
     public void setupOnlineGame(NetworkManager nm, boolean isHost) {
@@ -190,11 +216,7 @@ public class BoardPanel extends JPanel {
     // =========================================================================
     public void resetGame() {
         gameId++;
-        aiExecutionToken++;
-        if (aiWorker != null && !aiWorker.isDone()) {
-            aiWorker.cancel(true);
-            aiWorker = null;
-        }
+        cancelAiComputation();
         board.reset();
         moveHistory.clear();
         currentTurn = Piece.X;
@@ -214,13 +236,7 @@ public class BoardPanel extends JPanel {
     public void undoMove() {
         if (!canUndo()) return;
 
-        aiExecutionToken++;
-        if (aiWorker != null && !aiWorker.isDone()) {
-            aiWorker.cancel(true);
-            aiWorker = null;
-        }
-        isAiThinking = false;
-        setCursor(Cursor.getDefaultCursor());
+        cancelAiComputation();
 
         if (gameMode == GameMode.PVP) {
             Move m = moveHistory.remove(moveHistory.size() - 1);
@@ -269,11 +285,12 @@ public class BoardPanel extends JPanel {
 
         if (!board.isValidMove(row, col)) return false;
 
+        long moveStartedNanos=gameMode==GameMode.PV_AI?nanoClock.getAsLong():0;
         executeMove(row, col, currentTurn, true);
 
         // Kích hoạt AI nếu chơi với máy
         if (!isGameOver && gameMode == GameMode.PV_AI && currentTurn == Piece.O) {
-            triggerAI();
+            triggerAI(moveStartedNanos);
         }
         return true;
     }
@@ -313,6 +330,8 @@ public class BoardPanel extends JPanel {
     /** Stop background work when its owning window is disposed. */
     public void cancelAiComputation() {
         aiExecutionToken++;
+        if(aiMoveTimer!=null) aiMoveTimer.stop();
+        aiMoveTimer=null;
         if (aiWorker != null) aiWorker.cancel(true);
         aiWorker = null;
         isAiThinking = false;
@@ -396,7 +415,8 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    private void triggerAI() {
+    private void triggerAI(long startedNanos) {
+        aiTurnStartedNanos=startedNanos;
         isAiThinking = true;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (stateListener != null) { stateListener.onTurnChanged(currentTurn, true); stateListener.onHistoryChanged(false); }
@@ -415,15 +435,15 @@ public class BoardPanel extends JPanel {
             @Override protected Move doInBackground() { return searchAi.findBestMove(snap); }
             @Override protected void done() {
                 try {
-                    if (isCancelled() || token != aiExecutionToken || capturedGameId != gameId || capturedMoveCount != moveHistory.size()) {
+                    if (isCancelled() || !isCurrentAiTurn(token,capturedGameId,capturedMoveCount)) {
                         return;
                     }
                     Move best = get();
-                    isAiThinking = false;
-                    setCursor(Cursor.getDefaultCursor());
                     if (stateListener != null)
                         stateListener.onAiStatsUpdated(searchAi.getExecutionTimeMs(), searchAi.getNodesEvaluated(), searchAi.getPruningCount());
-                    if (best != null && !isGameOver) executeMove(best.row, best.col, Piece.O);
+                    if(!isCurrentAiTurn(token,capturedGameId,capturedMoveCount)) return;
+                    if(best!=null) scheduleAiMove(best,token,capturedGameId,capturedMoveCount,startedNanos);
+                    else { isAiThinking=false;setCursor(Cursor.getDefaultCursor()); }
                 } catch (Exception ex) {
                     if (token == aiExecutionToken) {
                         isAiThinking = false;
@@ -433,6 +453,38 @@ public class BoardPanel extends JPanel {
             }
         };
         aiWorker.execute();
+    }
+
+    private boolean isCurrentAiTurn(int token,int capturedGameId,int capturedMoveCount) {
+        return token==aiExecutionToken&&capturedGameId==gameId&&capturedMoveCount==moveHistory.size()
+                &&gameMode==GameMode.PV_AI&&isEnabled()&&!isGameOver&&isAiThinking&&currentTurn==Piece.O;
+    }
+
+    private int remainingAiDelay(long startedNanos) {
+        long elapsed=TimeUnit.NANOSECONDS.toMillis(Math.max(0,nanoClock.getAsLong()-startedNanos));
+        return AiMoveDelay.remainingMillis(minimumAiMoveDelayMs,elapsed);
+    }
+
+    private void scheduleAiMove(Move best,int token,int capturedGameId,int capturedMoveCount,long startedNanos) {
+        int remaining=remainingAiDelay(startedNanos);
+        if(remaining==0) { applyAiMove(best);return; }
+        Timer timer=new Timer(remaining,null);timer.setRepeats(false);
+        timer.addActionListener(event -> {
+            timer.stop();
+            // A stopped timer event can already be queued; never touch a newer turn's timer.
+            if(!isCurrentAiTurn(token,capturedGameId,capturedMoveCount)) return;
+            int stillRemaining=remainingAiDelay(startedNanos);
+            if(stillRemaining>0) { timer.setInitialDelay(stillRemaining);timer.restart();return; }
+            aiMoveTimer=null;
+            applyAiMove(best);
+        });
+        aiMoveTimer=timer;timer.start();
+        if(stateListener!=null) stateListener.onHistoryChanged(canUndo());
+    }
+
+    private void applyAiMove(Move best) {
+        isAiThinking=false;setCursor(Cursor.getDefaultCursor());
+        executeMove(best.row,best.col,Piece.O);
     }
 
     // =========================================================================
