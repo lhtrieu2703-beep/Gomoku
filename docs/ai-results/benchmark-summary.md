@@ -46,3 +46,28 @@ Sequential, direct MinimaxAI calls. Warmups discarded. Wall time excludes board 
 | HARD | 200 | 24.307150 | 261.466400 | 276.901900 | 94.524888 |
 
 Measured rows: 600; warmups: 150. Construction/ASCII in benchmark-positions.md; no positions selected based on AI output. Late 40/60/100 are synthetic density categories, not representative human endgames. Small timing sample; JIT/GC/OS scheduling remain factors.
+
+## Diễn giải thời gian theo mức
+
+Vừa và Khó không chỉ khác độ sâu. Khó giới hạn tối đa 22 ứng viên ở gốc và 14 ở mỗi tầng đệ quy; Vừa tương ứng là 16 và 10 (MinimaxAI.java:212–213, 258–259). Khó còn có đường tắt tạo/chặn Double-Three (MinimaxAI.java:176–197), chạy trước Minimax. Các giới hạn là mức tối đa, không phải số ứng viên thực tế ở mọi thế.
+
+Bảng dưới dùng kết quả đo trên đúng corpus trong benchmark-positions.md. Nhánh thoát được xác định bằng bộ đếm tạm ngoài repo; số node và nước chọn khớp bản không gắn bộ đếm và các mẫu benchmark đã lưu. Node là số lần vào hàm minimax (MinimaxAI.java:243–245), không bao gồm đánh giá ứng viên và các kiểm tra chiến thuật trước tìm kiếm; 0 node không có nghĩa là không tính toán.
+
+| Thế | Nhánh thoát của Khó | Node Vừa | Node Khó |
+|---|---|---:|---:|
+| opening-1 | Minimax | 62 | 773 |
+| opening-2 | Minimax | 65 | 443 |
+| opening-3 | Minimax | 96 | 463 |
+| middle-10 | Minimax | 95 | 719 |
+| middle-14 | Tạo Double-Three | 76 | 0 |
+| middle-18 | Chặn Open Four (cả Vừa và Khó) | 0 | 0 |
+| middle-20 | Minimax | 64 | 488 |
+| late-40 | Tạo Double-Three | 41 | 0 |
+| late-60 | Chặn Double-Three | 51 | 0 |
+| late-100 | Tạo Double-Three | 69 | 0 |
+
+Ở bốn thế middle-14, late-40, late-60 và late-100, Khó nhanh hơn Vừa vì trả về qua đường tắt riêng, không chạy Minimax; Vừa bỏ qua đường tắt này và tiếp tục tìm kiếm. Ở năm thế opening-1/2/3, middle-10 và middle-20, cả hai có chạy Minimax; Khó duyệt nhiều node hơn và chậm hơn trong số liệu đã đo.
+
+Riêng middle-18, cả hai cùng thoát tại nhánh chặn Open Four (MinimaxAI.java:141–159), chọn cùng ô (9,7), cùng 0 node và cùng 402 lần gọi evaluatePlayerAdvanced. Chênh lệch thời gian nhỏ chưa giải thích được; coi là nhiễu đo khi diễn giải kết quả, chưa có bằng chứng về lợi thế tốc độ riêng của Khó ở thế này.
+
+Không dùng bảng này để kết luận chất lượng nước đi hay sức mạnh AI. Nhãn depth 2/depth 3 không chứng minh hai mức luôn tìm kiếm đến độ sâu đó, và phép so sánh này không chỉ thay đổi độ sâu.
