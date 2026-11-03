@@ -1,0 +1,5 @@
+﻿TIME_ASIA_SAIGON: 2026-11-03T11:30:31.7759025+07:00
+COMMAND: java -Djava.awt.headless=true -Dgomoku.sound.diagnostics=true -cp tools/sound/before-no-diag/classes game.view.SoundPlaybackProbe 200
+EXIT_CODE: 0
+
+HEADER_CORRECTION: the initial COMMAND header used a fixed diagnostics=true template. This run was invoked with -DisableDiagnostics; actual child arguments set gomoku.sound.diagnostics=false and passed "200 false" to the probe. probe.stderr.log is empty. The runner now logs ProcessStartInfo.Arguments directly.

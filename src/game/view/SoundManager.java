@@ -8,7 +8,8 @@ import java.util.function.BooleanSupplier;
 /**
  * Trình quản lý âm thanh cho game Caro:
  * Tự động tổng hợp sóng âm thanh (Audio Synthesis) cho tiếng gõ cờ và tiếng chiến thắng
- * mà không cần file ngoài, đảm bảo 100% chạy mượt trên mọi máy tính.
+ * mà không cần file ngoài. Phát trên luồng nền, giữ Clip mở để tránh khởi động lại
+ * thiết bị ở mỗi nước đi; lỗi thiết bị được ghi ra stderr.
  */
 public class SoundManager {
     private static volatile boolean soundEnabled = true;
@@ -19,6 +20,8 @@ public class SoundManager {
                 return thread;
             }, new ThreadPoolExecutor.DiscardOldestPolicy());
     static { PLAYBACK.allowCoreThreadTimeOut(true); }
+    private static final CachedClip PLACE_CLIP = new CachedClip();
+    private static final CachedClip VICTORY_CLIP = new CachedClip();
 
     public static void setSoundEnabled(boolean enabled) {
         soundEnabled = enabled;
@@ -56,8 +59,9 @@ public class SoundManager {
                 }
 
                 if (currentGame.getAsBoolean())
-                    playClip(AudioSystem.getClip(), buffer, sampleRate, currentGame);
-            } catch (Exception ignored) {
+                    PLACE_CLIP.play(buffer, sampleRate, () -> soundEnabled && currentGame.getAsBoolean());
+            } catch (Exception error) {
+                reportFailure("place", error);
             }
         });
     }
@@ -91,10 +95,10 @@ public class SoundManager {
                 }
 
                 if (currentResult.getAsBoolean()) {
-                    try { playClip(AudioSystem.getClip(), buffer, sampleRate, currentResult); }
-                    catch (Exception ignored) {}
+                    VICTORY_CLIP.play(buffer, sampleRate, () -> soundEnabled && currentResult.getAsBoolean());
                 }
-            } catch (Exception ignored) {
+            } catch (Exception error) {
+                reportFailure("victory", error);
             }
         });
     }
@@ -105,22 +109,71 @@ public class SoundManager {
     }
 
     static void playClip(Clip clip, byte[] buffer, float sampleRate, BooleanSupplier currentResult) throws Exception {
+        playClip(clip, buffer, sampleRate, currentResult, true);
+    }
+
+    private static void playClip(Clip clip, byte[] buffer, float sampleRate,
+                                 BooleanSupplier currentResult, boolean openAndClose) throws Exception {
         CountDownLatch stopped = new CountDownLatch(1);
         AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
+        LineListener listener = event -> {
+            if (event.getType() == LineEvent.Type.STOP) stopped.countDown();
+        };
         try (AudioInputStream stream = new AudioInputStream(
                 new ByteArrayInputStream(buffer), format, buffer.length)) {
-            clip.addLineListener(event -> {
-                if (event.getType() == LineEvent.Type.STOP) stopped.countDown();
-            });
-            clip.open(stream);
+            if (!openAndClose) {
+                clip.stop();
+                clip.setFramePosition(0);
+            }
+            clip.addLineListener(listener);
+            if (openAndClose) clip.open(stream);
             if (!currentResult.getAsBoolean()) return;
             clip.start();
             long durationMs = (long) (1000.0 * buffer.length / sampleRate);
-            long deadline = System.nanoTime() + (durationMs + 1000) * 1_000_000L;
+            // A cold Windows device exceeded the former 1-second startup allowance in the probe.
+            long deadline = System.nanoTime() + (durationMs + 3000) * 1_000_000L;
             while (currentResult.getAsBoolean() && System.nanoTime() < deadline)
                 if (stopped.await(10, TimeUnit.MILLISECONDS)) break;
+            if (stopped.getCount() != 0 && currentResult.getAsBoolean())
+                throw new LineUnavailableException("Audio playback timed out before STOP");
         } finally {
-            clip.close();
+            if (openAndClose) clip.close();
+            else {
+                try { clip.stop(); }
+                finally { clip.removeLineListener(listener); }
+            }
         }
+    }
+
+    /** At most one open line per effect. All device calls and waits stay on PLAYBACK. */
+    private static final class CachedClip {
+        private Clip clip;
+
+        synchronized void play(byte[] buffer, float sampleRate, BooleanSupplier currentResult) throws Exception {
+            if (!currentResult.getAsBoolean()) return;
+            if (clip == null || !clip.isOpen()) {
+                Clip opened = AudioSystem.getClip();
+                try {
+                    opened.open(new AudioFormat(sampleRate, 8, 1, true, false), buffer, 0, buffer.length);
+                    clip = opened;
+                } catch (Exception error) {
+                    opened.close();
+                    throw error;
+                }
+            }
+            try {
+                playClip(clip, buffer, sampleRate, currentResult, false);
+            } catch (Exception error) {
+                clip.close();
+                clip = null;
+                throw error;
+            }
+        }
+    }
+
+    private static void reportFailure(String event, Exception error) {
+        // Called only by the audio worker: report the complete error without blocking the EDT.
+        System.err.println("[SOUND] " + event + " playback failed on " + Thread.currentThread().getName());
+        error.printStackTrace(System.err);
     }
 }

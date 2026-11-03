@@ -1,0 +1,36 @@
+PROBE java=25.0.3 os=Windows 11 intervalMs=200 time=2026-11-03T04:24:29.579522900Z
+PROBE_REQUEST index=1 time=2026-11-03T04:24:29.668522100Z thread=AWT-EventQueue-0 requestNs=4736437554900 apiReturnMs=7.7684 dispatchReturnMs=13.062
+PROBE_REQUEST index=2 time=2026-11-03T04:24:29.882009800Z thread=AWT-EventQueue-0 requestNs=4736651193300 apiReturnMs=0.4269 dispatchReturnMs=0.586
+PROBE_REQUEST index=3 time=2026-11-03T04:24:30.083005100Z thread=AWT-EventQueue-0 requestNs=4736852213200 apiReturnMs=0.4025 dispatchReturnMs=0.578
+PROBE_REQUEST index=4 time=2026-11-03T04:24:30.284416400Z thread=AWT-EventQueue-0 requestNs=4737053696700 apiReturnMs=0.4345 dispatchReturnMs=0.585
+PROBE_REQUEST index=5 time=2026-11-03T04:24:30.486108300Z thread=AWT-EventQueue-0 requestNs=4737255835200 apiReturnMs=0.5273 dispatchReturnMs=0.689
+PROBE_REQUEST index=6 time=2026-11-03T04:24:30.688468800Z thread=AWT-EventQueue-0 requestNs=4737457633700 apiReturnMs=1.4727 dispatchReturnMs=1.619
+PROBE_REQUEST index=7 time=2026-11-03T04:24:30.891180300Z thread=AWT-EventQueue-0 requestNs=4737660372300 apiReturnMs=0.6131 dispatchReturnMs=0.924
+PROBE_REQUEST index=8 time=2026-11-03T04:24:31.092298Z thread=AWT-EventQueue-0 requestNs=4737861533300 apiReturnMs=0.6216 dispatchReturnMs=0.916
+PROBE_REQUEST index=9 time=2026-11-03T04:24:31.293348600Z thread=AWT-EventQueue-0 requestNs=4738062684400 apiReturnMs=0.4017 dispatchReturnMs=0.763
+PROBE_REQUEST index=10 time=2026-11-03T04:24:31.494793700Z thread=AWT-EventQueue-0 requestNs=4738264031800 apiReturnMs=0.2572 dispatchReturnMs=0.400
+POOL completed=10 active=0 queued=0
+PROBE_TEN_REQUESTS_DRAINED 2026-11-03T04:24:35.677962400Z
+MIXER name=Port Speakers (Realtek(R) Audio) description=Port Mixer sourceLines=0 targetLines=1
+MIXER name=Port Microphone Array (Intel® Smart  description=Port Mixer sourceLines=1 targetLines=1
+MIXER name=Primary Sound Driver description=Direct Audio Device: DirectSound Playback sourceLines=2 targetLines=0
+MIXER name=Speakers (Realtek(R) Audio) description=Direct Audio Device: DirectSound Playback sourceLines=2 targetLines=0
+MIXER name=Primary Sound Capture Driver description=Direct Audio Device: DirectSound Capture sourceLines=0 targetLines=1
+MIXER name=Microphone Array (Intel® Smart Sound Technology for Digital Microphones) description=Direct Audio Device: DirectSound Capture sourceLines=0 targetLines=1
+FORMAT_CHECK format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame advertised=true
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame type=Open frame=0 thread=Java Sound Event Dispatcher
+FORMAT_OPEN_OK format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame openMs=5.262 frames=2646 isOpen=true
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame type=Close frame=0 thread=Java Sound Event Dispatcher
+FORMAT_CHECK format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian advertised=true
+FORMAT_OPEN_OK format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian openMs=4.896 frames=2646 isOpen=true
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Open frame=0 thread=Java Sound Event Dispatcher
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Close frame=0 thread=Java Sound Event Dispatcher
+FORMAT_CHECK format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian advertised=true
+FORMAT_LINE format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Open frame=0 thread=Java Sound Event Dispatcher
+FORMAT_OPEN_OK format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian openMs=4.438 frames=2880 isOpen=true
+FORMAT_LINE format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Close frame=0 thread=Java Sound Event Dispatcher
+FORMAT_CHECK format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian advertised=true
+FORMAT_OPEN_OK format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian openMs=4.660 frames=2646 isOpen=true
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian type=Open frame=0 thread=Java Sound Event Dispatcher
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian type=Close frame=0 thread=Java Sound Event Dispatcher
+PROBE_DONE 2026-11-03T04:24:35.708963400Z

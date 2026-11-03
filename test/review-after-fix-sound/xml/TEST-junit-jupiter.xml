@@ -1,0 +1,1013 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="JUnit Jupiter" tests="158" skipped="0" failures="0" errors="0" time="0.657" hostname="SaintLaurentDon" timestamp="2026-11-03T11:42:32">
+<properties>
+<property name="file.encoding" value="UTF-8"/>
+<property name="file.separator" value="\"/>
+<property name="java.awt.headless" value="true"/>
+<property name="java.class.path" value="lib/junit-platform-console-standalone-1.10.2.jar"/>
+<property name="java.class.version" value="69.0"/>
+<property name="java.home" value="C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot"/>
+<property name="java.io.tmpdir" value="C:\Users\Acer\AppData\Local\Packages\sandbox.{e3a30a9b-41fa-402b-bc79-f2c5dcb20bcf}\AC\Temp\"/>
+<property name="java.library.path" value="C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell;C:\Users\Acer\.codex\tmp\arg0-windows\codex-arg0Ep4XeC;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\libheif\libheif\bin;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\jxrlib\jxrlib\bin;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\poppler\Library\bin;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\override;C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot\bin;C:\Program Files (x86)\Common Files\Oracle\Java\java8path;C:\Program Files (x86)\Common Files\Oracle\Java\javapath;C:\ProgramData\Oracle\Java\javapath;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\NVIDIA Corporation\PhysX\Common;C:\Program Files (x86)\Microsoft SQL Server\160\Tools\Binn\;C:\Program Files\Microsoft SQL Server\160\Tools\Binn\;C:\Program Files\Microsoft SQL Server\Client SDK\ODBC\170\Tools\Binn\;C:\Program Files\Microsoft SQL Server\160\DTS\Binn\;C:\Work\Git\cmd;C:\Program Files\NVIDIA Corporation\NVIDIA App\NvDLISR;C:\Users\Acer\Downloads\nvm;C:\nvm4w\nodejs;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;C:\Program Files\dotnet\;C:\Users\Acer\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\Acer\AppData\Local\Programs\Python\Python311\;C:\msys64\ucrt64\bin;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\powershell;C:\Users\Acer\AppData\Local\Microsoft\WindowsApps;T:\code\compilor java\openjdk-24.0.1_windows-x64_bin\jdk-24.0.1\bin;C:\Microsoft VS Code\bin;C:\Users\Acer\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\MSYS2;C:\Users\Acer\Downloads\nvm;C:\nvm4w\nodejs;C:\Users\Acer\AppData\Roaming\npm;C:\Users\Acer\AppData\Local\Programs\Antigravity IDE\bin;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\bin\fallback;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin;C:\Users\Acer\.cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd;C:\Users\Acer\AppData\Local\OpenAI\Codex\bin\57159798136552f4;C:\Users\Acer\AppData\Local\OpenAI\Codex\bin\22cfb1d302613eae;."/>
+<property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
+<property name="java.runtime.version" value="25.0.3+9-LTS"/>
+<property name="java.specification.name" value="Java Platform API Specification"/>
+<property name="java.specification.vendor" value="Oracle Corporation"/>
+<property name="java.specification.version" value="25"/>
+<property name="java.vendor" value="Microsoft"/>
+<property name="java.vendor.url" value="https://www.microsoft.com"/>
+<property name="java.vendor.url.bug" value="https://github.com/microsoft/openjdk/issues"/>
+<property name="java.vendor.version" value="Microsoft-13877124"/>
+<property name="java.version" value="25.0.3"/>
+<property name="java.version.date" value="2026-04-21"/>
+<property name="java.vm.compressedOopsMode" value="Zero based"/>
+<property name="java.vm.info" value="mixed mode, sharing"/>
+<property name="java.vm.name" value="OpenJDK 64-Bit Server VM"/>
+<property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+<property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+<property name="java.vm.specification.version" value="25"/>
+<property name="java.vm.vendor" value="Microsoft"/>
+<property name="java.vm.version" value="25.0.3+9-LTS"/>
+<property name="jdk.debug" value="release"/>
+<property name="line.separator" value="
+"/>
+<property name="native.encoding" value="Cp1252"/>
+<property name="os.arch" value="amd64"/>
+<property name="os.name" value="Windows 11"/>
+<property name="os.version" value="10.0"/>
+<property name="path.separator" value=";"/>
+<property name="stderr.encoding" value="UTF-8"/>
+<property name="stdin.encoding" value="cp437"/>
+<property name="stdout.encoding" value="UTF-8"/>
+<property name="sun.arch.data.model" value="64"/>
+<property name="sun.boot.library.path" value="C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot\bin"/>
+<property name="sun.cpu.endian" value="little"/>
+<property name="sun.cpu.isalist" value="amd64"/>
+<property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+<property name="sun.java.command" value="lib/junit-platform-console-standalone-1.10.2.jar execute --class-path test/review-after-fix-sound/test-classes;test/review-after-fix-sound/classes --select-class game.BoardWinTest --select-class game.F3HeuristicTest --select-class game.ai.AITacticsTest --select-method game.Task4bGameplayTest#resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain --select-class game.model.BoardModelContractTest --select-class game.model.ScoreTrackerContractTest --select-class game.ai.MinimaxEasyContractTest --select-class game.ai.HeuristicOrderingTest --select-class game.network.NetworkMessageTest --config junit.jupiter.execution.parallel.enabled=false --reports-dir test/review-after-fix-sound/xml --details tree --disable-banner --disable-ansi-colors --fail-if-no-tests"/>
+<property name="sun.java.launcher" value="SUN_STANDARD"/>
+<property name="sun.jnu.encoding" value="Cp1252"/>
+<property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+<property name="sun.os.patch.level" value=""/>
+<property name="user.country" value="US"/>
+<property name="user.dir" value="C:\VNUK\Năm 3 - Kì 1 - 2026_2027\Basic Project\Gomoku"/>
+<property name="user.home" value="C:\Users\Acer"/>
+<property name="user.language" value="en"/>
+<property name="user.name" value="Acer"/>
+<property name="user.script" value=""/>
+<property name="user.timezone" value="Asia/Saigon"/>
+<property name="user.variant" value=""/>
+</properties>
+<testcase name="testT15()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT15()]
+display-name: T15: # X X X X X X* O -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT38()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT38()]
+display-name: T38: Ngang 4 + Dọc 4 + Chéo 4 (đều mở) -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[1]" classname="game.network.NetworkMessageTest" time="0.006">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#1]
+display-name: host=false, ply=1, row=0, col=14
+]]></system-out>
+</testcase>
+<testcase name="testT11()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT11()]
+display-name: T11: . X X X X X X* . -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT34()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT34()]
+display-name: T34: Ngang 6 hợp lệ + Dọc 5 hợp lệ -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT19()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT19()]
+display-name: T19: Hàng 9 quân mở 2 đầu -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain()" classname="game.Task4bGameplayTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.Task4bGameplayTest]/[method:resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain()]
+display-name: resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain()
+]]></system-out>
+</testcase>
+<testcase name="hardCreatesCrossDoubleThree()" classname="game.ai.AITacticsTest" time="0.006">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[method:hardCreatesCrossDoubleThree()]
+display-name: hardCreatesCrossDoubleThree()
+]]></system-out>
+</testcase>
+<testcase name="testT30()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT30()]
+display-name: T30: Hàng 5 bị chặn có sẵn, đặt chỗ khác không tạo hàng mới -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="opponentWinIsRecordedForEitherHumanPiece(Piece)[1]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:opponentWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] X
+]]></system-out>
+</testcase>
+<testcase name="winsImmediatelyWithOneOpenEnd(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:winsImmediatelyWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Khó
+]]></system-out>
+</testcase>
+<testcase name="winsImmediatelyWithOneOpenEnd(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:winsImmediatelyWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="opponentWinIsRecordedForEitherHumanPiece(Piece)[2]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:opponentWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] O
+]]></system-out>
+</testcase>
+<testcase name="testT04()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT04()]
+display-name: T04: O X* X X X X O -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT27()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT27()]
+display-name: T27: . X X O X* X X . (bị O ngắt giữa) -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testSanitySetupPatternInverted()" classname="game.BoardWinTest" time="0.015">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testSanitySetupPatternInverted()]
+display-name: Sanity 3: Kiểm tra invertColors=true đảo màu đúng cả 2 nhánh X và O
+]]></system-out>
+</testcase>
+<testcase name="testT46()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT46()]
+display-name: T46: Chéo từ (0,0) đến (5,5) là X (6 quân), (6,6) là O -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT23()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT23()]
+display-name: T23: . X X X* X X X . (nối 3+2 thành 6) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT42()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT42()]
+display-name: T42: Ngang 5 quân ở cột 0-4, quân vừa đặt ở cột 0, cột 5 trống -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="sendMoveFormatsTheCurrentRoundMessage()" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:sendMoveFormatsTheCurrentRoundMessage()]
+display-name: sendMoveFormatsTheCurrentRoundMessage()
+]]></system-out>
+</testcase>
+<testcase name="testT08()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT08()]
+display-name: T08: # X X X X X* # (chéo 5 ô góc chạm 2 mép) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="fullDrawBoardReturnsNullWithoutMutation(Difficulty)[3]" classname="game.ai.AITacticsTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:fullDrawBoardReturnsNullWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]
+display-name: [3] Khó
+]]></system-out>
+</testcase>
+<testcase name="fullDrawBoardReturnsNullWithoutMutation(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:fullDrawBoardReturnsNullWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="fullDrawBoardReturnsNullWithoutMutation(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:fullDrawBoardReturnsNullWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Dễ
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[8]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#8]
+display-name: [8] MOVE 00000000-0000-0000-0000-000000000001 1 7 -1
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[9]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#9]
+display-name: [9] MOVE 00000000-0000-0000-0000-000000000001 1 7 15
+]]></system-out>
+</testcase>
+<testcase name="takesWinInsteadOfBlockingOpponentWin(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.009">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:takesWinInsteadOfBlockingOpponentWin(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Khó
+]]></system-out>
+</testcase>
+<testcase name="takesWinInsteadOfBlockingOpponentWin(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0.012">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:takesWinInsteadOfBlockingOpponentWin(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="blocksImmediateLossWithOneOpenEnd(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksImmediateLossWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Khó
+]]></system-out>
+</testcase>
+<testcase name="blocksImmediateLossWithOneOpenEnd(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksImmediateLossWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[11]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#11]
+display-name: [11] MOVE 00000000-0000-0000-0000-000000000001 2 7 7
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[12]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#12]
+display-name: [12] MOVE 00000000-0000-0000-0000-000000000001 1 7 7 extra
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[10]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#10]
+display-name: [10] MOVE not-a-uuid 1 7 7
+]]></system-out>
+</testcase>
+<testcase name="blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blockedFiveIsNotAWinAndRealThreatRemains(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Dễ
+]]></system-out>
+</testcase>
+<testcase name="testT37()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT37()]
+display-name: T37: Ngang 7 chặn 2 đầu + Dọc 5 chặn 2 đầu -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testSanitySetupPatternNormal()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testSanitySetupPatternNormal()]
+display-name: Sanity 1: Kiểm tra setupPattern('O X X X X* X O') đặt đúng quân ở từng ô
+]]></system-out>
+</testcase>
+<testcase name="completedSearchPreservesEveryCellCountAndRule(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:completedSearchPreservesEveryCellCountAndRule(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Dễ
+]]></system-out>
+</testcase>
+<testcase name="blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blockedFiveIsNotAWinAndRealThreatRemains(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="completedSearchPreservesEveryCellCountAndRule(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.049">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:completedSearchPreservesEveryCellCountAndRule(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[3]" classname="game.ai.AITacticsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blockedFiveIsNotAWinAndRealThreatRemains(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]
+display-name: [3] Khó
+]]></system-out>
+</testcase>
+<testcase name="testT14()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT14()]
+display-name: T14: # X X X X X X* . -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="completedSearchPreservesEveryCellCountAndRule(Difficulty)[3]" classname="game.ai.AITacticsTest" time="0.212">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:completedSearchPreservesEveryCellCountAndRule(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]
+display-name: [3] Khó
+]]></system-out>
+</testcase>
+<testcase name="testT33()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT33()]
+display-name: T33: Ngang 5 hợp lệ + Dọc 5 hợp lệ -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT10()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT10()]
+display-name: T10: O X X X X X* . O (chỉ xét ô liền kề) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[2]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#2]
+display-name: [2] MOVE 00000000-0000-0000-0000-000000000001 1 7
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[3]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#3]
+display-name: [3] MOVE 00000000-0000-0000-0000-000000000001 a 7 7
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[1]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#1]
+display-name: [1] MOVE
+]]></system-out>
+</testcase>
+<testcase name="hostRestartFormatsBaseAndNewRoundMessage()" classname="game.network.NetworkMessageTest" time="0.036">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:hostRestartFormatsBaseAndNewRoundMessage()]
+display-name: hostRestartFormatsBaseAndNewRoundMessage()
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[6]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#6]
+display-name: [6] MOVE 00000000-0000-0000-0000-000000000001 1 -1 7
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[7]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#7]
+display-name: [7] MOVE 00000000-0000-0000-0000-000000000001 1 15 7
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[4]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#4]
+display-name: [4] MOVE 00000000-0000-0000-0000-000000000001 0 7 7
+]]></system-out>
+</testcase>
+<testcase name="testT18()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT18()]
+display-name: T18: O X X X X X X X* O -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="invalidMoveLineDoesNotDispatchAMove(String)[5]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#5]
+display-name: [5] MOVE 00000000-0000-0000-0000-000000000001 226 7 7
+]]></system-out>
+</testcase>
+<testcase name="nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[3]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] RULE_B, X
+]]></system-out>
+</testcase>
+<testcase name="nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[4]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] RULE_B, O
+]]></system-out>
+</testcase>
+<testcase name="testT52()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT52()]
+display-name: T52: Đặt ngoài bàn cờ -> Từ chối, không văng lỗi ngoại lệ
+]]></system-out>
+</testcase>
+<testcase name="actualCrossDoubleThreeIsRecognized(WinRule, Piece)[4]" classname="game.F3HeuristicTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] RULE_B, O
+]]></system-out>
+</testcase>
+<testcase name="nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[1]" classname="game.F3HeuristicTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] RULE_A, X
+]]></system-out>
+</testcase>
+<testcase name="actualCrossDoubleThreeIsRecognized(WinRule, Piece)[2]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] RULE_A, O
+]]></system-out>
+</testcase>
+<testcase name="nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[2]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] RULE_A, O
+]]></system-out>
+</testcase>
+<testcase name="actualCrossDoubleThreeIsRecognized(WinRule, Piece)[3]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] RULE_B, X
+]]></system-out>
+</testcase>
+<testcase name="actualCrossDoubleThreeIsRecognized(WinRule, Piece)[1]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] RULE_A, X
+]]></system-out>
+</testcase>
+<testcase name="restartLineOnClientReplacesTheMatchingRound()" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:restartLineOnClientReplacesTheMatchingRound()]
+display-name: restartLineOnClientReplacesTheMatchingRound()
+]]></system-out>
+</testcase>
+<testcase name="testT26()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT26()]
+display-name: T26: . X X . X* X X . (có ô trống ở giữa) -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT49()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT49()]
+display-name: T49: Bàn cờ đã đầy, nước cuối không tạo hàng hợp lệ -> HÒA
+]]></system-out>
+</testcase>
+<testcase name="testT03()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT03()]
+display-name: T03: . X X* X X X O -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT22()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT22()]
+display-name: T22: . X X X X* X X X . (nối 3+3 thành 7) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT45()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT45()]
+display-name: T45: Quân vừa đặt ở góc (14,14), chéo (10,10)-(14,14) là X, (9,9) trống -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="openSixMatchesSelectedRule(WinRule, Piece)[4]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] RULE_B, O
+]]></system-out>
+</testcase>
+<testcase name="openSixMatchesSelectedRule(WinRule, Piece)[3]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] RULE_B, X
+]]></system-out>
+</testcase>
+<testcase name="hardPreventsOpponentCrossDoubleThree()" classname="game.ai.AITacticsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[method:hardPreventsOpponentCrossDoubleThree()]
+display-name: hardPreventsOpponentCrossDoubleThree()
+]]></system-out>
+</testcase>
+<testcase name="openSixMatchesSelectedRule(WinRule, Piece)[2]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] RULE_A, O
+]]></system-out>
+</testcase>
+<testcase name="openSixMatchesSelectedRule(WinRule, Piece)[1]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] RULE_A, X
+]]></system-out>
+</testcase>
+<testcase name="testT07()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT07()]
+display-name: T07: O X X X X X* # -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="emptyBoardReturnsCentreWithoutMutation(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0.015">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:emptyBoardReturnsCentreWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Dễ
+]]></system-out>
+</testcase>
+<testcase name="emptyBoardReturnsCentreWithoutMutation(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:emptyBoardReturnsCentreWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="emptyBoardReturnsCentreWithoutMutation(Difficulty)[3]" classname="game.ai.AITacticsTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:emptyBoardReturnsCentreWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]
+display-name: [3] Khó
+]]></system-out>
+</testcase>
+<testcase name="testT41()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT41()]
+display-name: T41: Chéo phụ (↙) 5 quân, 2 đầu trống -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT13()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT13()]
+display-name: T13: O X X X X X X* O -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT36()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT36()]
+display-name: T36: Ngang 6 mở + Dọc 5 chặn 2 đầu -> THẮNG (nhờ hàng ngang)
+]]></system-out>
+</testcase>
+<testcase name="clientRestartRequestFormatsTheBaseRoundMessage()" classname="game.network.NetworkMessageTest" time="0.012">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:clientRestartRequestFormatsTheBaseRoundMessage()]
+display-name: clientRestartRequestFormatsTheBaseRoundMessage()
+]]></system-out>
+</testcase>
+<testcase name="outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[4]" classname="game.model.BoardModelContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#4]
+display-name: row=7, col=15
+]]></system-out>
+</testcase>
+<testcase name="testT32()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT32()]
+display-name: T32: Ngang 5 chặn 2 đầu + Chéo 5 chặn 2 đầu -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[3]" classname="game.model.BoardModelContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#3]
+display-name: row=7, col=-1
+]]></system-out>
+</testcase>
+<testcase name="outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[2]" classname="game.model.BoardModelContractTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#2]
+display-name: row=15, col=7
+]]></system-out>
+</testcase>
+<testcase name="outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[1]" classname="game.model.BoardModelContractTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#1]
+display-name: row=-1, col=7
+]]></system-out>
+</testcase>
+<testcase name="blockedSixIsNotFive(WinRule, Piece)[1]" classname="game.F3HeuristicTest" time="0.01">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] RULE_A, X
+]]></system-out>
+</testcase>
+<testcase name="winningPositionOutranksOrdinaryPosition(Piece)[2]" classname="game.ai.HeuristicOrderingTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:winningPositionOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] O
+]]></system-out>
+</testcase>
+<testcase name="testT17()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT17()]
+display-name: T17: . X X X X X X X* . -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="winningPositionOutranksOrdinaryPosition(Piece)[1]" classname="game.ai.HeuristicOrderingTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:winningPositionOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] X
+]]></system-out>
+</testcase>
+<testcase name="blockedSixIsNotFive(WinRule, Piece)[4]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] RULE_B, O
+]]></system-out>
+</testcase>
+<testcase name="blockedSixIsNotFive(WinRule, Piece)[3]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] RULE_B, X
+]]></system-out>
+</testcase>
+<testcase name="blockedSixIsNotFive(WinRule, Piece)[2]" classname="game.F3HeuristicTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] RULE_A, O
+]]></system-out>
+</testcase>
+<testcase name="testT51()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT51()]
+display-name: T51: Đặt vào ô đã có quân -> Từ chối, bàn cờ và lượt giữ nguyên
+]]></system-out>
+</testcase>
+<testcase name="drawIsRecordedForEitherHumanPiece(Piece)[2]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:drawIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] O
+]]></system-out>
+</testcase>
+<testcase name="drawIsRecordedForEitherHumanPiece(Piece)[1]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:drawIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] X
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[3]" classname="game.ai.AITacticsTest" time="0.005">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] 2, X
+]]></system-out>
+</testcase>
+<testcase name="testT02()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT02()]
+display-name: T02: O X X X X* X . -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT48()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT48()]
+display-name: T48: X O O O O O* X -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[2]" classname="game.ai.AITacticsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] 1, O
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[1]" classname="game.ai.AITacticsTest" time="0.007">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] 1, X
+]]></system-out>
+</testcase>
+<testcase name="testT25()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT25()]
+display-name: T25: . X X X X* . (chỉ 4 quân) -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT44()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT44()]
+display-name: T44: Quân vừa đặt ở góc (0,0), chéo (0,0)-(4,4) là X, (5,5) là O -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT21()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT21()]
+display-name: T21: . X X X* X X . (nối 2+2 thành 5) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="openFourOutranksOrdinaryPosition(Piece)[2]" classname="game.ai.HeuristicOrderingTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:openFourOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] O
+]]></system-out>
+</testcase>
+<testcase name="openFourOutranksOrdinaryPosition(Piece)[1]" classname="game.ai.HeuristicOrderingTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:openFourOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] X
+]]></system-out>
+</testcase>
+<testcase name="testT06()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT06()]
+display-name: T06: # X X X X X* O -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT29()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT29()]
+display-name: T29: . X X X O X* X . -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="openFourIsThreatButNotTerminal(WinRule, Piece)[3]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] RULE_B, X
+]]></system-out>
+</testcase>
+<testcase name="duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[2]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:duplicateGameIdRejectsSecondResultAndPreservesFirst(game.model.Piece, game.model.Piece)]/[test-template-invocation:#2]
+display-name: first=O, second=X
+]]></system-out>
+</testcase>
+<testcase name="testSanitySetupPatternAllO()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testSanitySetupPatternAllO()]
+display-name: Sanity 2: Kiểm tra setupPattern('. O O O O O* .') chỉ có quân O, không có X
+]]></system-out>
+</testcase>
+<testcase name="openFourIsThreatButNotTerminal(WinRule, Piece)[4]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] RULE_B, O
+]]></system-out>
+</testcase>
+<testcase name="duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[3]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:duplicateGameIdRejectsSecondResultAndPreservesFirst(game.model.Piece, game.model.Piece)]/[test-template-invocation:#3]
+display-name: first=NONE, second=X
+]]></system-out>
+</testcase>
+<testcase name="duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[1]" classname="game.model.ScoreTrackerContractTest" time="0.003">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:duplicateGameIdRejectsSecondResultAndPreservesFirst(game.model.Piece, game.model.Piece)]/[test-template-invocation:#1]
+display-name: first=X, second=O
+]]></system-out>
+</testcase>
+<testcase name="openFourIsThreatButNotTerminal(WinRule, Piece)[1]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] RULE_A, X
+]]></system-out>
+</testcase>
+<testcase name="openFourIsThreatButNotTerminal(WinRule, Piece)[2]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] RULE_A, O
+]]></system-out>
+</testcase>
+<testcase name="testT40()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT40()]
+display-name: T40: Chéo chính (↘) 5 quân, 2 đầu trống -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[8]" classname="game.ai.AITacticsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#8]
+display-name: [8] 10, O
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[7]" classname="game.ai.AITacticsTest" time="0.005">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#7]
+display-name: [7] 10, X
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[6]" classname="game.ai.AITacticsTest" time="0.005">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#6]
+display-name: [6] 5, O
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[5]" classname="game.ai.AITacticsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#5]
+display-name: [5] 5, X
+]]></system-out>
+</testcase>
+<testcase name="easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[4]" classname="game.ai.AITacticsTest" time="0.004">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] 2, O
+]]></system-out>
+</testcase>
+<testcase name="testT16()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT16()]
+display-name: T16: # X X X X X X* # (chéo 6 ô góc) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT35()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT35()]
+display-name: T35: Ngang 6 + Dọc 6 (đều mở) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="easyChoosesMoveWithoutEvaluatingMinimaxNodes()" classname="game.ai.MinimaxEasyContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.MinimaxEasyContractTest]/[method:easyChoosesMoveWithoutEvaluatingMinimaxNodes()]
+display-name: easyChoosesMoveWithoutEvaluatingMinimaxNodes()
+]]></system-out>
+</testcase>
+<testcase name="testT12()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT12()]
+display-name: T12: O X X X X X X* . -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT31()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT31()]
+display-name: T31: Ngang 5 chặn 2 đầu + Dọc 5 mở -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="resetScoresClearsAllThreeCounters()" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[method:resetScoresClearsAllThreeCounters()]
+display-name: resetScoresClearsAllThreeCounters()
+]]></system-out>
+</testcase>
+<testcase name="singleThreeIsNotDoubleThree(WinRule, Piece)[1]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] RULE_A, X
+]]></system-out>
+</testcase>
+<testcase name="singleThreeIsNotDoubleThree(WinRule, Piece)[2]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] RULE_A, O
+]]></system-out>
+</testcase>
+<testcase name="singleThreeIsNotDoubleThree(WinRule, Piece)[3]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] RULE_B, X
+]]></system-out>
+</testcase>
+<testcase name="singleThreeIsNotDoubleThree(WinRule, Piece)[4]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] RULE_B, O
+]]></system-out>
+</testcase>
+<testcase name="testT39()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT39()]
+display-name: T39: Hàng dọc 5, đặt ở giữa bàn, 2 đầu trống -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT50()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT50()]
+display-name: T50: Bàn cờ đã đầy, nước cuối tạo hàng hợp lệ -> THẮNG (thắng ưu tiên hơn hòa)
+]]></system-out>
+</testcase>
+<testcase name="edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[3]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]
+display-name: [3] RULE_B, X
+]]></system-out>
+</testcase>
+<testcase name="blocksOpponentOpenThree(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.002">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksOpponentOpenThree(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Khó
+]]></system-out>
+</testcase>
+<testcase name="humanWinIsRecordedForEitherHumanPiece(Piece)[2]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:humanWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] O
+]]></system-out>
+</testcase>
+<testcase name="edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[4]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]
+display-name: [4] RULE_B, O
+]]></system-out>
+</testcase>
+<testcase name="edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[1]" classname="game.F3HeuristicTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] RULE_A, X
+]]></system-out>
+</testcase>
+<testcase name="edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[2]" classname="game.F3HeuristicTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]
+display-name: [2] RULE_A, O
+]]></system-out>
+</testcase>
+<testcase name="blocksOpponentOpenThree(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksOpponentOpenThree(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="humanWinIsRecordedForEitherHumanPiece(Piece)[1]" classname="game.model.ScoreTrackerContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:humanWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#1]
+display-name: [1] X
+]]></system-out>
+</testcase>
+<testcase name="testT05()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT05()]
+display-name: T05: # X X X X X* . -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT24()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT24()]
+display-name: T24: O X X X* X X O (nối thành 5, O chặn 2 đầu) -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT47()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT47()]
+display-name: T47: . O O O O O* . -> O THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT01()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT01()]
+display-name: T01: . X X X X X* . -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT20()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT20()]
+display-name: T20: Cả hàng 15 ô đều là X, 2 đầu là mép -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT43()" classname="game.BoardWinTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT43()]
+display-name: T43: Ngang 5 quân ở cột 10-14, quân vừa đặt ở cột 14, cột 9 là O -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="createsOpenFourWhenSafe(Difficulty)[1]" classname="game.ai.AITacticsTest" time="0.007">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:createsOpenFourWhenSafe(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]
+display-name: [1] Trung bình
+]]></system-out>
+</testcase>
+<testcase name="createsOpenFourWhenSafe(Difficulty)[2]" classname="game.ai.AITacticsTest" time="0.007">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:createsOpenFourWhenSafe(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]
+display-name: [2] Khó
+]]></system-out>
+</testcase>
+<testcase name="restartLineForDifferentBaseDoesNotChangeRound()" classname="game.network.NetworkMessageTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:restartLineForDifferentBaseDoesNotChangeRound()]
+display-name: restartLineForDifferentBaseDoesNotChangeRound()
+]]></system-out>
+</testcase>
+<testcase name="testT09()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT09()]
+display-name: T09: O . X X X X X* . O (O không liền kề) -> THẮNG
+]]></system-out>
+</testcase>
+<testcase name="testT28()" classname="game.BoardWinTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT28()]
+display-name: T28: . X X X* . X X . (còn ô trống) -> KHÔNG THẮNG
+]]></system-out>
+</testcase>
+<testcase name="restartRequestLineOnHostCommitsANewRound()" classname="game.network.NetworkMessageTest" time="0.001">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:restartRequestLineOnHostCommitsANewRound()]
+display-name: restartRequestLineOnHostCommitsANewRound()
+]]></system-out>
+</testcase>
+<testcase name="undoRemovesOnlyRequestedStoneAndDecrementsMoveCount()" classname="game.model.BoardModelContractTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[method:undoRemovesOnlyRequestedStoneAndDecrementsMoveCount()]
+display-name: undoRemovesOnlyRequestedStoneAndDecrementsMoveCount()
+]]></system-out>
+</testcase>
+<testcase name="moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[3]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#3]
+display-name: host=false, ply=225, row=14, col=14
+]]></system-out>
+</testcase>
+<testcase name="moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[2]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#2]
+display-name: host=true, ply=2, row=14, col=0
+]]></system-out>
+</testcase>
+<testcase name="moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[4]" classname="game.network.NetworkMessageTest" time="0">
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#4]
+display-name: host=true, ply=224, row=0, col=0
+]]></system-out>
+</testcase>
+<system-out><![CDATA[
+unique-id: [engine:junit-jupiter]
+display-name: JUnit Jupiter
+]]></system-out>
+</testsuite>

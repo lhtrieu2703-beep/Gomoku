@@ -1,0 +1,50 @@
+PROBE java=25.0.3 os=Windows 11 intervalMs=200 time=2026-11-03T04:30:31.853492900Z
+PROBE_REQUEST index=1 time=2026-11-03T04:30:31.906492400Z thread=AWT-EventQueue-0 requestNs=5098676106400 apiReturnMs=3.3452 dispatchReturnMs=38.946
+PROBE_REQUEST index=2 time=2026-11-03T04:30:32.113736100Z thread=AWT-EventQueue-0 requestNs=5098883067400 apiReturnMs=0.2904 dispatchReturnMs=0.456
+PROBE_REQUEST index=3 time=2026-11-03T04:30:32.316359600Z thread=AWT-EventQueue-0 requestNs=5099085810300 apiReturnMs=0.0863 dispatchReturnMs=0.211
+PROBE_REQUEST index=4 time=2026-11-03T04:30:32.518864400Z thread=AWT-EventQueue-0 requestNs=5099288033800 apiReturnMs=0.0627 dispatchReturnMs=0.176
+PROBE_REQUEST index=5 time=2026-11-03T04:30:32.719875200Z thread=AWT-EventQueue-0 requestNs=5099489370400 apiReturnMs=0.2988 dispatchReturnMs=1.020
+PROBE_REQUEST index=6 time=2026-11-03T04:30:32.923076700Z thread=AWT-EventQueue-0 requestNs=5099692226700 apiReturnMs=0.0588 dispatchReturnMs=0.278
+PROBE_REQUEST index=7 time=2026-11-03T04:30:33.124103200Z thread=AWT-EventQueue-0 requestNs=5099893353200 apiReturnMs=0.0634 dispatchReturnMs=0.193
+PROBE_REQUEST index=8 time=2026-11-03T04:30:33.324961500Z thread=AWT-EventQueue-0 requestNs=5100094290500 apiReturnMs=0.0659 dispatchReturnMs=0.234
+PROBE_REQUEST index=9 time=2026-11-03T04:30:33.525982900Z thread=AWT-EventQueue-0 requestNs=5100295282500 apiReturnMs=0.0576 dispatchReturnMs=0.273
+PROBE_REQUEST index=10 time=2026-11-03T04:30:33.727118400Z thread=AWT-EventQueue-0 requestNs=5100496302100 apiReturnMs=0.061 dispatchReturnMs=0.199
+POOL completed=10 active=0 queued=0
+PROBE_TEN_REQUESTS_DRAINED 2026-11-03T04:30:35.852062100Z
+MIXER name=Port Speakers (Realtek(R) Audio) description=Port Mixer sourceLines=0 targetLines=1
+MIXER name=Port Microphone Array (Intel® Smart  description=Port Mixer sourceLines=1 targetLines=1
+MIXER name=Primary Sound Driver description=Direct Audio Device: DirectSound Playback sourceLines=2 targetLines=0
+MIXER name=Speakers (Realtek(R) Audio) description=Direct Audio Device: DirectSound Playback sourceLines=2 targetLines=0
+MIXER name=Primary Sound Capture Driver description=Direct Audio Device: DirectSound Capture sourceLines=0 targetLines=1
+MIXER name=Microphone Array (Intel® Smart Sound Technology for Digital Microphones) description=Direct Audio Device: DirectSound Capture sourceLines=0 targetLines=1
+FORMAT_CHECK format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame advertised=true
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame type=Open frame=0 thread=Java Sound Event Dispatcher
+FORMAT_OPEN_OK format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame openMs=6.008 frames=2646 isOpen=true
+CONTROL FRESH PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame completed=true framePosition=2646 frameLength=2646 elapsedMs=609.160 events=[type=Start sinceStartMs=1.9117 lineFrame=0, type=Stop sinceStartMs=608.9503 lineFrame=2646]
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 8 bit, mono, 1 bytes/frame type=Close frame=2646 thread=Java Sound Event Dispatcher
+FORMAT_CHECK format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian advertised=true
+FORMAT_OPEN_OK format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian openMs=5.757 frames=2646 isOpen=true
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Open frame=0 thread=Java Sound Event Dispatcher
+CONTROL FRESH PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian completed=true framePosition=2646 frameLength=2646 elapsedMs=629.760 events=[type=Start sinceStartMs=1.0393 lineFrame=0, type=Stop sinceStartMs=629.6927 lineFrame=2646]
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Close frame=2646 thread=Java Sound Event Dispatcher
+FORMAT_CHECK format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian advertised=true
+FORMAT_OPEN_OK format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian openMs=5.982 frames=2880 isOpen=true
+FORMAT_LINE format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Open frame=0 thread=Java Sound Event Dispatcher
+CONTROL FRESH PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian completed=true framePosition=2880 frameLength=2880 elapsedMs=685.187 events=[type=Start sinceStartMs=0.9867 lineFrame=0, type=Stop sinceStartMs=685.1104 lineFrame=2880]
+FORMAT_LINE format=PCM_SIGNED 48000.0 Hz, 16 bit, mono, 2 bytes/frame, little-endian type=Close frame=2880 thread=Java Sound Event Dispatcher
+FORMAT_CHECK format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian advertised=true
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian type=Open frame=0 thread=Java Sound Event Dispatcher
+FORMAT_OPEN_OK format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian openMs=6.295 frames=2646 isOpen=true
+CONTROL FRESH PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian completed=true framePosition=2646 frameLength=2646 elapsedMs=693.227 events=[type=Start sinceStartMs=1.0442 lineFrame=0, type=Stop sinceStartMs=693.1657 lineFrame=2646]
+FORMAT_LINE format=PCM_SIGNED 44100.0 Hz, 16 bit, stereo, 4 bytes/frame, little-endian type=Close frame=2646 thread=Java Sound Event Dispatcher
+CONTROL REUSED trial=1 completed=true framePosition=2646 frameLength=2646 elapsedMs=598.780 events=[type=Start sinceStartMs=0.7964 lineFrame=0, type=Stop sinceStartMs=598.7183 lineFrame=2646]
+CONTROL REUSED trial=2 completed=true framePosition=2646 frameLength=2646 elapsedMs=83.102 events=[type=Start sinceStartMs=0.0586 lineFrame=0, type=Stop sinceStartMs=82.9983 lineFrame=2646]
+CONTROL REUSED trial=3 completed=true framePosition=2646 frameLength=2646 elapsedMs=97.258 events=[type=Start sinceStartMs=0.0924 lineFrame=0, type=Stop sinceStartMs=97.1969 lineFrame=2646]
+CONTROL REUSED trial=4 completed=true framePosition=2646 frameLength=2646 elapsedMs=98.155 events=[type=Start sinceStartMs=0.0809 lineFrame=0, type=Stop sinceStartMs=98.0981 lineFrame=2646]
+CONTROL REUSED trial=5 completed=true framePosition=2646 frameLength=2646 elapsedMs=95.183 events=[type=Start sinceStartMs=0.0557 lineFrame=0, type=Stop sinceStartMs=95.1129 lineFrame=2646]
+CONTROL REUSED trial=6 completed=true framePosition=2646 frameLength=2646 elapsedMs=83.841 events=[type=Start sinceStartMs=0.1095 lineFrame=0, type=Stop sinceStartMs=83.7695 lineFrame=2646]
+CONTROL REUSED trial=7 completed=true framePosition=2646 frameLength=2646 elapsedMs=94.700 events=[type=Start sinceStartMs=0.0531 lineFrame=0, type=Stop sinceStartMs=94.6355 lineFrame=2646]
+CONTROL REUSED trial=8 completed=true framePosition=2646 frameLength=2646 elapsedMs=85.069 events=[type=Start sinceStartMs=0.0574 lineFrame=0, type=Stop sinceStartMs=85.0016 lineFrame=2646]
+CONTROL REUSED trial=9 completed=true framePosition=2646 frameLength=2646 elapsedMs=93.416 events=[type=Start sinceStartMs=0.0805 lineFrame=0, type=Stop sinceStartMs=93.3557 lineFrame=2646]
+CONTROL REUSED trial=10 completed=true framePosition=2646 frameLength=2646 elapsedMs=91.333 events=[type=Start sinceStartMs=0.0659 lineFrame=0, type=Stop sinceStartMs=91.2435 lineFrame=2646]
+PROBE_DONE 2026-11-03T04:30:41.526158Z

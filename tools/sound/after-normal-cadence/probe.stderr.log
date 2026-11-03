@@ -1,0 +1,3 @@
+Exception in thread "main" java.lang.IllegalStateException: Not every requested sound reached the full frame count
+	at game.view.SoundPlaybackProbe$CacheObserver.finishAndVerify(SoundPlaybackProbe.java:217)
+	at game.view.SoundPlaybackProbe.main(SoundPlaybackProbe.java:48)

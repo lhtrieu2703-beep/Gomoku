@@ -1,0 +1,57 @@
+{
+  "branch": "fix-sound",
+  "baseline_commit": "398656aad758fd72591fbd2b026ef55a0874f6ee",
+  "source_sha256": "7c1d10cedca0023e95813c6655ae44316212c6f56aa0c7b87fa0f3790711e650",
+  "changed_preexisting_files": [
+    "src/game/view/SoundManager.java"
+  ],
+  "all_other_preexisting_files_unchanged": 263,
+  "full_suite": {
+    "tests": 158,
+    "pass": 158,
+    "fail": 0,
+    "errors": 0,
+    "skipped": 0,
+    "log": "docs/junit-run-after-fix-sound-final.log",
+    "xml": "test/review-after-fix-sound-final/xml/TEST-junit-jupiter.xml",
+    "initial_full_run_log": "docs/junit-run-after-fix-sound.log",
+    "full_runs_this_task": 2,
+    "additional_full_run_explicitly_authorized_by_user": true
+  },
+  "final_sound_resource_tests": {
+    "tests": 5,
+    "pass": 5,
+    "fail": 0
+  },
+  "native_probe": {
+    "requests": 10,
+    "full_frame_stops": 10,
+    "clip_instances": 1,
+    "frames_per_sound": 2646,
+    "interval_ms": 1000,
+    "log": "tools/sound/after-final/probe.stdout.log"
+  },
+  "retained_failures": {
+    "intermediate_native_probe": "tools/sound/after-normal-cadence/probe.stdout.log: 9/10 full frame stops; first STOP at frame 0",
+    "original_cold_start_regression": "tools/sound/cold-before.log: AssertionError: Clip closed before delayed STOP"
+  },
+  "final_cold_start_regression": "tools/sound/cold-final.log: PASS",
+  "control_fresh_format_completion_ms": [
+    609.16,
+    629.76,
+    685.187,
+    693.227
+  ],
+  "control_reused_warm_completion_ms": [
+    83.102,
+    97.258,
+    98.155,
+    95.183,
+    83.841,
+    94.7,
+    85.069,
+    93.416,
+    91.333
+  ],
+  "temporary_sound_diag_removed": true
+}
