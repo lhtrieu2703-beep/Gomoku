@@ -1,0 +1,29 @@
+MODIFIED (5)
+src/game/model/ScoreTracker.java
+src/game/view/BoardPanel.java
+src/game/view/MainFrame.java
+test/game/UndoParityTest.java
+test/game/UndoScoreTest.java
+
+CREATED (19)
+docs/SCORE_UNDO_FIX_2026-11-03.md
+docs/junit-run-after-fix-score-undo.log
+docs/score-undo-old-tests-fail.log
+test/game/model/ScoreTrackerRevokeTest.java
+test/review-after-fix-score-undo/classes/README.md
+test/review-after-fix-score-undo/xml/TEST-junit-jupiter.xml
+test/review-after-fix-score-undo/xml/TEST-junit-platform-suite.xml
+test/review-after-fix-score-undo/xml/TEST-junit-vintage.xml
+tools/score-undo/EXECUTED-TESTS.md
+tools/score-undo/baseline-sha256.json
+tools/score-undo/created-and-modified-files.txt
+tools/score-undo/executed-tests.json
+tools/score-undo/old-xml/TEST-junit-jupiter.xml
+tools/score-undo/old-xml/TEST-junit-platform-suite.xml
+tools/score-undo/old-xml/TEST-junit-vintage.xml
+tools/score-undo/product-and-wiring-before-assertions.patch
+tools/score-undo/results.json
+tools/score-undo/run-headless.ps1
+tools/score-undo/scope-verification.json
+
+Generated ignored .class files stay local under tools/score-undo/old-classes, tools/score-undo/old-test-classes and test/review-after-fix-score-undo/{classes,test-classes}; not committed.

@@ -43,6 +43,9 @@ public class UndoScoreTest {
         // Gắn listener kết nối BoardPanel với ScoreTracker giống MainFrame
         panel.setGameStateListener(new BoardPanel.GameStateListener() {
             @Override
+            public void onGameReopened(int gameId) { tracker.revokeResult(gameId); }
+
+            @Override
             public void onTurnChanged(Piece currentTurn, boolean isAiThinking) {}
 
             @Override
@@ -85,8 +88,8 @@ public class UndoScoreTest {
     }
 
     @Test
-    @DisplayName("U02: Undo xong, thành tích vẫn 0-1, isGameOver = false")
-    public void testU02_UndoAfterAiWin_ScoreUnchanged_GameOverFalse() {
+    @DisplayName("U02: Undo sau AI thắng thu hồi kết quả và mở lại ván")
+    public void testU02_UndoAfterAiWin_RevokesAiResult_ReopensGame() {
         panel.setGameMode(BoardPanel.GameMode.PV_AI);
         int initialGameId = panel.getGameId();
 
@@ -112,9 +115,9 @@ public class UndoScoreTest {
 
         assertFalse(panel.isGameOver(), "isGameOver phải trở về false sau khi Undo");
         assertEquals(initialGameId, panel.getGameId(), "Undo KHÔNG được thay đổi gameId");
-        assertEquals(0, tracker.getHumanWins(), "Thành tích người thắng không đổi");
-        assertEquals(1, tracker.getAiWins(), "Thành tích AI thắng VẪN PHẢI LÀ 1 (không bị xóa)");
-        assertEquals(0, tracker.getDraws(), "Thành tích hòa không đổi");
+        assertEquals(0, tracker.getHumanWins(), "Ván mở lại chưa có kết quả người thắng");
+        assertEquals(0, tracker.getAiWins(), "Kết quả AI thắng phải được thu hồi khi mở lại ván");
+        assertEquals(0, tracker.getDraws(), "Không có kết quả hòa");
     }
 
     @Test
@@ -340,8 +343,8 @@ public class UndoScoreTest {
     }
 
     @Test
-    @DisplayName("8 & 9 (End-to-End): AI thắng (0-1) -> Undo -> người chơi thắng cùng ván -> điểm vẫn 0-1, bàn cờ và lượt đúng")
-    public void test8_And_9_EndToEnd_AiWin_Undo_PlayerWin_ScoreStays01() {
+    @DisplayName("8 & 9: AI thắng -> Undo -> người thắng: kết quả cuối là người 1, AI 0")
+    public void test8_And_9_AiWin_Undo_PlayerWin_ReplacesResult() {
         panel.setGameMode(BoardPanel.GameMode.PV_AI);
         int gId = panel.getGameId();
 
@@ -372,15 +375,15 @@ public class UndoScoreTest {
         assertEquals(Piece.NONE, board.getPiece(8, 8), "Ô (8,8) của người đã được rút");
         assertEquals(gId, panel.getGameId(), "gameId vẫn giữ nguyên");
         assertEquals(0, tracker.getHumanWins(), "Điểm thắng vẫn là 0");
-        assertEquals(1, tracker.getAiWins(), "Điểm thua vẫn là 1");
+        assertEquals(0, tracker.getAiWins(), "Kết quả AI thắng đã được thu hồi");
 
         // 3. Người chơi đánh vào (7, 11) để tự tạo chuỗi 5 quân thắng (7,7 đến 7,11)
         panel.executeMoveForTest(7, 11, Piece.X);
 
         assertTrue(panel.isGameOver(), "Người chơi hoàn thành chuỗi 5 quân X, ván cờ kết thúc lần 2");
-        // Theo quy tắc Mục 8: kết quả đầu tiên của một gameId là kết quả cuối cùng!
-        assertEquals(0, tracker.getHumanWins(), "Người chơi thắng ở lần kết thúc thứ hai KHÔNG được cộng điểm");
-        assertEquals(1, tracker.getAiWins(), "Thành tích VẪN GIỮ NGUYÊN là 0-1");
+        // Chỉ kết quả đang có hiệu lực của ván được tính.
+        assertEquals(1, tracker.getHumanWins(), "Kết quả mới phải ghi nhận người chơi thắng");
+        assertEquals(0, tracker.getAiWins(), "Kết quả AI thắng cũ không còn hiệu lực");
         assertEquals(0, tracker.getDraws());
     }
 }

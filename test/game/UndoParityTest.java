@@ -43,6 +43,9 @@ public class UndoParityTest {
 
         panel.setGameStateListener(new BoardPanel.GameStateListener() {
             @Override
+            public void onGameReopened(int gameId) { tracker.revokeResult(gameId); }
+
+            @Override
             public void onTurnChanged(Piece currentTurn, boolean isAiThinking) {}
 
             @Override
@@ -71,8 +74,8 @@ public class UndoParityTest {
     }
 
     @Test
-    @DisplayName("P1: PV_AI, X thắng ở nước thứ 9, Undo chỉ rút đúng 1 nước của X")
-    public void testP1_XWin_UndoOneMove() {
+    @DisplayName("P1: Undo sau X thắng rút một quân và thu hồi điểm thắng")
+    public void testP1_XWin_UndoRevokesHumanResult() {
         // Đánh 9 nước: X(7,7) O(0,0) X(7,8) O(0,1) X(7,9) O(0,2) X(7,10) O(0,3) X(7,11)
         panel.executeMoveForTest(7, 7, Piece.X);
         panel.executeMoveForTest(0, 0, Piece.O);
@@ -104,8 +107,8 @@ public class UndoParityTest {
         assertTrue(panel.canUndo(), "Vẫn còn nước trong lịch sử, canUndo phải là true");
         assertEquals(Piece.NONE, board.getPiece(7, 11), "Ô (7,11) của nước thắng phải được xóa sạch");
 
-        // Điểm ScoreTracker không đổi (1-0 cho người)
-        assertEquals(1, tracker.getHumanWins(), "Điểm thắng của người chơi không đổi");
+        // Kết quả thắng đã được thu hồi (0-0).
+        assertEquals(0, tracker.getHumanWins(), "Điểm thắng phải được thu hồi khi mở lại ván");
         assertEquals(0, tracker.getAiWins());
         assertEquals(0, tracker.getDraws());
     }
@@ -170,8 +173,8 @@ public class UndoParityTest {
     }
 
     @Test
-    @DisplayName("P4: Hòa ở nước thứ 225 (nước cuối là của X), Undo chỉ rút 1 nước của X")
-    public void testP4_DrawAtMove225_UndoOneMove() {
+    @DisplayName("P4: Undo sau hòa ở nước 225 rút một quân và thu hồi điểm hòa")
+    public void testP4_DrawAtMove225_UndoRevokesDrawResult() {
         // Phân loại các ô theo mẫu hòa không tạo 5 quân liên tiếp
         List<int[]> xList = new ArrayList<>();
         List<int[]> oList = new ArrayList<>();
@@ -214,7 +217,7 @@ public class UndoParityTest {
         assertFalse(panel.isGameOver(), "Ván cờ chơi tiếp được");
         assertEquals(Piece.X, panel.getCurrentTurn(), "Lượt cờ thuộc về X");
         assertEquals(Piece.NONE, board.getPiece(lastMove[0], lastMove[1]), "Ô thứ 225 phải được xóa");
-        assertEquals(1, tracker.getDraws(), "Điểm hòa giữ nguyên");
+        assertEquals(0, tracker.getDraws(), "Kết quả hòa phải được thu hồi khi mở lại ván");
     }
 
     @Test

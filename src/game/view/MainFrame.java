@@ -79,6 +79,11 @@ public class MainFrame extends JFrame {
         btnNewGame.addActionListener(e -> newGame()); rulesButton.addActionListener(e -> showRules()); settingsButton.addActionListener(e -> showSettings());
         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
             public void onTurnChanged(Piece turn,boolean thinking) { refreshGameStatus(); }
+            public void onGameReopened(int gameId) {
+                if(!isGameActive() || gameId!=boardPanel.getGameId() || boardPanel.isGameOver()
+                        || boardPanel.getGameMode()==BoardPanel.GameMode.ONLINE) return;
+                scoreTracker.revokeResult(gameId); refreshGameStatus();
+            }
             public void onGameOver(String message,Piece winner) { onGameOver(boardPanel.getGameId(),message,winner); }
             public void onGameOver(int gameId,String message,Piece winner) {
                 if(!isGameActive() || gameId!=boardPanel.getGameId() || !boardPanel.isGameOver()) return;

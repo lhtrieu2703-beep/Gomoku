@@ -85,6 +85,7 @@ public class BoardPanel extends JPanel {
         default void onGameOver(int gameId, String message, Piece winner) {
             onGameOver(message, winner);
         }
+        default void onGameReopened(int gameId) {}
         void onAiStatsUpdated(long timeMs, long nodes, long prunings);
         void onHistoryChanged(boolean canUndo);
     }
@@ -236,6 +237,7 @@ public class BoardPanel extends JPanel {
     public void undoMove() {
         if (!canUndo()) return;
 
+        boolean wasGameOver = isGameOver;
         cancelAiComputation();
 
         if (gameMode == GameMode.PVP) {
@@ -270,6 +272,7 @@ public class BoardPanel extends JPanel {
         final int undoGameId = gameId;
         SoundManager.playPlacePieceSound(() -> undoGameId == gameId && isEnabled());
         if (stateListener != null) {
+            if (wasGameOver) stateListener.onGameReopened(gameId);
             stateListener.onTurnChanged(currentTurn, false);
             stateListener.onHistoryChanged(canUndo());
         }

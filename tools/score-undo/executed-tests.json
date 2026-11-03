@@ -1,0 +1,1142 @@
+[
+  {
+    "class": "game.BoardWinTest",
+    "test": "testSanitySetupPatternAllO()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testSanitySetupPatternInverted()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testSanitySetupPatternNormal()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT01()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT02()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT03()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT04()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT05()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT06()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT07()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT08()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT09()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT10()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT11()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT12()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT13()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT14()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT15()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT16()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT17()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT18()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT19()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT20()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT21()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT22()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT23()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT24()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT25()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT26()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT27()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT28()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT29()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT30()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT31()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT32()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT33()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT34()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT35()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT36()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT37()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT38()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT39()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT40()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT41()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT42()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT43()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT44()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT45()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT46()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT47()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT48()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT49()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT50()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT51()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT52()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.Task4bGameplayTest",
+    "test": "resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.UndoParityTest",
+    "test": "testP1_XWin_UndoRevokesHumanResult()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoParityTest",
+    "test": "testP1b_PlayAgainAfterUndo_ScoreUnchanged()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoParityTest",
+    "test": "testP2_OnlyOneMove_Undo()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.UndoParityTest",
+    "test": "testP3_XAndO_UndoTwoMoves()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.UndoParityTest",
+    "test": "testP4_DrawAtMove225_UndoRevokesDrawResult()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoParityTest",
+    "test": "testP5_AlternatingPieceCountAfterUndo()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "test6e_PvpUndoOneMove_PvAiUndoTwoMoves_OnlineUndoForbidden()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "test7_OnlineMoveIgnoredWhenGameOver()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "test8_And_9_AiWin_Undo_PlayerWin_ReplacesResult()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU01_AiWinRecorded()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU02_UndoAfterAiWin_RevokesAiResult_ReopensGame()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU03_PlayAgainAndFinish_NoDuplicateScore()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU04_UndoWhenHistoryEmpty_NoException()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU05_UndoMultipleTimesUntilEmpty_RestoresStateCorrectly()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU06_ResetGame_NewGameId_ScoresPreserved_NewResultRecorded()",
+    "status": "PASS",
+    "type": "Kịch bản fixture: chuỗi nước đi và Undo/reset; không chạy MainFrame hay AI thật"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU07_DrawGame_Undo_DrawScorePreserved()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.UndoScoreTest",
+    "test": "testU08_AiWorkerTokenDiscardedOnResetOrUndo()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksImmediateLossWithOneOpenEnd(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksImmediateLossWithOneOpenEnd(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksOpponentOpenThree(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksOpponentOpenThree(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "completedSearchPreservesEveryCellCountAndRule(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "completedSearchPreservesEveryCellCountAndRule(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "completedSearchPreservesEveryCellCountAndRule(Difficulty)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "createsOpenFourWhenSafe(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "createsOpenFourWhenSafe(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[5]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[6]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[7]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[8]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "emptyBoardReturnsCentreWithoutMutation(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "emptyBoardReturnsCentreWithoutMutation(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "emptyBoardReturnsCentreWithoutMutation(Difficulty)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "fullDrawBoardReturnsNullWithoutMutation(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "fullDrawBoardReturnsNullWithoutMutation(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "fullDrawBoardReturnsNullWithoutMutation(Difficulty)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "hardCreatesCrossDoubleThree()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "hardPreventsOpponentCrossDoubleThree()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "takesWinInsteadOfBlockingOpponentWin(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "takesWinInsteadOfBlockingOpponentWin(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "winsImmediatelyWithOneOpenEnd(Difficulty)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "winsImmediatelyWithOneOpenEnd(Difficulty)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "openFourOutranksOrdinaryPosition(Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "openFourOutranksOrdinaryPosition(Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "winningPositionOutranksOrdinaryPosition(Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "winningPositionOutranksOrdinaryPosition(Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.ai.MinimaxEasyContractTest",
+    "test": "easyChoosesMoveWithoutEvaluatingMinimaxNodes()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "undoRemovesOnlyRequestedStoneAndDecrementsMoveCount()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "drawIsRecordedForEitherHumanPiece(Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "drawIsRecordedForEitherHumanPiece(Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "humanWinIsRecordedForEitherHumanPiece(Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "humanWinIsRecordedForEitherHumanPiece(Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "opponentWinIsRecordedForEitherHumanPiece(Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "opponentWinIsRecordedForEitherHumanPiece(Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "resetScoresClearsAllThreeCounters()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "drawThenRevokeThenWinRemovesDraw(Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "drawThenRevokeThenWinRemovesDraw(Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "duplicateIdIsRejectedWithoutRevoke()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "humanWinThenRevokeThenOpponentWinReplacesResult(Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "humanWinThenRevokeThenOpponentWinReplacesResult(Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "repeatedRevokeDoesNotSubtractTwice()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingEachResultRestoresPreviousTotals(Piece, Piece)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingEachResultRestoresPreviousTotals(Piece, Piece)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingEachResultRestoresPreviousTotals(Piece, Piece)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingEachResultRestoresPreviousTotals(Piece, Piece)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingEachResultRestoresPreviousTotals(Piece, Piece)[5]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingEachResultRestoresPreviousTotals(Piece, Piece)[6]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingOneGamePreservesOtherGames()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingResultClearedByResetDoesNotSubtractAnotherGame()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.model.ScoreTrackerRevokeTest",
+    "test": "revokingUnknownIdLeavesExistingResultsUnchanged()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ; ScoreTracker thuần logic hoặc fixture BoardPanel"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "clientRestartRequestFormatsTheBaseRoundMessage()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "hostRestartFormatsBaseAndNewRoundMessage()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[10]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[11]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[12]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[5]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[6]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[7]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[8]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[9]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[1]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[2]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[3]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[4]",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "restartLineForDifferentBaseDoesNotChangeRound()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "restartLineOnClientReplacesTheMatchingRound()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "restartRequestLineOnHostCommitsANewRound()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "sendMoveFormatsTheCurrentRoundMessage()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt"
+  }
+]
