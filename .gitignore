@@ -1,6 +1,8 @@
 # Compiled class files
 bin/
 bin_test/
+build/
+dist/
 *.class
 
 # Package Files

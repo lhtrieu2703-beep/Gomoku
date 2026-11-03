@@ -1,0 +1,29 @@
+START_ASIA_SAIGON 2026-11-03T10:51:15.233408100+07:00
+JAVA 25.0.3
+CAPTURE_SOURCE java.awt.Robot.createMultiResolutionScreenCapture; native variant; no rendering/resizing/postprocessing
+FORCED_SCALE none
+LOOK_AND_FEEL com.sun.java.swing.plaf.windows.WindowsLookAndFeel
+SCALE AffineTransform[[1.25, 0.0, 0.0], [0.0, 1.25, 0.0]]
+SCREEN_LOGICAL java.awt.Rectangle[x=0,y=0,width=1536,height=864]
+DISPLAY_MODE 1920x1080
+TOOLKIT_DPI 120
+WORK_AREA java.awt.Rectangle[x=0,y=0,width=1536,height=864]
+FRAME_DEFAULT java.awt.Dimension[width=774,height=795] content=java.awt.Dimension[width=760,height=758]
+PRIVACY RAM Preferences; anonymous player; JVM-only hosts resolver; no personal Preferences read/write
+01_title.png	CAPTURED	967	994	java.awt.Rectangle[x=381,y=35,width=774,height=795]	1.25	1.25	TITLE; hồ sơ mặc định; tiếng Việt
+02_menu.png	CAPTURED	967	994	java.awt.Rectangle[x=381,y=35,width=774,height=795]	1.25	1.25	MENU; Người chơi 1; tiếng Việt
+03_setup_dialog.png	CAPTURED	310	221	java.awt.Rectangle[x=644,y=344,width=248,height=177]	1.25	1.25	SetupDialog chơi với máy; độ khó mặc định Trung Bình
+MOVE ply=1 piece=X row=7 col=7
+MOVE ply=2 piece=O row=5 col=5
+MOVE ply=3 piece=X row=8 col=7
+MOVE ply=4 piece=O row=6 col=7
+MOVE ply=5 piece=X row=6 col=8
+MOVE ply=6 piece=O row=8 col=6
+MOVE ply=7 piece=X row=8 col=9
+MOVE ply=8 piece=O row=5 col=6
+04_board_playing.png	CAPTURED	967	994	java.awt.Rectangle[x=381,y=35,width=774,height=795]	1.25	1.25	PV_AI / MEDIUM; 8 quân qua playMove và AI thật; tỉ số 0–0, hòa 0; Về menu / Ván Mới / Đi Lại
+05_settings.png	CAPTURED	336	359	java.awt.Rectangle[x=633,y=289,width=269,height=287]	1.25	1.25	SettingsDialog; Tiếng Việt; âm thanh tắt trong phiên RAM
+06_rules.png	CAPTURED	815	706	java.awt.Rectangle[x=442,y=150,width=652,height=565]	1.25	1.25	RulesDialog; nội dung và ví dụ RULE_B của ứng dụng
+07_lan_dialog.png	CAPTURED	662	339	java.awt.Rectangle[x=503,y=297,width=530,height=271]	1.25	1.25	NetworkDialog; 127.0.0.1 qua fallback có sẵn; chưa Host/Join, không mở socket
+END_ASIA_SAIGON 2026-11-03T10:51:24.578181200+07:00
+RESULT captured=7 unavailable=0 uncaught=0

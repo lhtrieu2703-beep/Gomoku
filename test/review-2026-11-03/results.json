@@ -1,0 +1,60 @@
+{
+  "total": 158,
+  "PASS": 158,
+  "FAIL": 0,
+  "ERROR": 0,
+  "SKIPPED": 0,
+  "excluded_old_methods": 142,
+  "new_methods": 18,
+  "new_invocations": 42,
+  "old_invocations": 116,
+  "by_test_class": {
+    "game.BoardWinTest": {
+      "PASS": 55
+    },
+    "game.network.NetworkMessageTest": {
+      "PASS": 22
+    },
+    "game.Task4bGameplayTest": {
+      "PASS": 1
+    },
+    "game.ai.AITacticsTest": {
+      "PASS": 32
+    },
+    "game.model.ScoreTrackerContractTest": {
+      "PASS": 10
+    },
+    "game.F3HeuristicTest": {
+      "PASS": 28
+    },
+    "game.model.BoardModelContractTest": {
+      "PASS": 5
+    },
+    "game.ai.HeuristicOrderingTest": {
+      "PASS": 4
+    },
+    "game.ai.MinimaxEasyContractTest": {
+      "PASS": 1
+    }
+  },
+  "by_production_class": {
+    "game.model.Board": {
+      "PASS": 60
+    },
+    "game.network.NetworkManager": {
+      "PASS": 22
+    },
+    "game.model.ScoreTracker": {
+      "PASS": 11
+    },
+    "game.ai.MinimaxAI": {
+      "PASS": 33
+    },
+    "game.ai.HeuristicEvaluator": {
+      "PASS": 32
+    }
+  },
+  "failures": [],
+  "all_baseline_files_unchanged": true,
+  "junit_execute_invocations": 1
+}
