@@ -1,0 +1,56 @@
+{
+  "total": 190,
+  "PASS": 190,
+  "FAIL": 0,
+  "ERROR": 0,
+  "SKIPPED": 0,
+  "baseline_preserved": 158,
+  "previously_excluded_fixture_invocations": 17,
+  "new_methods": 8,
+  "new_invocations": 15,
+  "old_assertions_phase": {
+    "total": 18,
+    "PASS": 14,
+    "FAIL": 4,
+    "ERROR": 0,
+    "SKIPPED": 0
+  },
+  "by_test_class": {
+    "game.BoardWinTest": {
+      "PASS": 55
+    },
+    "game.network.NetworkMessageTest": {
+      "PASS": 22
+    },
+    "game.UndoParityTest": {
+      "PASS": 6
+    },
+    "game.Task4bGameplayTest": {
+      "PASS": 1
+    },
+    "game.ai.AITacticsTest": {
+      "PASS": 32
+    },
+    "game.model.ScoreTrackerRevokeTest": {
+      "PASS": 15
+    },
+    "game.model.ScoreTrackerContractTest": {
+      "PASS": 10
+    },
+    "game.UndoScoreTest": {
+      "PASS": 11
+    },
+    "game.F3HeuristicTest": {
+      "PASS": 28
+    },
+    "game.model.BoardModelContractTest": {
+      "PASS": 5
+    },
+    "game.ai.HeuristicOrderingTest": {
+      "PASS": 4
+    },
+    "game.ai.MinimaxEasyContractTest": {
+      "PASS": 1
+    }
+  }
+}

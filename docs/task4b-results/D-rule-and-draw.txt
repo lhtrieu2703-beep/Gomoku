@@ -1,0 +1,29 @@
+==================================================
+   BẮT ĐẦU KIỂM THỬ LUẬT CHẶN 2 ĐẦU & HÒA CỜ
+==================================================
+
+--- PHẦN 1: KIỂM THỬ LUẬT CHẶN HAI ĐẦU ---
+[PASS] 1. Chuỗi 5 quân hở 2 đầu (_XXXXX_) -> THẮNG
+[PASS] 2. Chuỗi 5 quân bị chặn 1 đầu bởi O (OXXXXX_) -> THẮNG
+[PASS] 3. Chuỗi 5 quân bị chặn 2 đầu bởi O (OXXXXXO) -> KHÔNG THẮNG
+[PASS] 4. Chuỗi 5 quân sát mép bàn cờ, đầu kia hở (|XXXXX_) -> THẮNG
+[PASS] 5. Chuỗi 5 quân sát mép, 1 đầu bị O chặn (|XXXXXO) -> THẮNG
+[PASS] 6. Chuỗi chéo bị chặn 2 đầu bởi O -> KHÔNG THẮNG
+[PASS] 7. Chuỗi chéo bị chặn 1 đầu bởi O -> THẮNG
+[PASS] 8. Chuỗi 6 quân bị chặn 2 đầu bởi O (OXXXXXXO) -> KHÔNG THẮNG
+
+--- PHẦN 2: KIỂM THỬ BÀN CỜ ĐÁNH KÍN 225 Ô & HÒA CỜ ---
+[PASS] 1. Đã đánh 224 ô -> isFull() phải là false
+[PASS] 2. Nước đi tại ô cuối cùng (14, 14) phải hợp lệ
+[PASS] 3. Đánh nước thứ 225 thành công
+[PASS] 4. Bàn cờ hiện tại đã đánh kín 225 ô (isFull == true)
+[PASS] 5. Nước thứ 225 không tạo thế thắng (checkWin == false) -> Xử HÒA
+[PASS] 6. Không thể đánh thêm bất kỳ ô nào sau khi kín bàn
+[PASS] 7. Bàn cờ trước nước 225 có 224 nước
+[PASS] 8. Nước thứ 225 tạo thành 5 quân X -> checkWin() PHẢI LÀ TRUE
+[PASS] 9. Bàn cờ đồng thời đầy 225 ô (isFull == true)
+
+==================================================
+KẾT QUẢ: ĐÃ VƯỢT QUA 17 / 17 KIỂM THỬ.
+>>> TẤT CẢ CÁC KIỂM THỬ ĐỀU CHÍNH XÁC 100%! <<<
+==================================================

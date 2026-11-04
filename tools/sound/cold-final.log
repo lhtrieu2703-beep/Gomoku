@@ -1,0 +1,2 @@
+COLD_START delayMs=1250 elapsedMs=1277.203 stopDelivered=true closedBeforeStop=false
+COLD_START_REGRESSION PASS

@@ -29,7 +29,7 @@ public class SpeakerIcon implements Icon {
         boolean on = SoundManager.isSoundEnabled();
 
         // --- Thân loa (hình chữ nhật nhỏ bên trái) ---
-        g2.setColor(Color.WHITE);
+        g2.setColor(Theme.CREAM);
         int bx1 = size / 10;
         int bx2 = size * 3 / 10;
         int by1 = size * 3 / 8;
@@ -53,7 +53,7 @@ public class SpeakerIcon implements Icon {
                     size * 3 / 10, size * 3 / 4, -45, 90);
         } else {
             // --- Dấu X đỏ ---
-            g2.setColor(new Color(220, 50, 50));
+            g2.setColor(Theme.MUTE_MARK);
             float stroke = Math.max(1.5f, size / 12f);
             g2.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
             int m = size * 6 / 10;

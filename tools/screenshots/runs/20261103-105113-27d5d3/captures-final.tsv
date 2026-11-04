@@ -1,0 +1,8 @@
+file	status	width_px	height_px	logical_bounds	scale_x	scale_y	note
+01_title.png	CAPTURED	951	986	java.awt.Rectangle[x=381,y=35,width=774,height=795]	1.25	1.25	TITLE; hồ sơ mặc định; tiếng Việt; final PNG: lossless crop x=8,y=0,w=raw-16,h=raw-8; viewed after crop
+02_menu.png	CAPTURED	951	986	java.awt.Rectangle[x=381,y=35,width=774,height=795]	1.25	1.25	MENU; Người chơi 1; tiếng Việt; final PNG: lossless crop x=8,y=0,w=raw-16,h=raw-8; viewed after crop
+03_setup_dialog.png	CAPTURED	294	213	java.awt.Rectangle[x=644,y=344,width=248,height=177]	1.25	1.25	SetupDialog chơi với máy; độ khó mặc định Trung Bình; final PNG: lossless crop x=8,y=0,w=raw-16,h=raw-8; viewed after crop
+04_board_playing.png	CAPTURED	951	986	java.awt.Rectangle[x=381,y=35,width=774,height=795]	1.25	1.25	PV_AI / MEDIUM; 8 quân qua playMove và AI thật; tỉ số 0–0, hòa 0; Về menu / Ván Mới / Đi Lại; final PNG: lossless crop x=8,y=0,w=raw-16,h=raw-8; viewed after crop
+05_settings.png	CAPTURED	320	351	java.awt.Rectangle[x=633,y=289,width=269,height=287]	1.25	1.25	SettingsDialog; Tiếng Việt; âm thanh tắt trong phiên RAM; final PNG: lossless crop x=8,y=0,w=raw-16,h=raw-8; viewed after crop
+06_rules.png	CAPTURED	799	698	java.awt.Rectangle[x=442,y=150,width=652,height=565]	1.25	1.25	RulesDialog; nội dung và ví dụ RULE_B của ứng dụng; final PNG: lossless crop x=8,y=0,w=raw-16,h=raw-8; viewed after crop
+07_lan_dialog.png	CAPTURED	646	331	java.awt.Rectangle[x=503,y=297,width=530,height=271]	1.25	1.25	NetworkDialog; 127.0.0.1 qua fallback có sẵn; chưa Host/Join, không mở socket; final PNG: lossless crop x=8,y=0,w=raw-16,h=raw-8; viewed after crop

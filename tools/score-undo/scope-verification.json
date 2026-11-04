@@ -1,0 +1,41 @@
+{
+  "branch": "fix-score-undo",
+  "parent": "8121c9ea8184018ff3aeff4df2d8e65b04dc3963",
+  "only_changed_preexisting_files": [
+    "src/game/model/ScoreTracker.java",
+    "src/game/view/BoardPanel.java",
+    "src/game/view/MainFrame.java",
+    "test/game/UndoParityTest.java",
+    "test/game/UndoScoreTest.java"
+  ],
+  "unchanged_test_methods_in_modified_classes": {
+    "test/game/UndoScoreTest.java": [
+      "testU01_AiWinRecorded",
+      "testU03_PlayAgainAndFinish_NoDuplicateScore",
+      "testU04_UndoWhenHistoryEmpty_NoException",
+      "testU05_UndoMultipleTimesUntilEmpty_RestoresStateCorrectly",
+      "testU06_ResetGame_NewGameId_ScoresPreserved_NewResultRecorded",
+      "testU07_DrawGame_Undo_DrawScorePreserved",
+      "testU08_AiWorkerTokenDiscardedOnResetOrUndo",
+      "test6e_PvpUndoOneMove_PvAiUndoTwoMoves_OnlineUndoForbidden",
+      "test7_OnlineMoveIgnoredWhenGameOver"
+    ],
+    "test/game/UndoParityTest.java": [
+      "testP1b_PlayAgainAfterUndo_ScoreUnchanged",
+      "testP2_OnlyOneMove_Undo",
+      "testP3_XAndO_UndoTwoMoves",
+      "testP5_AlternatingPieceCountAfterUndo"
+    ]
+  },
+  "setUp_changes": "only approved onGameReopened callback in both fixtures",
+  "original_runner_and_all_other_tracked_files": "SHA-256 identical to baseline",
+  "final_junit_execute_markers": 1,
+  "final_source_sha256": {
+    "src/game/model/ScoreTracker.java": "2dd6be0c624d9c12612f11e8b3e8b4224bfbf62aa1ca8cd1a3ff5d4dab6f5425",
+    "src/game/view/BoardPanel.java": "6104b6bf5fad71c0a117efb5ffc9983e72dd8eae0ce8f07521b0c5b43c04e3d4",
+    "src/game/view/MainFrame.java": "2bc91ec9c0dd23a9a106429c052bd3333e7670490625c68bfb740e45ecaefcbc",
+    "test/game/UndoParityTest.java": "263e6b1a9a0bde86edef2d3ff3fa84fb9200dfd534f83e05574e16b735a69213",
+    "test/game/UndoScoreTest.java": "324de884c61d7a81e1814c731f950007736ee49634a442b4edf662b89186b2e9",
+    "test/game/model/ScoreTrackerRevokeTest.java": "d17f7a050b4cfdb9debf42c00aa0aabdf64edd25c9c77e27e79379f775fde362"
+  }
+}

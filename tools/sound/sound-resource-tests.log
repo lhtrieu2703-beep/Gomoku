@@ -1,0 +1,27 @@
+COMMAND: java -Djava.awt.headless=true -jar lib/junit-platform-console-standalone-1.10.2.jar execute --class-path test/review-after-fix-sound/test-classes;test/review-after-fix-sound/classes --select-class game.view.SoundResourceTest --reports-dir tools/sound/resource-test-xml --details tree --disable-banner --disable-ansi-colors --fail-if-no-tests
+╷
+├─ JUnit Jupiter ✔
+│  └─ SoundResourceTest ✔
+│     ├─ staleResultClosesClipWithoutStarting() ✔
+│     ├─ closesClipWhenStartFails() ✔
+│     ├─ closesClipAfterPlaybackStops() ✔
+│     ├─ closesClipWhenOpenFails() ✔
+│     └─ queuedPieceSoundChecksGameValidityBeforeOpeningAnyAudioDevice() ✔
+├─ JUnit Vintage ✔
+└─ JUnit Platform Suite ✔
+
+Test run finished after 123 ms
+[         4 containers found      ]
+[         0 containers skipped    ]
+[         4 containers started    ]
+[         0 containers aborted    ]
+[         4 containers successful ]
+[         0 containers failed     ]
+[         5 tests found           ]
+[         0 tests skipped         ]
+[         5 tests started         ]
+[         0 tests aborted         ]
+[         5 tests successful      ]
+[         0 tests failed          ]
+
+EXIT_CODE: 0

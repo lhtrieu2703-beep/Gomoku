@@ -1,5 +1,20 @@
 # GOMOKU PROJECT NOTES
 
+## Task 4 — StartScreen, tên local và bảng điểm — 2026-10-27
+- Base main 6c0b4c8 chứa Task 3.5 (3f07d02); nhánh task4-start-screen. Baseline thật: JUnit 175/175, RuleAndDrawTest 17/17, FullGomokuTestSuite 77/77 assertions, 54 tình huống chạy và 3 PENDING. Log gốc: docs/task4-results/baseline-*.txt.
+- Đăng nhập chỉ là nhập tên; không tài khoản/mật khẩu. StartScreen và bàn cờ là hai card trong cùng MainFrame. Enter hoặc Bắt đầu chuyển card; không tạo JFrame mới.
+- Tên chuẩn hóa NFC, bỏ khoảng trắng đầu/cuối, một dòng và tối đa 16 Unicode code point, không chẻ surrogate pair. Tên rỗng xóa key playerName để dùng Lang.defaultPlayerName theo ngôn ngữ hiện tại. AppSettings vẫn nhận Preferences qua constructor; các test ghi tên dùng node UUID riêng rồi removeNode và so sánh snapshot node thật.
+- Tên hiện cạnh trạng thái lượt; Online chỉ hiển thị tên local. Không gửi tên qua LAN, không sửa luật, Minimax/depth/difficulty hay định dạng giao thức v2.
+- Quyết định điểm: giữ toàn bộ thắng/thua/hòa trong phiên chạy ứng dụng, theo ScoreTracker.newGame hiện có. Đổi tên không tạo hồ sơ điểm riêng. Tắt app vẫn mất điểm RAM như Task 2.
+- Về menu: tăng screenEpoch và khóa input trước, ngắt phiên LAN, đóng các dialog sở hữu (kết quả/kết nối/bảng điểm), hủy AI, xóa bàn/lịch sử/roundId, đặt quân local X và chế độ PvAI/Medium mặc định, tăng gameId. Giữ tên/ngôn ngữ/âm thanh/điểm. Callback phiên cũ, callback UI cũ và kết quả AI cũ bị loại, kể cả khi đã bắt đầu lại.
+- Âm đặt quân/thắng mang điều kiện gameId và trạng thái bảng, nên tác vụ chờ của ván cũ không mở Clip sau khi về menu. Clip đang phát được đóng khi điều kiện hết hiệu lực. Test audio dùng proxy/điều kiện giả, không cần thiết bị âm thanh.
+- Undo vẫn dùng canUndo của Task 2; kết thúc ván không khóa Undo. Nút Java2D hình cúp chỉ mở bảng điểm hiện có, không có huy hiệu/thành tựu mới; tooltip và nội dung qua Lang VI/EN/PT.
+- Header hai hàng, bàn cờ giữ preferred size 596x596 và phép đổi tọa độ cũ. Test bounds bao phủ cả hai card, VI/EN/PT, chuyển ngôn ngữ và Look & Feel Metal/Windows; ảnh hiện tại ở docs/task4-render/. Các ảnh Task 3.5 giữ làm lịch sử; test F4 xuất ảnh bàn cờ Task 4 sang thư mục mới.
+- Ảnh render dùng getDefaultTransform của cửa sổ để khớp FontMetrics tại DPI hiện tại; kiểm độ rộng chữ tên với cùng transform. Ảnh 1x trước đó đo chữ PT 163 px trong khi cửa sổ đo 149 px, gây cắt chữ trong ảnh; không thêm padding tùy ý vào layout sản phẩm.
+- Test vòng đời tách hai kiểm chứng: hủy SwingWorker thật do BoardPanel tạo và phát lại done() sản phẩm sau đổi card; worker có latch đang chạy được tiêm vào slot để xác nhận interrupt mà không phụ thuộc thời gian tìm kiếm AI. Socket LAN trong test là TCP localhost thật.
+- Sơ đồ chuyển màn hình và tài liệu kiểm tay: TASK4_START_SCREEN.md. Chưa kiểm tay LAN hai máy, âm thanh thiết bị và DPI 125%/150%.
+- Kiểm tra cuối từ build sạch: biên dịch 21 file src, 19 file test và 2 audit; JUnit 211/211 (0 skipped/aborted/failed), RuleAndDrawTest 17/17, FullGomokuTestSuite 77/77 assertions / 54 tình huống / 3 PENDING. Tăng 36 JUnit so với baseline: StartScreen 17, Preferences 3, lifecycle 9, layout 6, audio 1. Log thô và cây chi tiết ở docs/task4-results/; production Preferences trước/sau vẫn {soundEnabled=true}, không có key playerName/language mới.
+
 ## Task 3.5 decision log
 - Baseline local commit 8cdbdc6 on task3-stabilize from origin/main 14bdbfe; 123 JUnit, 17 rule checks, console output 80 assertions before fixing empty checks.
 - F1: protocol v2 START 2 UUID, MOVE UUID ply row col, client RESTART_REQUEST base, host RESTART base next. Host owns UUIDs, local gameId remains score-only. X/host still starts; no runtime rule selector, no ruleId sent. EOF only; no DISCONNECT write and no ACK/consent (Task 5).
@@ -144,3 +159,46 @@ Giao thức v2 qua Socket TCP (chi tiết và sơ đồ: TASK35_PROTOCOL.md):
 - Đo có giới hạn: Hard 1 quân median 38.30 ms/max 40.82 ms; 10 lượt Hard qua BoardPanel median 35.28 ms/max 109.69 ms; heartbeat EDT max 3.19 ms. Không xem đây là kiểm thử đầy đủ UI/audio/mạng hai máy.
 - Đã khảo sát nguồn RIF, Gomocup 2026, Rapfi, BGA, PlayOK và các sản phẩm có replay/puzzle/study. Đề xuất ưu tiên sửa đúng luật/giao thức/UI, rồi replay/lưu ván, gợi ý có giải thích và iterative deepening.
 - Báo cáo và nguồn: REVIEW_AND_UPGRADE_PLAN.md. Probe tái hiện: tools/audit; ảnh render: docs/audit-2026-10-26. Lượt review này chưa thay logic sản phẩm, chưa commit/push.
+
+
+## Task 4b — A (2026-10-29)
+- Palette: Theme; custom ThemedButton paints four states independently of look and feel.
+- Profile: playerName key retained; avatarIndex added; implicit empty name follows locale.
+- Images: /images/background.png and /avatars/avatar_0.png .. avatar_7.png; all optional.
+- javac does not copy resources. build.ps1 and run.bat copy resources/* into bin/.
+- Fixed card content 760x758; no setSize/setMinimumSize on MainFrame.
+- Tests use RAM Preferences (old registry-backed test setup migrated too); production settings only read for comparison.
+- A validation: complete JUnit tree in docs/task4b-results/A-junit.txt.
+- B6 uses the six rule lines supplied in the latest Task 4b prompt, replacing the earlier placeholder request.
+
+
+## Task 4b — B
+- Three fixed-size cards: TITLE -> MENU -> setup -> GAME. Back goes to MENU, preserving selected mode/difficulty and session totals.
+- Title mouse/key input stops the hint timer; dispose removes the global key dispatcher.
+- Profile and player-two setup edit drafts; Escape discards. Settings translate all open localized dialogs immediately.
+- Rules use exactly the six supplied lines and two Java2D examples; no automatic first-use popup.
+- LAN host/join remains the existing modal NetworkDialog and protocol v2; player names/avatars are not transmitted.
+- Game controls no longer contain mode/difficulty/language comboboxes. Phase C replaces the temporary game summary with player cards.
+- Complete JUnit: 238/238, zero skipped/failed; docs/task4b-results/B-junit.txt.
+
+
+## Task 4b — C
+- Player cards replace the old score/status stripes; winner/turn borders, opponent avatar and safe Unicode ellipsis.
+- Centring cause: stretched BorderLayout.CENTER BoardPanel (760 wide) paints at fixed OFFSET=32. A GridBag wrapper now keeps BoardPanel 596x596 centred; CELL_SIZE=38 and hit-testing/painting remain unchanged.
+- Scores stay in RAM, reset on actual mode/difficulty change, remain on profile/menu changes. Settings reset affects totals only.
+- Score reset retains recorded game IDs so Undo/replay cannot count the same game again; Undo implementation unchanged.
+- Difficulty enum labels are Vietnamese; presentation now explicitly uses existing Lang.easy/medium/hard for setup and computer name, without changing AI.
+- Complete JUnit: 250/250, zero skipped/failed; docs/task4b-results/C-junit.txt.
+
+
+## Task 4b — D (2026-10-29)
+- Final JUnit: 267/267, 0 skipped/aborted/failed. Counts independently checked against all tree leaves; CSV and full raw A/B/C/D outputs in docs/task4b-results and TASK4B_REPORT.md.
+- Old-test migration ledger: docs/TASK4B_TEST_MIGRATION.md; all old class invocation counts retained, no @Disabled.
+- All 18 required renders in docs/task4b-render; nine displayed-frame measurements: 774x795 outer, 760x758 content at native Windows DPI125%.
+- Palette centralized, board/rule illustrations share StonePainter; no change to stone/cell sizes or Undo logic.
+- Visual QA fixed clipped language selector, enum difficulty localization and exact menu/game action-button alignment; button labels in score confirmation use Lang.
+- Source line endings follow repository LF. AI/Board/network sources remain byte-identical to f61e2d5.
+- RuleAndDrawTest 17/17; FullGomokuTestSuite 54 executed scenarios/77 assertions PASS, T55-T57 remain 3 PENDING and are excluded from PASS.
+- Runtime assets remain optional: resources/images/background.png and resources/avatars/avatar_0.png .. avatar_7.png; build/run copy to bin. No real images supplied.
+- Production Preferences unchanged {playerName=a, soundEnabled=true}; test writes only RAM. No score persistence.
+- Manual checks still required: native display DPI150%, two-machine LAN, real speaker/audio device. Image cache transform1.5 unit test is not a native DPI150% claim.

@@ -1,0 +1,37 @@
+PROBE java=25.0.3 os=Windows 11 intervalMs=1000 time=2026-11-03T04:50:38.698224300Z
+PROBE_REQUEST index=1 time=2026-11-03T04:50:38.780223800Z thread=AWT-EventQueue-0 requestNs=6305549366000 apiReturnMs=1.3219 dispatchReturnMs=58.993
+PROBE_REQUEST index=2 time=2026-11-03T04:50:39.785202100Z thread=AWT-EventQueue-0 requestNs=6306555096400 apiReturnMs=0.1118 dispatchReturnMs=0.994
+PROBE_REQUEST index=3 time=2026-11-03T04:50:40.786845900Z thread=AWT-EventQueue-0 requestNs=6307556210200 apiReturnMs=0.0857 dispatchReturnMs=0.523
+PROBE_REQUEST index=4 time=2026-11-03T04:50:41.791909Z thread=AWT-EventQueue-0 requestNs=6308561311900 apiReturnMs=0.2363 dispatchReturnMs=1.345
+PROBE_REQUEST index=5 time=2026-11-03T04:50:42.794912Z thread=AWT-EventQueue-0 requestNs=6309564306500 apiReturnMs=0.0749 dispatchReturnMs=0.454
+PROBE_REQUEST index=6 time=2026-11-03T04:50:43.795708200Z thread=AWT-EventQueue-0 requestNs=6310565217000 apiReturnMs=0.0668 dispatchReturnMs=0.397
+PROBE_REQUEST index=7 time=2026-11-03T04:50:44.796469500Z thread=AWT-EventQueue-0 requestNs=6311566367900 apiReturnMs=0.3065 dispatchReturnMs=0.753
+PROBE_REQUEST index=8 time=2026-11-03T04:50:45.799472900Z thread=AWT-EventQueue-0 requestNs=6312568936400 apiReturnMs=0.2043 dispatchReturnMs=0.653
+PROBE_REQUEST index=9 time=2026-11-03T04:50:46.801051100Z thread=AWT-EventQueue-0 requestNs=6313571029700 apiReturnMs=0.0648 dispatchReturnMs=0.394
+PROBE_REQUEST index=10 time=2026-11-03T04:50:47.802563300Z thread=AWT-EventQueue-0 requestNs=6314571823800 apiReturnMs=0.0453 dispatchReturnMs=0.198
+POOL completed=10 active=0 queued=0
+PROBE_DIAGNOSTIC_LOGGER absent
+PROBE_CLIP time=2026-11-03T04:50:38.851224500Z ns=6305620746600 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:39.711499600Z ns=6306480820300 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:39.786201700Z ns=6306555772300 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:39.879378100Z ns=6306648549100 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:40.786845900Z ns=6307556713900 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:40.880654600Z ns=6307649803500 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:41.791909Z ns=6308561949900 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:41.886633300Z ns=6308655871500 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:42.794912Z ns=6309564976100 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:42.890852700Z ns=6309659981300 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:43.796586400Z ns=6310565705400 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:43.890505100Z ns=6310659676600 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:44.797461500Z ns=6311566622400 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:44.882513800Z ns=6311651791400 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:45.799472900Z ns=6312569165000 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:45.894117100Z ns=6312663356100 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:46.802051Z ns=6313571637300 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:46.902448700Z ns=6313671596400 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:47.802563300Z ns=6314572482700 type=Start clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=true framePositionFromEvent=0 frameLength=2646
+PROBE_CLIP time=2026-11-03T04:50:47.897480Z ns=6314666719700 type=Stop clip=515969449 thread=Java Sound Event Dispatcher isOpen=true isRunning=false framePositionFromEvent=2646 frameLength=2646
+PROBE_COMPLETED expected=10 fullFrameStops=10 clipInstances=1
+PROBE_FINAL_STATE clip=515969449 isOpen=true isRunning=false framePosition=2646 frameLength=2646
+PROBE_TEN_REQUESTS_DRAINED 2026-11-03T04:50:48.808307900Z
+PROBE_DONE 2026-11-03T04:50:48.808307900Z

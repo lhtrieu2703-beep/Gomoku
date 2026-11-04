@@ -1,0 +1,1424 @@
+[
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT15()",
+    "display": "T15: # X X X X X X* O -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT15()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT38()",
+    "display": "T38: Ngang 4 + Dọc 4 + Chéo 4 (đều mở) -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT38()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[1]",
+    "display": "host=false, ply=1, row=0, col=14",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT11()",
+    "display": "T11: . X X X X X X* . -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT11()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT34()",
+    "display": "T34: Ngang 6 hợp lệ + Dọc 5 hợp lệ -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT34()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT19()",
+    "display": "T19: Hàng 9 quân mở 2 đầu -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT19()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.Task4bGameplayTest",
+    "test": "resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain()",
+    "display": "resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.Task4bGameplayTest]/[method:resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "hardCreatesCrossDoubleThree()",
+    "display": "hardCreatesCrossDoubleThree()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[method:hardCreatesCrossDoubleThree()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT30()",
+    "display": "T30: Hàng 5 bị chặn có sẵn, đặt chỗ khác không tạo hàng mới -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT30()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "opponentWinIsRecordedForEitherHumanPiece(Piece)[1]",
+    "display": "[1] X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:opponentWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "winsImmediatelyWithOneOpenEnd(Difficulty)[2]",
+    "display": "[2] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:winsImmediatelyWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "winsImmediatelyWithOneOpenEnd(Difficulty)[1]",
+    "display": "[1] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:winsImmediatelyWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "opponentWinIsRecordedForEitherHumanPiece(Piece)[2]",
+    "display": "[2] O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:opponentWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT04()",
+    "display": "T04: O X* X X X X O -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT04()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT27()",
+    "display": "T27: . X X O X* X X . (bị O ngắt giữa) -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT27()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testSanitySetupPatternInverted()",
+    "display": "Sanity 3: Kiểm tra invertColors=true đảo màu đúng cả 2 nhánh X và O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testSanitySetupPatternInverted()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT46()",
+    "display": "T46: Chéo từ (0,0) đến (5,5) là X (6 quân), (6,6) là O -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT46()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT23()",
+    "display": "T23: . X X X* X X X . (nối 3+2 thành 6) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT23()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT42()",
+    "display": "T42: Ngang 5 quân ở cột 0-4, quân vừa đặt ở cột 0, cột 5 trống -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT42()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "sendMoveFormatsTheCurrentRoundMessage()",
+    "display": "sendMoveFormatsTheCurrentRoundMessage()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:sendMoveFormatsTheCurrentRoundMessage()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT08()",
+    "display": "T08: # X X X X X* # (chéo 5 ô góc chạm 2 mép) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT08()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "fullDrawBoardReturnsNullWithoutMutation(Difficulty)[3]",
+    "display": "[3] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:fullDrawBoardReturnsNullWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "fullDrawBoardReturnsNullWithoutMutation(Difficulty)[2]",
+    "display": "[2] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:fullDrawBoardReturnsNullWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "fullDrawBoardReturnsNullWithoutMutation(Difficulty)[1]",
+    "display": "[1] Dễ",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:fullDrawBoardReturnsNullWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[8]",
+    "display": "[8] MOVE 00000000-0000-0000-0000-000000000001 1 7 -1",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#8]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[9]",
+    "display": "[9] MOVE 00000000-0000-0000-0000-000000000001 1 7 15",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#9]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "takesWinInsteadOfBlockingOpponentWin(Difficulty)[2]",
+    "display": "[2] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:takesWinInsteadOfBlockingOpponentWin(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "takesWinInsteadOfBlockingOpponentWin(Difficulty)[1]",
+    "display": "[1] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:takesWinInsteadOfBlockingOpponentWin(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksImmediateLossWithOneOpenEnd(Difficulty)[2]",
+    "display": "[2] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksImmediateLossWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksImmediateLossWithOneOpenEnd(Difficulty)[1]",
+    "display": "[1] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksImmediateLossWithOneOpenEnd(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[11]",
+    "display": "[11] MOVE 00000000-0000-0000-0000-000000000001 2 7 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#11]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[12]",
+    "display": "[12] MOVE 00000000-0000-0000-0000-000000000001 1 7 7 extra",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#12]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[10]",
+    "display": "[10] MOVE not-a-uuid 1 7 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#10]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[1]",
+    "display": "[1] Dễ",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blockedFiveIsNotAWinAndRealThreatRemains(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT37()",
+    "display": "T37: Ngang 7 chặn 2 đầu + Dọc 5 chặn 2 đầu -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT37()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testSanitySetupPatternNormal()",
+    "display": "Sanity 1: Kiểm tra setupPattern('O X X X X* X O') đặt đúng quân ở từng ô",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testSanitySetupPatternNormal()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "completedSearchPreservesEveryCellCountAndRule(Difficulty)[1]",
+    "display": "[1] Dễ",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:completedSearchPreservesEveryCellCountAndRule(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[2]",
+    "display": "[2] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blockedFiveIsNotAWinAndRealThreatRemains(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "completedSearchPreservesEveryCellCountAndRule(Difficulty)[2]",
+    "display": "[2] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:completedSearchPreservesEveryCellCountAndRule(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blockedFiveIsNotAWinAndRealThreatRemains(Difficulty)[3]",
+    "display": "[3] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blockedFiveIsNotAWinAndRealThreatRemains(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT14()",
+    "display": "T14: # X X X X X X* . -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT14()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "completedSearchPreservesEveryCellCountAndRule(Difficulty)[3]",
+    "display": "[3] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:completedSearchPreservesEveryCellCountAndRule(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT33()",
+    "display": "T33: Ngang 5 hợp lệ + Dọc 5 hợp lệ -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT33()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT10()",
+    "display": "T10: O X X X X X* . O (chỉ xét ô liền kề) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT10()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[2]",
+    "display": "[2] MOVE 00000000-0000-0000-0000-000000000001 1 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[3]",
+    "display": "[3] MOVE 00000000-0000-0000-0000-000000000001 a 7 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[1]",
+    "display": "[1] MOVE",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "hostRestartFormatsBaseAndNewRoundMessage()",
+    "display": "hostRestartFormatsBaseAndNewRoundMessage()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:hostRestartFormatsBaseAndNewRoundMessage()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[6]",
+    "display": "[6] MOVE 00000000-0000-0000-0000-000000000001 1 -1 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#6]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[7]",
+    "display": "[7] MOVE 00000000-0000-0000-0000-000000000001 1 15 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#7]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[4]",
+    "display": "[4] MOVE 00000000-0000-0000-0000-000000000001 0 7 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT18()",
+    "display": "T18: O X X X X X X X* O -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT18()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "invalidMoveLineDoesNotDispatchAMove(String)[5]",
+    "display": "[5] MOVE 00000000-0000-0000-0000-000000000001 226 7 7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:invalidMoveLineDoesNotDispatchAMove(java.lang.String)]/[test-template-invocation:#5]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[3]",
+    "display": "[3] RULE_B, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[4]",
+    "display": "[4] RULE_B, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT52()",
+    "display": "T52: Đặt ngoài bàn cờ -> Từ chối, không văng lỗi ngoại lệ",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT52()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[4]",
+    "display": "[4] RULE_B, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[1]",
+    "display": "[1] RULE_A, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[2]",
+    "display": "[2] RULE_A, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "nonTerminalThreatsNeverOutrankWin(WinRule, Piece)[2]",
+    "display": "[2] RULE_A, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:nonTerminalThreatsNeverOutrankWin(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[3]",
+    "display": "[3] RULE_B, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "actualCrossDoubleThreeIsRecognized(WinRule, Piece)[1]",
+    "display": "[1] RULE_A, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:actualCrossDoubleThreeIsRecognized(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "restartLineOnClientReplacesTheMatchingRound()",
+    "display": "restartLineOnClientReplacesTheMatchingRound()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:restartLineOnClientReplacesTheMatchingRound()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT26()",
+    "display": "T26: . X X . X* X X . (có ô trống ở giữa) -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT26()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT49()",
+    "display": "T49: Bàn cờ đã đầy, nước cuối không tạo hàng hợp lệ -> HÒA",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT49()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT03()",
+    "display": "T03: . X X* X X X O -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT03()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT22()",
+    "display": "T22: . X X X X* X X X . (nối 3+3 thành 7) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT22()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT45()",
+    "display": "T45: Quân vừa đặt ở góc (14,14), chéo (10,10)-(14,14) là X, (9,9) trống -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT45()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[4]",
+    "display": "[4] RULE_B, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[3]",
+    "display": "[3] RULE_B, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "hardPreventsOpponentCrossDoubleThree()",
+    "display": "hardPreventsOpponentCrossDoubleThree()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[method:hardPreventsOpponentCrossDoubleThree()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[2]",
+    "display": "[2] RULE_A, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openSixMatchesSelectedRule(WinRule, Piece)[1]",
+    "display": "[1] RULE_A, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openSixMatchesSelectedRule(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT07()",
+    "display": "T07: O X X X X X* # -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT07()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "emptyBoardReturnsCentreWithoutMutation(Difficulty)[1]",
+    "display": "[1] Dễ",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:emptyBoardReturnsCentreWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "emptyBoardReturnsCentreWithoutMutation(Difficulty)[2]",
+    "display": "[2] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:emptyBoardReturnsCentreWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "emptyBoardReturnsCentreWithoutMutation(Difficulty)[3]",
+    "display": "[3] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:emptyBoardReturnsCentreWithoutMutation(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT41()",
+    "display": "T41: Chéo phụ (↙) 5 quân, 2 đầu trống -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT41()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT13()",
+    "display": "T13: O X X X X X X* O -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT13()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT36()",
+    "display": "T36: Ngang 6 mở + Dọc 5 chặn 2 đầu -> THẮNG (nhờ hàng ngang)",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT36()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "clientRestartRequestFormatsTheBaseRoundMessage()",
+    "display": "clientRestartRequestFormatsTheBaseRoundMessage()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:clientRestartRequestFormatsTheBaseRoundMessage()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[4]",
+    "display": "row=7, col=15",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT32()",
+    "display": "T32: Ngang 5 chặn 2 đầu + Chéo 5 chặn 2 đầu -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT32()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[3]",
+    "display": "row=7, col=-1",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[2]",
+    "display": "row=15, col=7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)[1]",
+    "display": "row=-1, col=7",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[test-template:outOfBoundsPlacementIsRejectedWithoutChangingBoard(int, int)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[1]",
+    "display": "[1] RULE_A, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "winningPositionOutranksOrdinaryPosition(Piece)[2]",
+    "display": "[2] O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:winningPositionOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT17()",
+    "display": "T17: . X X X X X X X* . -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT17()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "winningPositionOutranksOrdinaryPosition(Piece)[1]",
+    "display": "[1] X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:winningPositionOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[4]",
+    "display": "[4] RULE_B, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[3]",
+    "display": "[3] RULE_B, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "blockedSixIsNotFive(WinRule, Piece)[2]",
+    "display": "[2] RULE_A, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:blockedSixIsNotFive(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT51()",
+    "display": "T51: Đặt vào ô đã có quân -> Từ chối, bàn cờ và lượt giữ nguyên",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT51()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "drawIsRecordedForEitherHumanPiece(Piece)[2]",
+    "display": "[2] O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:drawIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "drawIsRecordedForEitherHumanPiece(Piece)[1]",
+    "display": "[1] X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:drawIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[3]",
+    "display": "[3] 2, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT02()",
+    "display": "T02: O X X X X* X . -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT02()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT48()",
+    "display": "T48: X O O O O O* X -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT48()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[2]",
+    "display": "[2] 1, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[1]",
+    "display": "[1] 1, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT25()",
+    "display": "T25: . X X X X* . (chỉ 4 quân) -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT25()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT44()",
+    "display": "T44: Quân vừa đặt ở góc (0,0), chéo (0,0)-(4,4) là X, (5,5) là O -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT44()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT21()",
+    "display": "T21: . X X X* X X . (nối 2+2 thành 5) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT21()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "openFourOutranksOrdinaryPosition(Piece)[2]",
+    "display": "[2] O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:openFourOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.HeuristicOrderingTest",
+    "test": "openFourOutranksOrdinaryPosition(Piece)[1]",
+    "display": "[1] X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.HeuristicOrderingTest]/[test-template:openFourOutranksOrdinaryPosition(game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT06()",
+    "display": "T06: # X X X X X* O -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT06()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT29()",
+    "display": "T29: . X X X O X* X . -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT29()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[3]",
+    "display": "[3] RULE_B, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[2]",
+    "display": "first=O, second=X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:duplicateGameIdRejectsSecondResultAndPreservesFirst(game.model.Piece, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testSanitySetupPatternAllO()",
+    "display": "Sanity 2: Kiểm tra setupPattern('. O O O O O* .') chỉ có quân O, không có X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testSanitySetupPatternAllO()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[4]",
+    "display": "[4] RULE_B, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[3]",
+    "display": "first=NONE, second=X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:duplicateGameIdRejectsSecondResultAndPreservesFirst(game.model.Piece, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "duplicateGameIdRejectsSecondResultAndPreservesFirst(Piece, Piece)[1]",
+    "display": "first=X, second=O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:duplicateGameIdRejectsSecondResultAndPreservesFirst(game.model.Piece, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[1]",
+    "display": "[1] RULE_A, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "openFourIsThreatButNotTerminal(WinRule, Piece)[2]",
+    "display": "[2] RULE_A, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:openFourIsThreatButNotTerminal(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT40()",
+    "display": "T40: Chéo chính (↘) 5 quân, 2 đầu trống -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT40()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[8]",
+    "display": "[8] 10, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#8]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[7]",
+    "display": "[7] 10, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#7]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[6]",
+    "display": "[6] 5, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#6]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[5]",
+    "display": "[5] 5, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#5]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, Piece)[4]",
+    "display": "[4] 2, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:easyAlwaysReturnsLegalMoveOnNearlyFullBoard(int, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT16()",
+    "display": "T16: # X X X X X X* # (chéo 6 ô góc) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT16()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT35()",
+    "display": "T35: Ngang 6 + Dọc 6 (đều mở) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT35()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.MinimaxEasyContractTest",
+    "test": "easyChoosesMoveWithoutEvaluatingMinimaxNodes()",
+    "display": "easyChoosesMoveWithoutEvaluatingMinimaxNodes()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.MinimaxEasyContractTest]/[method:easyChoosesMoveWithoutEvaluatingMinimaxNodes()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT12()",
+    "display": "T12: O X X X X X X* . -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT12()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT31()",
+    "display": "T31: Ngang 5 chặn 2 đầu + Dọc 5 mở -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT31()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "resetScoresClearsAllThreeCounters()",
+    "display": "resetScoresClearsAllThreeCounters()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[method:resetScoresClearsAllThreeCounters()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[1]",
+    "display": "[1] RULE_A, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[2]",
+    "display": "[2] RULE_A, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[3]",
+    "display": "[3] RULE_B, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "singleThreeIsNotDoubleThree(WinRule, Piece)[4]",
+    "display": "[4] RULE_B, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:singleThreeIsNotDoubleThree(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT39()",
+    "display": "T39: Hàng dọc 5, đặt ở giữa bàn, 2 đầu trống -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT39()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT50()",
+    "display": "T50: Bàn cờ đã đầy, nước cuối tạo hàng hợp lệ -> THẮNG (thắng ưu tiên hơn hòa)",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT50()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[3]",
+    "display": "[3] RULE_B, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksOpponentOpenThree(Difficulty)[2]",
+    "display": "[2] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksOpponentOpenThree(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "humanWinIsRecordedForEitherHumanPiece(Piece)[2]",
+    "display": "[2] O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:humanWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[4]",
+    "display": "[4] RULE_B, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[1]",
+    "display": "[1] RULE_A, X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.F3HeuristicTest",
+    "test": "edgeFiveMatchesBoardAndDominatesOtherThreats(WinRule, Piece)[2]",
+    "display": "[2] RULE_A, O",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.F3HeuristicTest]/[test-template:edgeFiveMatchesBoardAndDominatesOtherThreats(game.model.Board$WinRule, game.model.Piece)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "blocksOpponentOpenThree(Difficulty)[1]",
+    "display": "[1] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:blocksOpponentOpenThree(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.ScoreTrackerContractTest",
+    "test": "humanWinIsRecordedForEitherHumanPiece(Piece)[1]",
+    "display": "[1] X",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.ScoreTrackerContractTest]/[test-template:humanWinIsRecordedForEitherHumanPiece(game.model.Piece)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT05()",
+    "display": "T05: # X X X X X* . -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT05()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT24()",
+    "display": "T24: O X X X* X X O (nối thành 5, O chặn 2 đầu) -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT24()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT47()",
+    "display": "T47: . O O O O O* . -> O THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT47()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT01()",
+    "display": "T01: . X X X X X* . -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT01()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT20()",
+    "display": "T20: Cả hàng 15 ô đều là X, 2 đầu là mép -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT20()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT43()",
+    "display": "T43: Ngang 5 quân ở cột 10-14, quân vừa đặt ở cột 14, cột 9 là O -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT43()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "createsOpenFourWhenSafe(Difficulty)[1]",
+    "display": "[1] Trung bình",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:createsOpenFourWhenSafe(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#1]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.ai.AITacticsTest",
+    "test": "createsOpenFourWhenSafe(Difficulty)[2]",
+    "display": "[2] Khó",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.ai.AITacticsTest]/[test-template:createsOpenFourWhenSafe(game.ai.MinimaxAI$Difficulty)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "restartLineForDifferentBaseDoesNotChangeRound()",
+    "display": "restartLineForDifferentBaseDoesNotChangeRound()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:restartLineForDifferentBaseDoesNotChangeRound()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT09()",
+    "display": "T09: O . X X X X X* . O (O không liền kề) -> THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT09()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.BoardWinTest",
+    "test": "testT28()",
+    "display": "T28: . X X X* . X X . (còn ô trống) -> KHÔNG THẮNG",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.BoardWinTest]/[method:testT28()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "restartRequestLineOnHostCommitsANewRound()",
+    "display": "restartRequestLineOnHostCommitsANewRound()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[method:restartRequestLineOnHostCommitsANewRound()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.model.BoardModelContractTest",
+    "test": "undoRemovesOnlyRequestedStoneAndDecrementsMoveCount()",
+    "display": "undoRemovesOnlyRequestedStoneAndDecrementsMoveCount()",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.model.BoardModelContractTest]/[method:undoRemovesOnlyRequestedStoneAndDecrementsMoveCount()]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[3]",
+    "display": "host=false, ply=225, row=14, col=14",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#3]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[2]",
+    "display": "host=true, ply=2, row=14, col=0",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#2]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  },
+  {
+    "class": "game.network.NetworkMessageTest",
+    "test": "moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)[4]",
+    "display": "host=true, ply=224, row=0, col=0",
+    "status": "PASS",
+    "type": "Hành vi đơn lẻ trên fixture/thế cờ dựng sẵn; không replay ván theo lượt",
+    "unique_id": "[engine:junit-jupiter]/[class:game.network.NetworkMessageTest]/[test-template:moveLineDispatchesPeerRoundPlyAndCoordinates(boolean, int, int, int)]/[test-template-invocation:#4]",
+    "xml": "test/review-2026-11-03/xml/TEST-junit-jupiter.xml"
+  }
+]

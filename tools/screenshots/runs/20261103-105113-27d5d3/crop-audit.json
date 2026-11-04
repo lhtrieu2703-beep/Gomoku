@@ -1,0 +1,93 @@
+[
+  {
+    "File": "01_title.png",
+    "RawWidth": 967,
+    "RawHeight": 994,
+    "CropX": 8,
+    "CropY": 0,
+    "Width": 951,
+    "Height": 986,
+    "RawSHA256": "22532AD9A32A15AC66A92C3AA6C6DB52E217AF39366C611D731FA8B71DFF499F",
+    "FinalSHA256": "93299451235D66956BE7A4A0EF9B35D00A3E4E73E77E70C3A3A11B4EE2E38887",
+    "Method": "Lossless rectangular subset of original Robot pixels; no recapture, redraw or resampling",
+    "Reason": "Actual raster inspected: 8-px invisible Win32 outer resize margin at left/right/bottom"
+  },
+  {
+    "File": "02_menu.png",
+    "RawWidth": 967,
+    "RawHeight": 994,
+    "CropX": 8,
+    "CropY": 0,
+    "Width": 951,
+    "Height": 986,
+    "RawSHA256": "D86BE01605B620A2A807F87ACF111625A5F1B7EE61959B2FE0774DB60B11F3C9",
+    "FinalSHA256": "04CC1198DAFD64C2A246D0752A91E9B0A27227BADBC519110C7F8CB6200BF340",
+    "Method": "Lossless rectangular subset of original Robot pixels; no recapture, redraw or resampling",
+    "Reason": "Actual raster inspected: 8-px invisible Win32 outer resize margin at left/right/bottom"
+  },
+  {
+    "File": "03_setup_dialog.png",
+    "RawWidth": 310,
+    "RawHeight": 221,
+    "CropX": 8,
+    "CropY": 0,
+    "Width": 294,
+    "Height": 213,
+    "RawSHA256": "1187440B1368BAA2BEEAEA6D0B65F27E158A886F647A931B065C9F27A57A0B5C",
+    "FinalSHA256": "D26F900B91459D3828A2E740D86554F11393D4ABD38FDDB520B9FBBCA1625833",
+    "Method": "Lossless rectangular subset of original Robot pixels; no recapture, redraw or resampling",
+    "Reason": "Actual raster inspected: 8-px invisible Win32 outer resize margin at left/right/bottom"
+  },
+  {
+    "File": "04_board_playing.png",
+    "RawWidth": 967,
+    "RawHeight": 994,
+    "CropX": 8,
+    "CropY": 0,
+    "Width": 951,
+    "Height": 986,
+    "RawSHA256": "3DD09CE670477942869F5E551A9ECAD6A6F1A985AC67205898E1B0203330BB91",
+    "FinalSHA256": "B11016D4AEECED21EF4952044B12B9C4CD43EDC4222A8E0C3DCE14A8774A2E56",
+    "Method": "Lossless rectangular subset of original Robot pixels; no recapture, redraw or resampling",
+    "Reason": "Actual raster inspected: 8-px invisible Win32 outer resize margin at left/right/bottom"
+  },
+  {
+    "File": "05_settings.png",
+    "RawWidth": 336,
+    "RawHeight": 359,
+    "CropX": 8,
+    "CropY": 0,
+    "Width": 320,
+    "Height": 351,
+    "RawSHA256": "59276CBF7A75A521F76E882023AF86333B2D0B0193F771C2F22330AA53779588",
+    "FinalSHA256": "7C79C7FAC916ECF199DEF633ADE8DC2200106C26DEC801BC7F0394ED3D8578C8",
+    "Method": "Lossless rectangular subset of original Robot pixels; no recapture, redraw or resampling",
+    "Reason": "Actual raster inspected: 8-px invisible Win32 outer resize margin at left/right/bottom"
+  },
+  {
+    "File": "06_rules.png",
+    "RawWidth": 815,
+    "RawHeight": 706,
+    "CropX": 8,
+    "CropY": 0,
+    "Width": 799,
+    "Height": 698,
+    "RawSHA256": "001A570B20D80391FE0A7E03D8FF43EB8CD2EC7CC3DD4028613F7B43B272BFB5",
+    "FinalSHA256": "8592687315582FCF530E16B9C4F44977F1C18B1457C7A7969E3A59BF97789F25",
+    "Method": "Lossless rectangular subset of original Robot pixels; no recapture, redraw or resampling",
+    "Reason": "Actual raster inspected: 8-px invisible Win32 outer resize margin at left/right/bottom"
+  },
+  {
+    "File": "07_lan_dialog.png",
+    "RawWidth": 662,
+    "RawHeight": 339,
+    "CropX": 8,
+    "CropY": 0,
+    "Width": 646,
+    "Height": 331,
+    "RawSHA256": "929BFF2BE3BC45D9D8E3300B61BF8E60F0997CE6DDDA8F5118058D4A189C940B",
+    "FinalSHA256": "8E4016CF5E6F106CAAB8B15ADA689560969EB85E43DBD885D326850027CC3F1C",
+    "Method": "Lossless rectangular subset of original Robot pixels; no recapture, redraw or resampling",
+    "Reason": "Actual raster inspected: 8-px invisible Win32 outer resize margin at left/right/bottom"
+  }
+]

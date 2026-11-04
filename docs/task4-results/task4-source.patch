@@ -1,0 +1,1482 @@
+diff --git a/src/game/view/AchievementIcon.java b/src/game/view/AchievementIcon.java
+new file mode 100644
+index 0000000..b2dbdd2
+--- /dev/null
++++ b/src/game/view/AchievementIcon.java
+@@ -0,0 +1,32 @@
++package game.view;
++
++import javax.swing.Icon;
++import java.awt.*;
++import java.awt.geom.Path2D;
++
++/** A Java2D cup representing the existing score summary, without badge state. */
++public final class AchievementIcon implements Icon {
++    private final int size;
++
++    public AchievementIcon(int size) { this.size = size; }
++    @Override public int getIconWidth() { return size; }
++    @Override public int getIconHeight() { return size; }
++
++    @Override public void paintIcon(Component component, Graphics graphics, int x, int y) {
++        Graphics2D g = (Graphics2D) graphics.create();
++        try {
++            g.translate(x, y);
++            g.scale(size / 24.0, size / 24.0);
++            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
++            g.setColor(new Color(240, 191, 83));
++            g.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
++            g.drawRoundRect(2, 4, 20, 8, 7, 7);
++            Path2D cup = new Path2D.Double();
++            cup.moveTo(6, 3); cup.lineTo(18, 3); cup.lineTo(17, 11);
++            cup.quadTo(12, 19, 7, 11); cup.closePath();
++            g.fill(cup);
++            g.fillRect(11, 14, 2, 5);
++            g.fillRoundRect(7, 19, 10, 3, 2, 2);
++        } finally { g.dispose(); }
++    }
++}
+diff --git a/src/game/view/AppSettings.java b/src/game/view/AppSettings.java
+index dcd6a85..4951441 100644
+--- a/src/game/view/AppSettings.java
++++ b/src/game/view/AppSettings.java
+@@ -1,14 +1,17 @@
+ package game.view;
+ 
+ import java.util.prefs.Preferences;
++import java.text.Normalizer;
+ 
+ /**
+- * Lưu/đọc cài đặt người dùng (ngôn ngữ, âm thanh) qua java.util.prefs.Preferences.
++ * Lưu/đọc cài đặt người dùng (ngôn ngữ, âm thanh, tên) qua java.util.prefs.Preferences.
+  * Nhận Preferences node qua constructor để test có thể inject node riêng.
+  */
+ public class AppSettings {
+     private static final String KEY_LANG  = "language";
+     private static final String KEY_SOUND = "soundEnabled";
++    private static final String KEY_PLAYER_NAME = "playerName";
++    public static final int MAX_PLAYER_NAME_LENGTH = 16;
+ 
+     private final Preferences prefs;
+ 
+@@ -43,6 +46,32 @@ public class AppSettings {
+         try { return prefs.getBoolean(KEY_SOUND, true); } catch (Exception ignored) { return true; }
+     }
+ 
++    /** Empty means use Lang.defaultPlayerName() at display time, in the current locale. */
++    public void savePlayerName(String name) {
++        try {
++            String normalized = normalizePlayerName(name);
++            if (normalized.isEmpty()) prefs.remove(KEY_PLAYER_NAME);
++            else prefs.put(KEY_PLAYER_NAME, normalized);
++        } catch (Exception ignored) {}
++    }
++
++    public String loadPlayerName() {
++        try { return normalizePlayerName(prefs.get(KEY_PLAYER_NAME, "")); }
++        catch (Exception ignored) { return ""; }
++    }
++
++    /** Count Unicode code points after NFC normalization; never split a surrogate pair. */
++    public static String normalizePlayerName(String name) {
++        if (name == null) return "";
++        StringBuilder singleLine = new StringBuilder();
++        name.codePoints().forEach(cp -> singleLine.appendCodePoint(
++                Character.isWhitespace(cp) || Character.isSpaceChar(cp) || Character.isISOControl(cp) ? ' ' : cp));
++        String normalized = Normalizer.normalize(singleLine.toString().strip(), Normalizer.Form.NFC);
++        if (normalized.codePointCount(0, normalized.length()) > MAX_PLAYER_NAME_LENGTH)
++            normalized = normalized.substring(0, normalized.offsetByCodePoints(0, MAX_PLAYER_NAME_LENGTH)).stripTrailing();
++        return normalized;
++    }
++
+     /** Trả về node Preferences đang dùng (để test kiểm tra path). */
+     public Preferences getPrefs() { return prefs; }
+ }
+diff --git a/src/game/view/BoardPanel.java b/src/game/view/BoardPanel.java
+index 6eb4c30..1ccbe62 100644
+--- a/src/game/view/BoardPanel.java
++++ b/src/game/view/BoardPanel.java
+@@ -108,7 +108,7 @@ public class BoardPanel extends JPanel {
+         addMouseMotionListener(new MouseMotionAdapter() {
+             @Override
+             public void mouseMoved(MouseEvent e) {
+-                if (isGameOver || isAiThinking) { clearHover(); return; }
++                if (!isEnabled() || isGameOver || isAiThinking) { clearHover(); return; }
+                 // Ở chế độ Online, nếu chưa đến lượt của mình thì không cho hover
+                 if (gameMode == GameMode.ONLINE && currentTurn != myPiece) { clearHover(); return; }
+ 
+@@ -253,7 +253,8 @@ public class BoardPanel extends JPanel {
+ 
+         hoverRow = hoverCol = -1;
+ 
+-        SoundManager.playPlacePieceSound();
++        final int undoGameId = gameId;
++        SoundManager.playPlacePieceSound(() -> undoGameId == gameId && isEnabled());
+         if (stateListener != null) {
+             stateListener.onTurnChanged(currentTurn, false);
+             stateListener.onHistoryChanged(canUndo());
+@@ -263,7 +264,7 @@ public class BoardPanel extends JPanel {
+ 
+     // =========================================================================
+     public boolean playMove(int row, int col) {
+-        if (isGameOver || isAiThinking || restartWaiting) return false;
++        if (!isEnabled() || isGameOver || isAiThinking || restartWaiting) return false;
+ 
+         // Ở chế độ Online: Không được đánh nếu chưa đến lượt của mình
+         if (gameMode == GameMode.ONLINE && currentTurn != myPiece) return false;
+@@ -296,7 +297,7 @@ public class BoardPanel extends JPanel {
+         final int receivedGameId = gameId;
+         Runnable apply = () -> {
+             Piece wirePiece = ply % 2 == 1 ? Piece.X : Piece.O;
+-            if (receivedGameId != gameId || gameMode != GameMode.ONLINE
++            if (!isEnabled() || receivedGameId != gameId || gameMode != GameMode.ONLINE
+                     || !java.util.Objects.equals(roundId, networkRoundId)
+                     || ply != board.getMoveCount() + 1 || wirePiece != myPiece.opposite()
+                     || isGameOver || restartWaiting || currentTurn != wirePiece) {
+@@ -320,6 +321,17 @@ public class BoardPanel extends JPanel {
+         setCursor(Cursor.getDefaultCursor());
+     }
+ 
++    /** Leave the game card without retaining online identity or background work. */
++    public void resetForMenu() {
++        setEnabled(false);
++        cancelAiComputation();
++        networkManager = null;
++        networkRoundId = null;
++        myPiece = Piece.X;
++        gameMode = GameMode.PV_AI;
++        resetGame();
++    }
++
+     private void executeMove(int row, int col, Piece piece) {
+         executeMove(row, col, piece, false);
+     }
+@@ -334,13 +346,14 @@ public class BoardPanel extends JPanel {
+         if (publishOnline && gameMode == GameMode.ONLINE && networkManager != null)
+             networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
+ 
+-        SoundManager.playPlacePieceSound();
++        final int moveGameId = gameId;
++        SoundManager.playPlacePieceSound(() -> moveGameId == gameId && isEnabled());
+ 
+         if (board.checkWin(row, col)) {
+             isGameOver = true;
+             winner = piece;
+             final int resultGameId = gameId;
+-            SoundManager.playVictorySound(() -> resultGameId == gameId);
++            SoundManager.playVictorySound(() -> resultGameId == gameId && isEnabled());
+             repaint();
+             if (stateListener != null) {
+                 String msg = buildWinMessage(piece);
+diff --git a/src/game/view/Lang.java b/src/game/view/Lang.java
+index b466775..4870b73 100644
+--- a/src/game/view/Lang.java
++++ b/src/game/view/Lang.java
+@@ -42,6 +42,83 @@ public class Lang {
+ 
+     public static boolean isVI() { return current == Language.VI; }
+ 
++    public static String startTitle() {
++        return switch (current) {
++            case VI -> "Cờ Gomoku";
++            case EN -> "Gomoku Game";
++            case PT -> "Jogo Gomoku";
++        };
++    }
++
++    public static String startSubtitle() {
++        return switch (current) {
++            case VI -> "Nhập tên để bắt đầu ván cờ.";
++            case EN -> "Enter your name to start playing.";
++            case PT -> "Digite seu nome para começar a jogar.";
++        };
++    }
++
++    public static String playerNameLabel() {
++        return switch (current) {
++            case VI -> "Tên người chơi";
++            case EN -> "Player name";
++            case PT -> "Nome do jogador";
++        };
++    }
++
++    public static String playerNameHint() {
++        return switch (current) {
++            case VI -> "Tối đa 16 ký tự";
++            case EN -> "Up to 16 characters";
++            case PT -> "Até 16 caracteres";
++        };
++    }
++
++    public static String defaultPlayerName() {
++        return switch (current) {
++            case VI -> "Người chơi";
++            case EN -> "Player";
++            case PT -> "Jogador";
++        };
++    }
++
++    public static String startGame() {
++        return switch (current) {
++            case VI -> "Bắt đầu";
++            case EN -> "Start";
++            case PT -> "Começar";
++        };
++    }
++
++    public static String languageLabel() {
++        return switch (current) {
++            case VI -> "Ngôn ngữ";
++            case EN -> "Language";
++            case PT -> "Idioma";
++        };
++    }
++
++    public static String backToMenu() {
++        return switch (current) {
++            case VI -> "Về menu";
++            case EN -> "Back to menu";
++            case PT -> "Voltar ao menu";
++        };
++    }
++
++    public static String achievementsTooltip() {
++        return switch (current) {
++            case VI -> "Thành tích";
++            case EN -> "Score summary";
++            case PT -> "Resultados";
++        };
++    }
++
++    public static String scoreSummary(String name, int winCount, int lossCount, int drawCount) {
++        return playerNameLabel() + ": " + name + "\n\n" + wins() + ": " + winCount
++                + "\n" + losses() + ": " + lossCount + "\n" + draws() + ": " + drawCount;
++    }
++
+     // =========================================================================
+     // Tên ngôn ngữ hiển thị trong dropdown (hiện bằng chính ngôn ngữ đó)
+     // =========================================================================
+diff --git a/src/game/view/MainFrame.java b/src/game/view/MainFrame.java
+index abe1051..6ee0477 100644
+--- a/src/game/view/MainFrame.java
++++ b/src/game/view/MainFrame.java
+@@ -22,6 +22,18 @@ import java.awt.*;
+ public class MainFrame extends JFrame {
+     private final Board board;
+     private final BoardPanel boardPanel;
++    private static final String MENU_CARD = "menu", GAME_CARD = "game";
++    private final CardLayout screenLayout = new CardLayout();
++    private final JPanel screenCards = new JPanel(screenLayout);
++    private final JPanel gameCard = new JPanel(new BorderLayout());
++    private final StartScreen startScreen;
++    private final JButton btnBackToMenu, btnAchievements;
++    private final JLabel playerLabel;
++    private String playerName;
++    private boolean menuVisible = true;
++    private volatile long screenEpoch;
++    private JDialog achievementsDialog;
++    private JTextArea achievementsText;
+ 
+     // === Components điều khiển ===
+     private final JLabel lblMode, lblDiff, turnLabel;
+@@ -63,12 +75,15 @@ public class MainFrame extends JFrame {
+         this.appSettings = settings;
+         this.board = new Board();
+         this.boardPanel = new BoardPanel(board);
++        this.boardPanel.setEnabled(false);
+ 
+         // Load cài đặt TRƯỚC khi dựng UI
+         Lang.set(appSettings.loadLang());
+         SoundManager.setSoundEnabled(appSettings.loadSound());
++        playerName = appSettings.loadPlayerName();
++        startScreen = new StartScreen(playerName, this::startGame, this::selectLanguage);
+ 
+-        setTitle("Gomoku");
++        setTitle(Lang.startTitle());
+         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+         setResizable(false);
+         setLayout(new BorderLayout(0, 0));
+@@ -79,7 +94,7 @@ public class MainFrame extends JFrame {
+         // =====================================================================
+         // 1. HEADER TỐI
+         // =====================================================================
+-        JPanel header = new JPanel(new BorderLayout());
++        JPanel header = new JPanel(new BorderLayout(0, 8));
+         header.setBackground(new Color(34, 36, 40));
+         header.setBorder(new EmptyBorder(10, 14, 10, 14));
+ 
+@@ -108,6 +123,11 @@ public class MainFrame extends JFrame {
+ 
+         // Combo ngôn ngữ
+         langCombo = makeLangCombo();
++        btnBackToMenu = makeDarkBtn(Lang.backToMenu(), new Color(55, 58, 65), Color.WHITE);
++        btnAchievements = makeDarkBtn("", new Color(55, 58, 65), Color.WHITE);
++        btnAchievements.setIcon(new AchievementIcon(20));
++        btnAchievements.setToolTipText(Lang.achievementsTooltip());
++        btnAchievements.getAccessibleContext().setAccessibleName(Lang.achievementsTooltip());
+ 
+         ctrlRow.add(lblMode); ctrlRow.add(modeCombo);
+         ctrlRow.add(Box.createHorizontalStrut(6));
+@@ -119,10 +139,16 @@ public class MainFrame extends JFrame {
+ 
+         JPanel rightRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+         rightRow.setOpaque(false);
++        rightRow.add(btnAchievements);
++        rightRow.add(Box.createHorizontalStrut(8));
+         rightRow.add(langCombo);
+ 
++        JPanel navigation = new JPanel(new BorderLayout(12, 0));
++        navigation.setOpaque(false);
++        navigation.add(btnBackToMenu, BorderLayout.WEST);
++        navigation.add(rightRow, BorderLayout.EAST);
++        header.add(navigation, BorderLayout.NORTH);
+         header.add(ctrlRow, BorderLayout.CENTER);
+-        header.add(rightRow, BorderLayout.EAST);
+ 
+         // =====================================================================
+         // 2. BẢNG THÀNH TÍCH
+@@ -139,6 +165,11 @@ public class MainFrame extends JFrame {
+         turnLabel = new JLabel(Lang.yourTurn());
+         turnLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+         turnLabel.setForeground(new Color(30, 30, 30));
++        playerLabel = new JLabel();
++        playerLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
++        playerLabel.putClientProperty("html.disable", Boolean.TRUE);
++        turnBar.add(playerLabel);
++        turnBar.add(Box.createHorizontalStrut(16));
+         turnBar.add(turnLabel);
+ 
+         JPanel north = new JPanel(new BorderLayout());
+@@ -150,7 +181,7 @@ public class MainFrame extends JFrame {
+         // 4. ĐĂNG KÝ SỰ KIỆN
+         // =====================================================================
+         modeCombo.addActionListener(e -> {
+-            if (modeComboUpdating) return;
++            if (modeComboUpdating || menuVisible || disposed) return;
+             BoardPanel.GameMode sel = (BoardPanel.GameMode) modeCombo.getSelectedItem();
+             diffCombo.setEnabled(sel == BoardPanel.GameMode.PV_AI);
+ 
+@@ -168,6 +199,7 @@ public class MainFrame extends JFrame {
+             boardPanel.setAiDifficulty((MinimaxAI.Difficulty) diffCombo.getSelectedItem()));
+ 
+         btnNewGame.addActionListener(e -> {
++            if (menuVisible || disposed) return;
+             if (boardPanel.getGameMode() == BoardPanel.GameMode.ONLINE) {
+                 if (networkManager.requestRestart(boardPanel.getNetworkRoundId()) && !networkManager.isHost())
+                     boardPanel.setRestartWaiting(true);
+@@ -178,7 +210,9 @@ public class MainFrame extends JFrame {
+             boardPanel.resetGame();
+         });
+ 
+-        btnUndo.addActionListener(e -> boardPanel.undoMove());
++        btnUndo.addActionListener(e -> { if (!menuVisible && !disposed) boardPanel.undoMove(); });
++        btnBackToMenu.addActionListener(e -> returnToMenu());
++        btnAchievements.addActionListener(e -> showScoreSummary());
+ 
+         // Listener nút âm thanh
+         btnSound.addActionListener(e -> {
+@@ -191,10 +225,7 @@ public class MainFrame extends JFrame {
+         langCombo.addActionListener(e -> {
+             if (langComboUpdating) return;
+             Lang.Language sel = (Lang.Language) langCombo.getSelectedItem();
+-            if (sel != null && sel != Lang.get()) {
+-                Lang.set(sel);
+-                appSettings.saveLang(Lang.get());
+-            }
++            if (sel != null) selectLanguage(sel);
+         });
+ 
+         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
+@@ -210,7 +241,7 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onGameOver(int gameId, String message, Piece winner) {
+-                if (disposed || gameId != boardPanel.getGameId() || !boardPanel.isGameOver()) return;
++                if (disposed || menuVisible || gameId != boardPanel.getGameId() || !boardPanel.isGameOver()) return;
+                 BoardPanel.GameMode mode = boardPanel.getGameMode();
+                 Piece humanPiece = (mode == BoardPanel.GameMode.ONLINE) ? boardPanel.getMyPiece() : Piece.X;
+                 boolean isNewRecord = scoreTracker.recordResult(gameId, winner, humanPiece);
+@@ -240,7 +271,7 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onHistoryChanged(boolean canUndo) {
+-                btnUndo.setEnabled(canUndo);
++                btnUndo.setEnabled(!menuVisible && !disposed && canUndo);
+             }
+         });
+ 
+@@ -250,13 +281,104 @@ public class MainFrame extends JFrame {
+         // =====================================================================
+         // 5. LẮP RÁP
+         // =====================================================================
+-        add(north, BorderLayout.NORTH);
+-        add(boardPanel, BorderLayout.CENTER);
++        gameCard.add(north, BorderLayout.NORTH);
++        gameCard.add(boardPanel, BorderLayout.CENTER);
++        screenCards.add(startScreen, MENU_CARD);
++        screenCards.add(gameCard, GAME_CARD);
++        add(screenCards, BorderLayout.CENTER);
++        screenLayout.show(screenCards, MENU_CARD);
++        getRootPane().setDefaultButton(startScreen.getStartButton());
++        refreshGameStatus();
+ 
+         resizeTranslatedControls();
+         setLocationRelativeTo(null);
+     }
+ 
++    private void selectLanguage(Lang.Language language) {
++        if (language != Lang.get()) Lang.set(language);
++        appSettings.saveLang(language);
++    }
++
++    public void startGame() {
++        if (disposed || !menuVisible) return;
++        playerName = AppSettings.normalizePlayerName(startScreen.getNameField().getText());
++        appSettings.savePlayerName(playerName);
++        startScreen.getNameField().setText(playerName);
++        menuVisible = false;
++        boardPanel.setEnabled(true);
++        screenLayout.show(screenCards, GAME_CARD);
++        getRootPane().setDefaultButton(null);
++        refreshScores();
++        refreshGameStatus();
++        resizeTranslatedControls();
++        boardPanel.requestFocusInWindow();
++    }
++
++    /** Invalidate callbacks before closing modal loops or resetting game state. */
++    public void returnToMenu() {
++        if (disposed || menuVisible) return;
++        screenEpoch++;
++        menuVisible = true;
++        boardPanel.setEnabled(false);
++        networkManager.disconnect();
++        closeOwnedDialogs();
++        modeComboUpdating = true;
++        try {
++            boardPanel.resetForMenu();
++            modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
++            diffCombo.setSelectedItem(MinimaxAI.Difficulty.MEDIUM);
++            boardPanel.setAiDifficulty(MinimaxAI.Difficulty.MEDIUM);
++            diffCombo.setEnabled(true);
++            btnUndo.setEnabled(false);
++        } finally { modeComboUpdating = false; }
++        scoreTracker.newGame(); // Task 2: retain totals for this application session.
++        startScreen.getNameField().setText(playerName);
++        screenLayout.show(screenCards, MENU_CARD);
++        getRootPane().setDefaultButton(startScreen.getStartButton());
++        refreshGameStatus();
++        resizeTranslatedControls();
++        startScreen.getNameField().requestFocusInWindow();
++    }
++
++    private void closeOwnedDialogs() {
++        closeResultDialog();
++        NetworkDialog pending = networkDialog;
++        networkDialog = null;
++        if (pending != null) pending.dispose();
++        for (Window window : getOwnedWindows()) if (window instanceof Dialog) window.dispose();
++        achievementsDialog = null;
++        achievementsText = null;
++    }
++
++    private void showScoreSummary() {
++        if (disposed || menuVisible) return;
++        if (achievementsDialog != null && achievementsDialog.isDisplayable()) {
++            refreshAchievementSummary();
++            achievementsDialog.toFront();
++            return;
++        }
++        achievementsDialog = new JDialog(this, Lang.scoreboard(), false);
++        achievementsDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
++        achievementsDialog.setResizable(false);
++        achievementsText = new JTextArea();
++        achievementsText.setFont(new Font("Segoe UI", Font.PLAIN, 16));
++        achievementsText.setEditable(false);
++        achievementsText.setFocusable(false);
++        achievementsText.setBorder(new EmptyBorder(20, 24, 20, 24));
++        achievementsDialog.add(achievementsText);
++        refreshAchievementSummary();
++        achievementsDialog.setLocationRelativeTo(this);
++        achievementsDialog.setVisible(true);
++    }
++
++    private void refreshAchievementSummary() {
++        if (achievementsDialog == null || achievementsText == null) return;
++        achievementsDialog.setTitle(Lang.scoreboard());
++        achievementsText.setText(Lang.scoreSummary(getPlayerName(), scoreTracker.getHumanWins(),
++                scoreTracker.getAiWins(), scoreTracker.getDraws()));
++        achievementsDialog.pack();
++    }
++
+     // =========================================================================
+     // TẠO NÚT ÂM THANH
+     // =========================================================================
+@@ -450,7 +572,7 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onConnected(boolean isHost, String roundId) {
+-                if (!disposed) {
++                if (!disposed && !menuVisible) {
+                     if (networkDialog != null) networkDialog.onConnectionSuccess();
+                     boardPanel.setupOnlineGame(networkManager, isHost, roundId);
+ 
+@@ -462,12 +584,12 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onMoveReceived(int row, int col) {
+-                boardPanel.applyOpponentMove(row, col);
++                if (!disposed && !menuVisible) boardPanel.applyOpponentMove(row, col);
+             }
+ 
+             @Override
+             public void onMoveReceived(String roundId, int ply, int row, int col) {
+-                boardPanel.applyOpponentMove(roundId, ply, row, col);
++                if (!disposed && !menuVisible) boardPanel.applyOpponentMove(roundId, ply, row, col);
+             }
+ 
+             @Override
+@@ -477,7 +599,7 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onRoundStarted(String base, String next) {
+-                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId())) {
++                if (!disposed && !menuVisible && java.util.Objects.equals(base, boardPanel.getNetworkRoundId())) {
+                     closeResultDialog();
+                     scoreTracker.newGame();
+                     boardPanel.startOnlineRound(base, next);
+@@ -486,13 +608,13 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onRestartWaiting(String base) {
+-                if (!disposed && java.util.Objects.equals(base, boardPanel.getNetworkRoundId()))
++                if (!disposed && !menuVisible && java.util.Objects.equals(base, boardPanel.getNetworkRoundId()))
+                     boardPanel.setRestartWaiting(true);
+             }
+ 
+             @Override
+             public void onOpponentDisconnected() {
+-                if (!disposed) {
++                if (!disposed && !menuVisible) {
+                     closeResultDialog();
+                     boardPanel.setRestartWaiting(false);
+                     modeCombo.setSelectedItem(BoardPanel.GameMode.PV_AI);
+@@ -504,18 +626,24 @@ public class MainFrame extends JFrame {
+ 
+             @Override
+             public void onError(NetworkManager.NetworkError error) {
+-                if (!disposed && networkDialog != null) networkDialog.onConnectionFailed(Lang.networkError(error));
++                if (!disposed && !menuVisible && networkDialog != null) networkDialog.onConnectionFailed(Lang.networkError(error));
+             }
+-        }, SwingUtilities::invokeLater);
++        }, callback -> {
++            long epoch = screenEpoch;
++            SwingUtilities.invokeLater(() -> {
++                if (!disposed && !menuVisible && epoch == screenEpoch) callback.run();
++            });
++        });
+     }
+ 
+     private void openNetworkDialog() {
++        long epoch = screenEpoch;
+         BoardPanel.GameMode previousMode = boardPanel.getGameMode();
+         NetworkDialog dialog = new NetworkDialog(this, networkManager, () -> {});
+         networkDialog = dialog;
+         dialog.setVisible(true);
+         if (networkDialog == dialog) networkDialog = null;
+-        if (!disposed && !dialog.wasConnected()) {
++        if (!disposed && !menuVisible && epoch == screenEpoch && !dialog.wasConnected()) {
+             modeComboUpdating = true;
+             try {
+                 modeCombo.setSelectedItem(previousMode);
+@@ -530,10 +658,11 @@ public class MainFrame extends JFrame {
+     @Override
+     public void dispose() {
+         disposed = true;
+-        closeResultDialog();
++        screenEpoch++;
++        if (boardPanel != null) boardPanel.setEnabled(false);
++        closeOwnedDialogs();
+         Lang.removeChangeListener(languageListener);
+         if (networkManager != null) networkManager.disconnect();
+-        if (networkDialog != null) networkDialog.dispose();
+         if (boardPanel != null) boardPanel.cancelAiComputation();
+         super.dispose();
+     }
+@@ -546,11 +675,16 @@ public class MainFrame extends JFrame {
+     // CẬP NHẬT NGÔN NGỮ
+     // =========================================================================
+     private void updateLanguage() {
+-        setTitle("Gomoku");
++        setTitle(Lang.startTitle());
++        startScreen.updateLanguage();
+         lblMode.setText(Lang.mode());
+         lblDiff.setText(Lang.difficulty());
+         btnNewGame.setText(Lang.newGame());
+         btnUndo.setText(Lang.undo());
++        btnBackToMenu.setText(Lang.backToMenu());
++        btnAchievements.setToolTipText(Lang.achievementsTooltip());
++        btnAchievements.getAccessibleContext().setAccessibleName(Lang.achievementsTooltip());
++        refreshAchievementSummary();
+ 
+         // Cập nhật langCombo mà không kích hoạt listener
+         langComboUpdating = true;
+@@ -633,9 +767,13 @@ public class MainFrame extends JFrame {
+     }
+ 
+     private void refreshScores() {
++        humanWins = scoreTracker.getHumanWins();
++        aiWins = scoreTracker.getAiWins();
++        draws = scoreTracker.getDraws();
+         lblWinVal.setText(String.valueOf(humanWins));
+         lblLossVal.setText(String.valueOf(aiWins));
+         lblDrawVal.setText(String.valueOf(draws));
++        refreshAchievementSummary();
+     }
+ 
+     private void setTurnLabel(String text, Color color) {
+@@ -645,6 +783,7 @@ public class MainFrame extends JFrame {
+ 
+     /** Refresh translated status without changing the board, turn or AI worker. */
+     private void refreshGameStatus() {
++        playerLabel.setText(Lang.playerNameLabel() + ": " + getPlayerName());
+         BoardPanel.GameMode mode = boardPanel.getGameMode();
+         Piece turn = boardPanel.getCurrentTurn();
+         if (boardPanel.isRestartWaiting()) {
+@@ -711,6 +850,11 @@ public class MainFrame extends JFrame {
+     // =========================================================================
+     public ScoreTracker getScoreTracker() { return scoreTracker; }
+     public BoardPanel getBoardPanel()     { return boardPanel; }
++    public StartScreen getStartScreen() { return startScreen; }
++    public boolean isMenuVisible() { return menuVisible; }
++    public String getPlayerName() { return playerName.isEmpty() ? Lang.defaultPlayerName() : playerName; }
++    public JButton getBackToMenuButton() { return btnBackToMenu; }
++    public JButton getAchievementsButton() { return btnAchievements; }
+ 
+     /** Trả về modeCombo để test kiểm tra renderer/màu. */
+     public JComboBox<BoardPanel.GameMode> getModeCombo() { return modeCombo; }
+diff --git a/src/game/view/SoundManager.java b/src/game/view/SoundManager.java
+index c09ce60..93ac2ab 100644
+--- a/src/game/view/SoundManager.java
++++ b/src/game/view/SoundManager.java
+@@ -32,10 +32,14 @@ public class SoundManager {
+      * Phát tiếng "cách" đanh của quân cờ gỗ khi đặt xuống bàn cờ.
+      */
+     public static void playPlacePieceSound() {
++        playPlacePieceSound(() -> true);
++    }
++
++    public static void playPlacePieceSound(BooleanSupplier currentGame) {
+         if (!soundEnabled) return;
+ 
+         PLAYBACK.execute(() -> {
+-            if (!soundEnabled) return;
++            if (!soundEnabled || !currentGame.getAsBoolean()) return;
+             try {
+                 float sampleRate = 44100;
+                 int durationMs = 60;
+@@ -51,7 +55,8 @@ public class SoundManager {
+                     buffer[i] = (byte) (sinVal * decay * 110);
+                 }
+ 
+-                playBuffer(buffer, sampleRate);
++                if (currentGame.getAsBoolean())
++                    playClip(AudioSystem.getClip(), buffer, sampleRate, currentGame);
+             } catch (Exception ignored) {
+             }
+         });
+@@ -94,13 +99,6 @@ public class SoundManager {
+         });
+     }
+ 
+-    private static void playBuffer(byte[] buffer, float sampleRate) {
+-        try {
+-            playClip(AudioSystem.getClip(), buffer, sampleRate);
+-        } catch (Exception ignored) {
+-        }
+-    }
+-
+     /** Package-visible to verify cleanup without requiring an audio device. */
+     static void playClip(Clip clip, byte[] buffer, float sampleRate) throws Exception {
+         playClip(clip, buffer, sampleRate, () -> true);
+diff --git a/src/game/view/StartScreen.java b/src/game/view/StartScreen.java
+new file mode 100644
+index 0000000..522a0ae
+--- /dev/null
++++ b/src/game/view/StartScreen.java
+@@ -0,0 +1,139 @@
++package game.view;
++
++import javax.swing.*;
++import javax.swing.border.EmptyBorder;
++import javax.swing.text.*;
++import java.awt.*;
++import java.util.function.Consumer;
++
++/** The menu card. All persistence and navigation are owned by MainFrame. */
++public final class StartScreen extends JPanel {
++    private final JLabel title = new JLabel();
++    private final JLabel subtitle = new JLabel();
++    private final JLabel nameLabel = new JLabel();
++    private final JLabel hint = new JLabel();
++    private final JLabel languageLabel = new JLabel();
++    private final JTextField nameField = new JTextField(20);
++    private final JButton startButton = new JButton();
++    private final JComboBox<Lang.Language> languageCombo = new JComboBox<>(Lang.Language.values());
++    private boolean updatingLanguage;
++
++    public StartScreen(String savedName, Runnable onStart, Consumer<Lang.Language> onLanguage) {
++        setLayout(new GridBagLayout());
++        setPreferredSize(new Dimension(760, 700));
++        JPanel form = new JPanel(new GridBagLayout());
++        form.setBackground(new Color(245, 241, 232));
++        form.setBorder(new EmptyBorder(30, 38, 32, 38));
++        title.setFont(new Font("Segoe UI", Font.BOLD, 38));
++        title.setForeground(new Color(27, 64, 50));
++        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 14));
++        subtitle.setForeground(new Color(66, 75, 70));
++        nameLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
++        nameLabel.setForeground(new Color(38, 47, 42));
++        nameLabel.setLabelFor(nameField);
++        hint.setFont(new Font("Segoe UI", Font.PLAIN, 12));
++        hint.setForeground(new Color(83, 90, 85));
++        languageLabel.setLabelFor(languageCombo);
++        languageLabel.setForeground(new Color(38, 47, 42));
++        nameField.setFont(new Font("Segoe UI", Font.PLAIN, 20));
++        nameField.setMargin(new Insets(9, 10, 9, 10));
++        ((AbstractDocument) nameField.getDocument()).setDocumentFilter(new DocumentFilter() {
++            @Override public void insertString(FilterBypass fb, int offset, String text, AttributeSet attr)
++                    throws BadLocationException { replace(fb, offset, 0, text, attr); }
++            @Override public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
++                    throws BadLocationException {
++                String old = fb.getDocument().getText(0, fb.getDocument().getLength());
++                String replacement = text == null ? "" : text;
++                String candidate = old.substring(0, offset) + replacement + old.substring(offset + length);
++                if (candidate.codePointCount(0, candidate.length()) > AppSettings.MAX_PLAYER_NAME_LENGTH)
++                    fb.replace(0, old.length(), AppSettings.normalizePlayerName(candidate), attrs);
++                else fb.replace(offset, length, replacement, attrs);
++            }
++        });
++        nameField.setText(savedName);
++        startButton.setFont(new Font("Segoe UI", Font.BOLD, 16));
++        startButton.setForeground(Color.WHITE);
++        startButton.setBackground(new Color(36, 115, 72));
++        startButton.setOpaque(true);
++        startButton.setBorderPainted(false);
++        startButton.setBorder(new EmptyBorder(11, 24, 11, 24));
++        startButton.setFocusPainted(false);
++        startButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
++        languageCombo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
++        languageCombo.setRenderer(new DefaultListCellRenderer() {
++            @Override public Component getListCellRendererComponent(JList<?> list, Object value,
++                    int index, boolean selected, boolean focus) {
++                JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, selected, focus);
++                if (value instanceof Lang.Language language) label.setText(Lang.langName(language));
++                return label;
++            }
++        });
++        addRow(form, title, 0, 0, 0);
++        addRow(form, subtitle, 1, 6, 25);
++        addRow(form, nameLabel, 2, 0, 6);
++        addRow(form, nameField, 3, 0, 5);
++        addRow(form, hint, 4, 0, 20);
++        JPanel languageRow = new JPanel(new BorderLayout(16, 0));
++        languageRow.setOpaque(false);
++        languageRow.add(languageLabel, BorderLayout.WEST);
++        languageRow.add(languageCombo, BorderLayout.CENTER);
++        addRow(form, languageRow, 5, 0, 24);
++        addRow(form, startButton, 6, 0, 0);
++        add(form);
++        updateLanguage();
++        startButton.addActionListener(e -> onStart.run());
++        nameField.addActionListener(e -> onStart.run());
++        languageCombo.addActionListener(e -> {
++            if (!updatingLanguage && languageCombo.getSelectedItem() instanceof Lang.Language language)
++                onLanguage.accept(language);
++        });
++    }
++
++    private static void addRow(JPanel form, Component component, int row, int top, int bottom) {
++        GridBagConstraints constraints = new GridBagConstraints();
++        constraints.gridx = 0; constraints.gridy = row; constraints.weightx = 1;
++        constraints.fill = GridBagConstraints.HORIZONTAL;
++        constraints.insets = new Insets(top, 0, bottom, 0);
++        form.add(component, constraints);
++    }
++
++    public void updateLanguage() {
++        title.setText(Lang.startTitle());
++        subtitle.setText(Lang.startSubtitle());
++        nameLabel.setText(Lang.playerNameLabel());
++        hint.setText(Lang.playerNameHint());
++        languageLabel.setText(Lang.languageLabel());
++        startButton.setText(Lang.startGame());
++        nameField.setToolTipText(Lang.playerNameHint());
++        nameField.getAccessibleContext().setAccessibleName(Lang.playerNameLabel());
++        updatingLanguage = true;
++        try { languageCombo.setSelectedItem(Lang.get()); }
++        finally { updatingLanguage = false; }
++        languageCombo.setToolTipText(Lang.langComboTooltip());
++        revalidate(); repaint();
++    }
++
++    @Override protected void paintComponent(Graphics graphics) {
++        super.paintComponent(graphics);
++        Graphics2D g = (Graphics2D) graphics.create();
++        try {
++            g.setPaint(new GradientPaint(0, 0, new Color(22, 40, 42), getWidth(), getHeight(), new Color(43, 78, 59)));
++            g.fillRect(0, 0, getWidth(), getHeight());
++            g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
++            int cell = 40, originX = getWidth() - 9 * cell, originY = getHeight() - 8 * cell;
++            g.setColor(new Color(223, 190, 118, 36));
++            for (int i = 0; i < 10; i++) {
++                g.drawLine(originX + i * cell, originY, originX + i * cell, getHeight());
++                g.drawLine(originX, originY + i * cell, getWidth(), originY + i * cell);
++            }
++            for (int i = 0; i < 5; i++) {
++                g.setColor(i % 2 == 0 ? new Color(10, 19, 19, 120) : new Color(242, 231, 203, 90));
++                g.fillOval(originX + i * cell - 13, getHeight() - 52, 26, 26);
++            }
++        } finally { g.dispose(); }
++    }
++
++    public JTextField getNameField() { return nameField; }
++    public JButton getStartButton() { return startButton; }
++    public JComboBox<Lang.Language> getLanguageCombo() { return languageCombo; }
++}
+diff --git a/test/game/F1ProtocolTest.java b/test/game/F1ProtocolTest.java
+index 0120fda..0c4920d 100644
+--- a/test/game/F1ProtocolTest.java
++++ b/test/game/F1ProtocolTest.java
+@@ -142,6 +142,7 @@ class F1ProtocolTest {
+         SwingUtilities.invokeAndWait(() -> {
+             MainFrame frame = new MainFrame(new AppSettings(new P2LifecycleTest.MemoryPreferences()));
+             try {
++                frame.startGame();
+                 BoardPanel panel = frame.getBoardPanel(); String base = id(), next = id();
+                 panel.setupOnlineGame(null, true, base); panel.setRestartWaiting(true);
+                 assertFalse(panel.playMove(7, 7)); panel.setRestartWaiting(false);
+diff --git a/test/game/F4LayoutTest.java b/test/game/F4LayoutTest.java
+index 972545c..8b54a4d 100644
+--- a/test/game/F4LayoutTest.java
++++ b/test/game/F4LayoutTest.java
+@@ -16,7 +16,7 @@ class F4LayoutTest {
+         SwingUtilities.invokeAndWait(() -> {
+             var prefs = new P2LifecycleTest.MemoryPreferences(); prefs.put("language", language.name());
+             MainFrame frame = new MainFrame(new AppSettings(prefs));
+-            try { layout(frame); check(frame.getContentPane()); render(frame, language.name()); }
++            try { frame.startGame(); layout(frame); check(frame.getContentPane()); render(frame, language.name()); }
+             finally { frame.dispose(); }
+         });
+     }
+@@ -26,6 +26,7 @@ class F4LayoutTest {
+             var prefs = new P2LifecycleTest.MemoryPreferences(); prefs.put("language", initial.name());
+             MainFrame frame = new MainFrame(new AppSettings(prefs));
+             try {
++                frame.startGame();
+                 for (Lang.Language next : Lang.Language.values()) { Lang.set(next); layout(frame); check(frame.getContentPane()); }
+                 if (initial == Lang.Language.VI) {
+                     Lang.set(Lang.Language.VI); Lang.set(Lang.Language.PT); layout(frame); check(frame.getContentPane()); render(frame, "VI-to-PT");
+@@ -48,11 +49,25 @@ class F4LayoutTest {
+         }
+     }
+     static void render(MainFrame frame, String name) {
++        render(frame, Paths.get("docs", "task4-render", "game"), name);
++    }
++    static void render(MainFrame frame, Path folder, String name) {
+         try {
+-            Path folder = Paths.get("docs", "task35-render"); Files.createDirectories(folder);
++            Files.createDirectories(folder);
+             Container content = frame.getContentPane();
+-            BufferedImage image = new BufferedImage(content.getWidth(), content.getHeight(), BufferedImage.TYPE_INT_RGB);
+-            Graphics2D graphics = image.createGraphics(); content.printAll(graphics); graphics.dispose();
++            var scale = frame.getGraphicsConfiguration().getDefaultTransform();
++            BufferedImage image = new BufferedImage((int) Math.ceil(content.getWidth() * scale.getScaleX()),
++                    (int) Math.ceil(content.getHeight() * scale.getScaleY()), BufferedImage.TYPE_INT_RGB);
++            Graphics2D graphics = image.createGraphics();
++            try {
++                graphics.scale(scale.getScaleX(), scale.getScaleY());
++                if (!frame.isMenuVisible()) {
++                    JLabel player = P2LifecycleTest.field(frame, "playerLabel");
++                    assertTrue(graphics.getFontMetrics(player.getFont()).stringWidth(player.getText()) <= player.getWidth(),
++                            "Player name must fit using the same DPI transform as the window");
++                }
++                content.printAll(graphics);
++            } finally { graphics.dispose(); }
+             ImageIO.write(image, "png", folder.resolve(name + ".png").toFile());
+         } catch (Exception e) { throw new AssertionError(e); }
+     }
+diff --git a/test/game/LangPurityTest.java b/test/game/LangPurityTest.java
+index 96e3364..fe842e7 100644
+--- a/test/game/LangPurityTest.java
++++ b/test/game/LangPurityTest.java
+@@ -158,6 +158,7 @@ public class LangPurityTest {
+         MainFrame frame = new MainFrame(new AppSettings(
+                 Preferences.userRoot().node(TEST_NODE + "/c")));
+         try {
++            frame.startGame();
+             // Màu nền ô display (bgColor) và màu chữ (fgColor) từ applyDarkComboUI:
+             //   bgColor = RGB(55, 58, 65)
+             //   fgColor = Color.WHITE = RGB(255, 255, 255)
+diff --git a/test/game/P1RegressionTest.java b/test/game/P1RegressionTest.java
+index 05608da..bcc2ddd 100644
+--- a/test/game/P1RegressionTest.java
++++ b/test/game/P1RegressionTest.java
+@@ -42,6 +42,7 @@ class P1RegressionTest {
+         SwingUtilities.invokeAndWait(() -> {
+             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
+             try {
++                frame.startGame();
+                 BoardPanel panel = frame.getBoardPanel();
+                 if (mode == BoardPanel.GameMode.ONLINE) panel.setupOnlineGame(null, true);
+                 else panel.setGameMode(mode);
+@@ -80,6 +81,7 @@ class P1RegressionTest {
+         SwingUtilities.invokeAndWait(() -> {
+             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
+             try {
++                frame.startGame();
+                 BoardPanel panel = frame.getBoardPanel();
+                 panel.setGameMode(BoardPanel.GameMode.PVP);
+                 panel.setGameStateListener(null); // suppress the modal result popup in this test
+diff --git a/test/game/P2LifecycleTest.java b/test/game/P2LifecycleTest.java
+index 1508d1a..cb542fa 100644
+--- a/test/game/P2LifecycleTest.java
++++ b/test/game/P2LifecycleTest.java
+@@ -47,6 +47,7 @@ class P2LifecycleTest {
+         MainFrame[] frame = new MainFrame[1];
+         SwingUtilities.invokeAndWait(() -> {
+             frame[0] = new MainFrame(new AppSettings(new MemoryPreferences()));
++            frame[0].startGame();
+             BoardPanel panel = frame[0].getBoardPanel();
+             assertTrue(panel.playMove(7, 7));
+             assertTrue(panel.isAiThinking());
+@@ -104,6 +105,7 @@ class P2LifecycleTest {
+         SwingUtilities.invokeAndWait(() -> {
+             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
+             try {
++                frame.startGame();
+                 frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
+                 BoardPanel panel = frame.getBoardPanel();
+                 assertTrue(panel.playMove(7, 7));
+diff --git a/test/game/SoundResourceTest.java b/test/game/SoundResourceTest.java
+index 959d55b..cd0c39a 100644
+--- a/test/game/SoundResourceTest.java
++++ b/test/game/SoundResourceTest.java
+@@ -5,6 +5,7 @@ import javax.sound.sampled.*;
+ import java.lang.reflect.Proxy;
+ import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.concurrent.atomic.AtomicReference;
++import java.util.concurrent.*;
+ import static org.junit.jupiter.api.Assertions.*;
+ 
+ class SoundResourceTest {
+@@ -13,6 +14,27 @@ class SoundResourceTest {
+     @Test void closesClipWhenStartFails() throws Exception { verify("start"); }
+     @Test void staleResultClosesClipWithoutStarting() throws Exception { verify("stale"); }
+ 
++    @Test void queuedPieceSoundChecksGameValidityBeforeOpeningAnyAudioDevice() throws Exception {
++        boolean sound = SoundManager.isSoundEnabled();
++        var field = SoundManager.class.getDeclaredField("PLAYBACK"); field.setAccessible(true);
++        ThreadPoolExecutor playback = (ThreadPoolExecutor) field.get(null);
++        CountDownLatch occupied = new CountDownLatch(2), release = new CountDownLatch(1), checked = new CountDownLatch(1);
++        AtomicBoolean current = new AtomicBoolean(true), observedCurrent = new AtomicBoolean(true);
++        try {
++            for (int i = 0; i < 2; i++) playback.execute(() -> {
++                occupied.countDown();
++                try { release.await(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
++            });
++            assertTrue(occupied.await(3, TimeUnit.SECONDS));
++            SoundManager.setSoundEnabled(true);
++            SoundManager.playPlacePieceSound(() -> {
++                observedCurrent.set(current.get()); checked.countDown(); return current.get();
++            });
++            current.set(false); release.countDown();
++            assertTrue(checked.await(3, TimeUnit.SECONDS)); assertFalse(observedCurrent.get());
++        } finally { release.countDown(); SoundManager.setSoundEnabled(sound); }
++    }
++
+     private void verify(String scenario) throws Exception {
+         AtomicBoolean closed = new AtomicBoolean();
+         AtomicBoolean started = new AtomicBoolean();
+diff --git a/test/game/Task4LayoutTest.java b/test/game/Task4LayoutTest.java
+new file mode 100644
+index 0000000..c015fe3
+--- /dev/null
++++ b/test/game/Task4LayoutTest.java
+@@ -0,0 +1,48 @@
++package game;
++
++import game.view.*;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.*;
++import javax.swing.*;
++import java.awt.*;
++import java.nio.file.*;
++import java.util.stream.Stream;
++import static org.junit.jupiter.api.Assertions.*;
++
++class Task4LayoutTest {
++    static Stream<Arguments> languagesAndLooks() {
++        return Stream.of(Lang.Language.values()).flatMap(language -> Stream.of(false, true).map(nativeLook -> Arguments.of(language, nativeLook)));
++    }
++    @ParameterizedTest @MethodSource("languagesAndLooks")
++    void bothCardsFitAllLocalesOnStartupAndAfterTransitions(Lang.Language language, boolean nativeLook) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            String look = UIManager.getLookAndFeel().getClass().getName();
++            Lang.Language original = Lang.get(); boolean sound = SoundManager.isSoundEnabled();
++            MainFrame frame = null;
++            try {
++                UIManager.setLookAndFeel(nativeLook ? UIManager.getSystemLookAndFeelClassName() : UIManager.getCrossPlatformLookAndFeelClassName());
++                frame = Task4StartScreenTest.frame(language);
++                check(frame); render(frame, (nativeLook ? "native-" : "") + language.name());
++                frame.getStartScreen().getNameField().setText("Á".repeat(16));
++                frame.startGame(); check(frame); frame.returnToMenu(); check(frame);
++                for (Lang.Language next : Lang.Language.values()) {
++                    frame.getStartScreen().getLanguageCombo().setSelectedItem(next); check(frame);
++                    assertEquals("Á".repeat(16), frame.getStartScreen().getNameField().getText());
++                    frame.startGame(); check(frame); frame.returnToMenu(); check(frame);
++                }
++                assertEquals(new Dimension(596, 596), frame.getBoardPanel().getPreferredSize());
++            } catch (Exception e) { throw new AssertionError(e); }
++            finally {
++                if (frame != null) frame.dispose();
++                Lang.set(original); SoundManager.setSoundEnabled(sound);
++                try { UIManager.setLookAndFeel(look); } catch (Exception e) { throw new AssertionError(e); }
++            }
++        });
++    }
++    private static void check(MainFrame frame) {
++        F4LayoutTest.layout(frame); F4LayoutTest.check(frame.getContentPane());
++    }
++    private static void render(MainFrame frame, String name) {
++        F4LayoutTest.render(frame, Paths.get("docs", "task4-render", "start"), name);
++    }
++}
+diff --git a/test/game/Task4LifecycleTest.java b/test/game/Task4LifecycleTest.java
+new file mode 100644
+index 0000000..551eff0
+--- /dev/null
++++ b/test/game/Task4LifecycleTest.java
+@@ -0,0 +1,215 @@
++package game;
++
++import game.ai.MinimaxAI;
++import game.model.*;
++import game.network.NetworkManager;
++import game.view.*;
++import org.junit.jupiter.api.*;
++import javax.swing.*;
++import java.awt.*;
++import java.io.*;
++import java.awt.event.MouseEvent;
++import java.net.*;
++import java.util.UUID;
++import java.util.concurrent.*;
++import java.util.concurrent.atomic.AtomicInteger;
++import java.util.function.*;
++import static org.junit.jupiter.api.Assertions.*;
++
++class Task4LifecycleTest {
++    private Lang.Language language;
++    private boolean sound;
++    private MainFrame frame;
++    @BeforeEach void open() throws Exception {
++        language = Lang.get(); sound = SoundManager.isSoundEnabled();
++        SwingUtilities.invokeAndWait(() -> { frame = Task4StartScreenTest.frame(Lang.Language.EN); frame.startGame(); });
++    }
++    @AfterEach void close() throws Exception {
++        SwingUtilities.invokeAndWait(() -> { frame.dispose(); Lang.set(language); SoundManager.setSoundEnabled(sound); });
++    }
++
++    @Test void menuCancelsActualAiWorkerAndItsCompletionCannotChangeNextGame() throws Exception {
++        SwingWorker<?, ?>[] oldWorker = new SwingWorker<?, ?>[1];
++        SwingUtilities.invokeAndWait(() -> {
++            frame.getDiffCombo().setSelectedItem(MinimaxAI.Difficulty.HARD);
++            BoardPanel panel = frame.getBoardPanel(); int oldId = panel.getGameId();
++            assertTrue(panel.playMove(7, 7)); assertTrue(panel.isAiThinking());
++            SwingWorker<?, ?> worker = P2LifecycleTest.field(panel, "aiWorker");
++            oldWorker[0] = worker;
++            frame.returnToMenu(); assertTrue(worker.isCancelled()); assertFalse(panel.isAiThinking());
++            assertEquals(oldId + 1, panel.getGameId()); assertEquals(0, panel.getMoveHistory().size());
++            frame.startGame(); assertFalse(frame.isMenuVisible());
++        });
++        SwingUtilities.invokeAndWait(() -> {
++            // Replay the actual product completion after the next card transition.
++            // A worker cancelled before STARTED need not emit a DONE property event.
++            try {
++                var completion = oldWorker[0].getClass().getDeclaredMethod("done");
++                completion.setAccessible(true); completion.invoke(oldWorker[0]);
++            } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
++            assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty());
++            Board board = P2LifecycleTest.field(frame, "board"); assertEquals(0, board.getMoveCount());
++        });
++    }
++
++    @Test void menuClosesRealLanSocketAndAllConnectionDialogs() throws Exception {
++        NetworkManager manager = P2LifecycleTest.field(frame, "networkManager");
++        try (ServerSocket server = new ServerSocket(0)) {
++            server.setSoTimeout(3000); manager.joinGame("127.0.0.1", server.getLocalPort());
++            try (Socket peer = server.accept()) {
++                peer.setSoTimeout(3000);
++                PrintWriter writer = new PrintWriter(peer.getOutputStream(), true);
++                String round = UUID.randomUUID().toString(); writer.println("START 2 " + round);
++                awaitEdt(() -> frame.getBoardPanel().getGameMode() == BoardPanel.GameMode.ONLINE);
++                writer.println("MOVE " + round + " 1 7 7");
++                awaitEdt(() -> frame.getBoardPanel().getMoveHistory().size() == 1);
++                SwingUtilities.invokeAndWait(() -> {
++                    int gameId = frame.getBoardPanel().getGameId();
++                    frame.returnToMenu();
++                    assertFalse(manager.isConnected()); assertFalse(manager.isWaitingForRestart());
++                    assertNull(frame.getBoardPanel().getNetworkRoundId());
++                    assertEquals(Piece.X, frame.getBoardPanel().getMyPiece());
++                    assertEquals(gameId + 1, frame.getBoardPanel().getGameId());
++                    for (Window window : frame.getOwnedWindows()) assertFalse(window.isDisplayable());
++                    frame.startGame();
++                });
++                assertEquals(-1, peer.getInputStream().read());
++            }
++        }
++        SwingUtilities.invokeAndWait(() -> {
++            assertEquals(BoardPanel.GameMode.PV_AI, frame.getBoardPanel().getGameMode());
++            assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty());
++        });
++    }
++
++    @Test void menuClosesPendingNetworkDialogAndCannotRestoreOldModeAfterNewStart() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
++            frame.getBoardPanel().playMove(7, 7);
++            NetworkManager manager = P2LifecycleTest.field(frame, "networkManager");
++            SwingUtilities.invokeLater(() -> {
++                NetworkDialog dialog = P2LifecycleTest.field(frame, "networkDialog");
++                assertNotNull(dialog); assertTrue(dialog.isVisible());
++                manager.hostGame(0);
++                Object oldSession = P2LifecycleTest.field(manager, "current");
++                frame.returnToMenu(); assertFalse(dialog.isDisplayable());
++                assertEquals(Boolean.TRUE, P2LifecycleTest.field(oldSession, "closed"));
++                frame.startGame();
++            });
++            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.ONLINE);
++            assertFalse(frame.isMenuVisible());
++            assertEquals(BoardPanel.GameMode.PV_AI, frame.getModeCombo().getSelectedItem());
++            assertEquals(BoardPanel.GameMode.PV_AI, frame.getBoardPanel().getGameMode());
++            assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty()); assertFalse(manager.isConnected());
++        });
++    }
++
++    @Test void queuedNetworkUiCallbackCannotRunEvenAfterMenuAndNewStart() throws Exception {
++        AtomicInteger callbacks = new AtomicInteger();
++        SwingUtilities.invokeAndWait(() -> {
++            NetworkManager manager = P2LifecycleTest.field(frame, "networkManager");
++            Consumer<Runnable> dispatcher = P2LifecycleTest.field(manager, "dispatcher");
++            dispatcher.accept(callbacks::incrementAndGet);
++            frame.returnToMenu(); frame.startGame();
++        });
++        SwingUtilities.invokeAndWait(() -> assertEquals(0, callbacks.get()));
++    }
++
++    @Test void menuRejectsBoardClicksAlreadyQueuedBeforeTheCardChanged() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            BoardPanel panel = frame.getBoardPanel();
++            SwingUtilities.invokeLater(() -> panel.dispatchEvent(new MouseEvent(panel, MouseEvent.MOUSE_CLICKED,
++                    System.currentTimeMillis(), 0, 298, 298, 1, false)));
++            frame.returnToMenu();
++        });
++        SwingUtilities.invokeAndWait(() -> {
++            assertFalse(frame.getBoardPanel().isEnabled());
++            assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty());
++            assertFalse(frame.getBoardPanel().isAiThinking());
++        });
++    }
++
++    @Test void menuInterruptsAWorkerWhoseBackgroundBodyIsAlreadyRunning() throws Exception {
++        CountDownLatch started = new CountDownLatch(1), interrupted = new CountDownLatch(1), release = new CountDownLatch(1);
++        SwingWorker<Void, Void> running = new SwingWorker<>() {
++            @Override protected Void doInBackground() throws Exception {
++                started.countDown();
++                try { release.await(); } catch (InterruptedException error) { interrupted.countDown(); throw error; }
++                return null;
++            }
++        };
++        try {
++            running.execute(); assertTrue(started.await(3, TimeUnit.SECONDS));
++            SwingUtilities.invokeAndWait(() -> {
++                // Controlled running worker isolates lifecycle cancellation from AI search duration.
++                try {
++                    var slot = BoardPanel.class.getDeclaredField("aiWorker"); slot.setAccessible(true); slot.set(frame.getBoardPanel(), running);
++                    var thinking = BoardPanel.class.getDeclaredField("isAiThinking"); thinking.setAccessible(true); thinking.setBoolean(frame.getBoardPanel(), true);
++                } catch (ReflectiveOperationException e) { throw new AssertionError(e); }
++                frame.returnToMenu(); assertTrue(running.isCancelled()); assertFalse(frame.getBoardPanel().isAiThinking());
++            });
++            assertTrue(interrupted.await(3, TimeUnit.SECONDS));
++        } finally { release.countDown(); running.cancel(true); }
++    }
++
++    @Test void queuedOpponentMoveCannotChangeBoardAfterMenu() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            BoardPanel panel = frame.getBoardPanel(); String round = UUID.randomUUID().toString();
++            panel.setupOnlineGame(null, false, round);
++            Thread receiver = new Thread(() -> panel.applyOpponentMove(round, 1, 4, 4));
++            receiver.start();
++            try { receiver.join(2000); } catch (InterruptedException e) { throw new AssertionError(e); }
++            assertFalse(receiver.isAlive());
++            frame.returnToMenu(); frame.startGame();
++        });
++        SwingUtilities.invokeAndWait(() -> assertTrue(frame.getBoardPanel().getMoveHistory().isEmpty()));
++    }
++
++    @Test void menuClosesResultPopupPreservesEarnedScoreAndRejectsLateResult() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
++            BoardPanel panel = frame.getBoardPanel(); int oldId = panel.getGameId();
++            for (int c = 0; c < 4; c++) { panel.playMove(7, c); panel.playMove(0, c * 2); }
++            frame.getAchievementsButton().doClick();
++            JDialog scores = P2LifecycleTest.field(frame, "achievementsDialog");
++            SwingUtilities.invokeLater(() -> {
++                JDialog result = P2LifecycleTest.field(frame, "resultDialog");
++                assertNotNull(result); assertTrue(result.isVisible());
++                frame.returnToMenu(); assertFalse(result.isDisplayable()); assertFalse(scores.isDisplayable());
++                frame.startGame();
++            });
++            panel.playMove(7, 4);
++            assertEquals(1, frame.getScoreTracker().getHumanWins());
++            BoardPanel.GameStateListener listener = P2LifecycleTest.field(panel, "stateListener");
++            listener.onGameOver(oldId, "stale", Piece.O);
++            assertEquals(0, frame.getScoreTracker().getAiWins()); assertNull(P2LifecycleTest.field(frame, "resultDialog"));
++            assertFalse(panel.isGameOver()); assertFalse(panel.canUndo());
++        });
++    }
++
++    @Test void undoRemainsAvailableAfterWin() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
++            BoardPanel panel = frame.getBoardPanel();
++            for (int c = 0; c < 4; c++) { panel.playMove(7, c); panel.playMove(0, c * 2); }
++            SwingUtilities.invokeLater(() -> {
++                JDialog result = P2LifecycleTest.field(frame, "resultDialog"); result.dispose();
++            });
++            panel.playMove(7, 4); assertTrue(panel.isGameOver()); assertTrue(panel.canUndo());
++            JButton undo = P2LifecycleTest.field(frame, "btnUndo"); assertTrue(undo.isEnabled()); undo.doClick();
++            assertFalse(panel.isGameOver()); assertEquals(8, panel.getMoveHistory().size());
++            assertEquals(1, frame.getScoreTracker().getHumanWins());
++        });
++    }
++
++    private static void awaitEdt(BooleanSupplier condition) throws Exception {
++        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(3);
++        boolean[] met = {false};
++        do {
++            SwingUtilities.invokeAndWait(() -> met[0] = condition.getAsBoolean());
++            if (met[0]) return;
++            Thread.sleep(5);
++        } while (System.nanoTime() < deadline);
++        fail("Timed out waiting for real LAN callback on EDT");
++    }
++}
+diff --git a/test/game/Task4PreferencesTest.java b/test/game/Task4PreferencesTest.java
+new file mode 100644
+index 0000000..a692349
+--- /dev/null
++++ b/test/game/Task4PreferencesTest.java
+@@ -0,0 +1,49 @@
++package game;
++
++import game.view.*;
++import org.junit.jupiter.api.*;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.EnumSource;
++import javax.swing.*;
++import java.util.*;
++import java.util.prefs.Preferences;
++import static org.junit.jupiter.api.Assertions.*;
++
++class Task4PreferencesTest {
++    private String path;
++    private Map<String, String> before;
++    private Lang.Language language;
++    private boolean sound;
++    @BeforeEach void isolate() throws Exception {
++        before = PreferencesIsolation.snapshot(); path = "/test/task4/name-" + UUID.randomUUID();
++        language = Lang.get(); sound = SoundManager.isSoundEnabled();
++    }
++    @AfterEach void cleanup() throws Exception {
++        try { PreferencesIsolation.cleanup(path, before); }
++        finally { SwingUtilities.invokeAndWait(() -> { Lang.set(language); SoundManager.setSoundEnabled(sound); }); }
++    }
++    @ParameterizedTest @EnumSource(Lang.Language.class)
++    void nameAndLanguageRoundTripThroughInjectedNode(Lang.Language selected) throws Exception {
++        Preferences node = Preferences.userRoot().node(path);
++        node.putBoolean("soundEnabled", false);
++        String name = switch (selected) { case VI -> "Đặng Minh"; case EN -> "Alex"; case PT -> "João Gonçalves"; };
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame first = new MainFrame(new AppSettings(node));
++            try {
++                first.getStartScreen().getLanguageCombo().setSelectedItem(selected);
++                first.getStartScreen().getNameField().setText("  " + name + "  ");
++                first.startGame(); assertEquals(name, first.getPlayerName());
++            } finally { first.dispose(); }
++            MainFrame reopened = new MainFrame(new AppSettings(node));
++            try {
++                assertTrue(reopened.isMenuVisible()); assertEquals(selected, Lang.get());
++                assertEquals(name, reopened.getStartScreen().getNameField().getText());
++                assertEquals(name, reopened.getPlayerName());
++                reopened.getStartScreen().getNameField().setText(""); reopened.startGame();
++                assertEquals(Lang.defaultPlayerName(), reopened.getPlayerName());
++                assertNull(node.get("playerName", null));
++                assertEquals("", new AppSettings(node).loadPlayerName());
++            } finally { reopened.dispose(); }
++        });
++    }
++}
+diff --git a/test/game/Task4StartScreenTest.java b/test/game/Task4StartScreenTest.java
+new file mode 100644
+index 0000000..6339027
+--- /dev/null
++++ b/test/game/Task4StartScreenTest.java
+@@ -0,0 +1,134 @@
++package game;
++
++import game.model.Piece;
++import game.view.*;
++import org.junit.jupiter.api.*;
++import org.junit.jupiter.params.ParameterizedTest;
++import org.junit.jupiter.params.provider.*;
++import javax.swing.*;
++import java.awt.*;
++import java.util.stream.Stream;
++import static org.junit.jupiter.api.Assertions.*;
++
++class Task4StartScreenTest {
++    private Lang.Language originalLanguage;
++    private boolean originalSound;
++    @BeforeEach void remember() { originalLanguage = Lang.get(); originalSound = SoundManager.isSoundEnabled(); }
++    @AfterEach void restore() throws Exception {
++        SwingUtilities.invokeAndWait(() -> { Lang.set(originalLanguage); SoundManager.setSoundEnabled(originalSound); });
++    }
++    static MainFrame frame(Lang.Language language) {
++        var prefs = new P2LifecycleTest.MemoryPreferences(); prefs.put("language", language.name());
++        return new MainFrame(new AppSettings(prefs));
++    }
++
++    @Test void startAndMenuSwitchCardsInTheSameFrame() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = frame(Lang.Language.VI);
++            try {
++                Container cards = frame.getStartScreen().getParent();
++                assertInstanceOf(CardLayout.class, cards.getLayout()); assertEquals(2, cards.getComponentCount());
++                assertTrue(frame.isMenuVisible()); assertTrue(frame.getStartScreen().isVisible());
++                assertFalse(frame.getBoardPanel().getParent().isVisible());
++                frame.getStartScreen().getNameField().setText("  Nguyễn Ánh  ");
++                frame.getStartScreen().getStartButton().doClick();
++                assertFalse(frame.isMenuVisible()); assertFalse(frame.getStartScreen().isVisible());
++                assertTrue(frame.getBoardPanel().getParent().isVisible());
++                assertSame(frame, SwingUtilities.getWindowAncestor(frame.getBoardPanel()));
++                assertEquals("Nguyễn Ánh", frame.getPlayerName());
++                int gameId = frame.getBoardPanel().getGameId();
++                frame.getBackToMenuButton().doClick();
++                assertTrue(frame.isMenuVisible()); assertTrue(frame.getStartScreen().isVisible());
++                assertEquals(gameId + 1, frame.getBoardPanel().getGameId());
++                assertSame(cards, frame.getStartScreen().getParent());
++            } finally { frame.dispose(); }
++        });
++    }
++
++    @ParameterizedTest @EnumSource(Lang.Language.class)
++    void emptyNameUsesTranslatedDefaultAndRemainsImplicit(Lang.Language language) throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = frame(language);
++            try {
++                frame.getStartScreen().getNameField().setText("  "); frame.startGame();
++                assertEquals(Lang.defaultPlayerName(), frame.getPlayerName());
++                JLabel label = P2LifecycleTest.field(frame, "playerLabel");
++                assertTrue(label.getText().contains(Lang.defaultPlayerName()));
++                frame.returnToMenu();
++                assertEquals("", frame.getStartScreen().getNameField().getText());
++                for (Lang.Language next : Lang.Language.values()) {
++                    frame.getStartScreen().getLanguageCombo().setSelectedItem(next);
++                    assertEquals(next, Lang.get()); assertEquals(Lang.defaultPlayerName(), frame.getPlayerName());
++                }
++            } finally { frame.dispose(); }
++        });
++    }
++
++    static Stream<Arguments> names() {
++        return Stream.of(
++                Arguments.of(null, ""), Arguments.of("\u2003\u00a0", ""), Arguments.of("  Nguyễn Ánh  ", "Nguyễn Ánh"),
++                Arguments.of("João Gonçalves", "João Gonçalves"), Arguments.of("Conceição", "Conceição"),
++                Arguments.of("A\u0301nh", "Ánh"), Arguments.of("abcdefghijklmnopXYZ", "abcdefghijklmnop"),
++                Arguments.of("🎯".repeat(17), "🎯".repeat(16)), Arguments.of("A\nB", "A B"),
++                Arguments.of("<html>João", "<html>João"));
++    }
++    @ParameterizedTest @MethodSource("names")
++    void normalizeUnicodeWhitespaceAndLongNames(String input, String expected) {
++        assertEquals(expected, AppSettings.normalizePlayerName(input));
++        assertTrue(expected.codePointCount(0, expected.length()) <= 16);
++    }
++
++    @Test void fieldLimitsUnicodeWithoutSplittingEmojiAndDisplaysNamesAsPlainText() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = frame(Lang.Language.PT);
++            try {
++                JTextField input = frame.getStartScreen().getNameField();
++                input.setText("🎯".repeat(17)); assertEquals("🎯".repeat(16), input.getText());
++                input.setText("<html>João"); frame.startGame();
++                JLabel label = P2LifecycleTest.field(frame, "playerLabel");
++                assertTrue(label.getText().contains("<html>João"));
++                assertNull(label.getClientProperty("html"));
++            } finally { frame.dispose(); }
++        });
++    }
++
++    @Test void languageChoiceOnMenuPreservesTypedNameAndSynchronizesBothSelectors() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            var prefs = new P2LifecycleTest.MemoryPreferences(); MainFrame frame = new MainFrame(new AppSettings(prefs));
++            try {
++                frame.getStartScreen().getNameField().setText("Conceição");
++                for (Lang.Language next : Lang.Language.values()) {
++                    frame.getStartScreen().getLanguageCombo().setSelectedItem(next);
++                    assertEquals(next.name(), prefs.get("language", ""));
++                    assertEquals(next, frame.getLangCombo().getSelectedItem());
++                    assertEquals(Lang.startGame(), frame.getStartScreen().getStartButton().getText());
++                    assertEquals("Conceição", frame.getStartScreen().getNameField().getText());
++                    frame.startGame(); assertEquals("Conceição", frame.getPlayerName()); frame.returnToMenu();
++                }
++            } finally { frame.dispose(); }
++        });
++    }
++
++    @Test void achievementIconShowsExistingSessionTotalsAndMenuKeepsThem() throws Exception {
++        SwingUtilities.invokeAndWait(() -> {
++            MainFrame frame = frame(Lang.Language.PT);
++            try {
++                frame.getStartScreen().getNameField().setText("João"); frame.startGame();
++                frame.getScoreTracker().recordResult(-1, Piece.X);
++                frame.getScoreTracker().recordResult(-2, Piece.O);
++                frame.getScoreTracker().recordResult(-3, Piece.NONE);
++                assertInstanceOf(AchievementIcon.class, frame.getAchievementsButton().getIcon());
++                assertEquals(Lang.achievementsTooltip(), frame.getAchievementsButton().getToolTipText());
++                frame.getAchievementsButton().doClick();
++                JDialog dialog = P2LifecycleTest.field(frame, "achievementsDialog");
++                JTextArea text = P2LifecycleTest.field(frame, "achievementsText");
++                assertTrue(dialog.isVisible()); assertEquals(Lang.scoreSummary("João", 1, 1, 1), text.getText());
++                Lang.set(Lang.Language.EN); assertEquals(Lang.scoreSummary("João", 1, 1, 1), text.getText());
++                frame.returnToMenu(); assertFalse(dialog.isDisplayable());
++                frame.getStartScreen().getNameField().setText("Alex"); frame.startGame();
++                assertEquals(1, frame.getScoreTracker().getHumanWins()); assertEquals(1, frame.getScoreTracker().getAiWins());
++                assertEquals(1, frame.getScoreTracker().getDraws());
++            } finally { frame.dispose(); }
++        });
++    }
++}
+diff --git a/test/game/UILangSoundTest.java b/test/game/UILangSoundTest.java
+index 1051e26..4b4a3c1 100644
+--- a/test/game/UILangSoundTest.java
++++ b/test/game/UILangSoundTest.java
+@@ -144,6 +144,7 @@ public class UILangSoundTest {
+         MainFrame frame = new MainFrame(new AppSettings(
+                 Preferences.userRoot().node(TEST_PREF_NODE + "/c2")));
+         try {
++            frame.startGame();
+             // modeCombo
+             JComboBox<BoardPanel.GameMode> modeCombo = frame.getModeCombo();
+             assertRendererContrast(modeCombo, "modeCombo");

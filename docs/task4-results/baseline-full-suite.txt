@@ -1,0 +1,90 @@
+======================================================================
+              BẮT ĐẦU CHẠY BỘ KIỂM THỬ TOÀN DIỆN 57 CA
+======================================================================
+
+[PASS] T01 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | . X X X X X* .
+[PASS] T02 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | O X X X X* X .
+[PASS] T03 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | . X X* X X X O
+[PASS] T04 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | O X* X X X X O
+[PASS] T05 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | # X X X X X* .
+[PASS] T06 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | # X X X X X* O
+[PASS] T07 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | O X X X X X* #
+[PASS] T08 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | # X X X X X* # chéo 5 ô
+[PASS] T09 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | O . X X X X X* . O
+[PASS] T10 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | O X X X X X* . O
+[PASS] T11 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 6 mở 2 đầu
+[PASS] T11 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng 6 mở 2 đầu
+[PASS] T12 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 6, 1 đầu O
+[PASS] T12 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng 6, 1 đầu O
+[PASS] T13 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 6 chặn 2 đầu
+[PASS] T13 | RULE B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 6 chặn 2 đầu
+[PASS] T14 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 6 sát mép #
+[PASS] T14 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng 6 sát mép #
+[PASS] T15 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 6 mép # và O
+[PASS] T15 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng 6 mép # và O
+[PASS] T16 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng chéo 6 hai đầu mép #
+[PASS] T16 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng chéo 6 hai đầu mép #
+[PASS] T17 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 7 mở 2 đầu
+[PASS] T17 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng 7 mở 2 đầu
+[PASS] T18 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 7 chặn 2 đầu
+[PASS] T18 | RULE B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 7 chặn 2 đầu
+[PASS] T19 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 9 mở 2 đầu
+[PASS] T19 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng 9 mở 2 đầu
+[PASS] T20 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hàng 15 ô chạm cả 2 mép
+[PASS] T20 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hàng 15 ô chạm cả 2 mép
+[PASS] T21 | RULE A | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Nối 2+2 thành 5
+[PASS] T21 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Nối 2+2 thành 5
+[PASS] T22 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Nối 3+3 thành 7
+[PASS] T22 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Nối 3+3 thành 7
+[PASS] T23 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Nối 3+2 thành 6
+[PASS] T23 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Nối 3+2 thành 6
+[PASS] T24 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Nối thành 5 nhưng bị O chặn 2 đầu
+[PASS] T24 | RULE B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Nối thành 5 nhưng bị O chặn 2 đầu
+[PASS] T25 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Chỉ có 4 quân
+[PASS] T26 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Có ô trống ở giữa
+[PASS] T27 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Bị O ngắt ở giữa
+[PASS] T28 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Còn ô trống ở giữa
+[PASS] T29 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Bị O ngắt
+[PASS] T30 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Đánh chỗ khác, không tạo hàng
+[PASS] T31 | RULE A | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Dọc 5 mở cứu ngang 5 bị chặn
+[PASS] T31 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Dọc 5 mở cứu ngang 5 bị chặn
+[PASS] T32 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Cả hai hướng đều bị chặn 2 đầu
+[PASS] T32 | RULE B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Cả hai hướng đều bị chặn 2 đầu
+[PASS] T33 | RULE A | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Cả ngang và dọc 5 hợp lệ
+[PASS] T33 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Cả ngang và dọc 5 hợp lệ
+[PASS] T34 | RULE A | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Thắng nhờ dọc 5 ở Rule A
+[PASS] T34 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Thắng cả hai hướng ở Rule B
+[PASS] T35 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Hai hàng 6 đều loại ở Rule A
+[PASS] T35 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Hai hàng 6 đều thắng ở Rule B
+[PASS] T36 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Ngang 6 loại, dọc 5 chặn ở Rule A
+[PASS] T36 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Thắng nhờ ngang 6 ở Rule B
+[PASS] T37 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Cả hai đều bị chặn 2 đầu
+[PASS] T37 | RULE B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Cả hai đều bị chặn 2 đầu
+[PASS] T38 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Tất cả các hướng chỉ có 4 quân
+[PASS] T38 | RULE B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Tất cả các hướng chỉ có 4 quân
+[PASS] T39 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Dọc 5 ở giữa bàn
+[PASS] T40 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Chéo chính 5 ở giữa bàn
+[PASS] T41 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Chéo phụ 5 ở giữa bàn
+[PASS] T42 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Cột 0-4 biên trái
+[PASS] T43 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Cột 10-14 biên phải, 1 đầu O
+[PASS] T44 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Góc (0,0) chéo 5 ô, 1 đầu O
+[PASS] T45 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Góc (14,14) chéo 5 ô, đầu kia mở
+[PASS] T46 | RULE A | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | Chéo 6 ô loại ở Rule A
+[PASS] T46 | RULE B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Chéo 6 ô thắng ở Rule B
+[PASS] T47 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | O thắng hợp lệ
+[PASS] T48 | RULE A/B | Kỳ vọng: KHÔNG THẮNG | Thực tế: KHÔNG THẮNG | O bị X chặn kín 2 đầu
+[PASS] T49 | RULE A/B | Kỳ vọng: HÒA         | Thực tế: HÒA         | 225 ô kín không có ai thắng
+[PASS] T50 | RULE A/B | Kỳ vọng: THẮNG       | Thực tế: THẮNG       | Nước thứ 225 thắng ưu tiên hơn hòa
+[PASS] T51 | RULE A/B | Kỳ vọng: TỪ CHỐI     | Thực tế: TỪ CHỐI     | Đánh vào ô đã có quân
+[PASS] T52 | RULE A/B | Kỳ vọng: TỪ CHỐI     | Thực tế: TỪ CHỐI     | Đánh ngoài bàn cờ
+[PASS] T53 | RULE A/B | Kỳ vọng: TỪ CHỐI     | Thực tế: TỪ CHỐI     | Nước đi thật sau khi thắng bị từ chối
+[PASS] T54 | RULE A/B | Kỳ vọng: TỪ CHỐI     | Thực tế: TỪ CHỐI     | Người chơi online không đi hai nước liên tiếp
+[PENDING] T55 | Đầu hàng: chưa có chức năng sản phẩm
+[PENDING] T56 | Hết giờ: chưa có đồng hồ sản phẩm
+[PENDING] T57 | Thứ tự kết thúc tích hợp: chưa có kịch bản console tương ứng
+
+======================================================================
+KẾT QUẢ ASSERTIONS: 77 / 77 ĐẠT (PASS)!
+ĐÃ CHẠY: 54 tình huống, 77 assertions; PENDING: 3.
+>>> TẤT CẢ ASSERTIONS ĐÃ CHẠY ĐỀU PASS; PENDING KHÔNG TÍNH VÀO PASS. <<<
+======================================================================

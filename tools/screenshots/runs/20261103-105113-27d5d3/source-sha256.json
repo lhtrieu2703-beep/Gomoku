@@ -1,0 +1,166 @@
+﻿[
+    {
+        "Path":  "src\\game\\AIBenchmarkTest.java",
+        "SHA256":  "A2E4BB783510792DA265BAA10BA7AC49FA58C058D6426062A1DFA24FF50AEFA2"
+    },
+    {
+        "Path":  "src\\game\\ConsoleTest.java",
+        "SHA256":  "4F6C1BD4D3D3C1ECFFBD058DE482EF3449AD044A2D7E44A33253D7B9AA008427"
+    },
+    {
+        "Path":  "src\\game\\FullGomokuTestSuite.java",
+        "SHA256":  "C67C13526705C10F02874C08DE24ED37705A02E94D80AF2BB448DD2FE82BE091"
+    },
+    {
+        "Path":  "src\\game\\Main.java",
+        "SHA256":  "31F92FEA4B30679185FAB4878A9CEADAF438928EE4CACA2BF3F4C71C36BAB589"
+    },
+    {
+        "Path":  "src\\game\\RuleAndDrawTest.java",
+        "SHA256":  "E5A40929303B4CCDD7591034068C31547919D192A94B1C86AFCF49C9E67B444A"
+    },
+    {
+        "Path":  "src\\game\\ai\\HeuristicEvaluator.java",
+        "SHA256":  "8A393CA1B30FFD8B74C402F732C30E691C2006E0E2438FA85BFFF72C49935D65"
+    },
+    {
+        "Path":  "src\\game\\ai\\MinimaxAI.java",
+        "SHA256":  "008F1EA14F4002780E8C27D4F250B006CC42ED47969B207883E75B4179507415"
+    },
+    {
+        "Path":  "src\\game\\ai\\Move.java",
+        "SHA256":  "560F657D7B0DD45A92F2881876E83AFF97FBD1564B26BFD0371C9FFFE3365873"
+    },
+    {
+        "Path":  "src\\game\\model\\Board.java",
+        "SHA256":  "B370242700C861651626010F149A5732ADBC6EA1F1008CFD7C5A6CAF3BDD9DA4"
+    },
+    {
+        "Path":  "src\\game\\model\\Piece.java",
+        "SHA256":  "5F86C8F4FCC3532FD26F5CAE9E1D469A7088A24E2258CC7CB018E5844893E634"
+    },
+    {
+        "Path":  "src\\game\\model\\ScoreTracker.java",
+        "SHA256":  "8BD0FAC598DEE0819178D6FBECA8A28A134166C88F6BB9B3D145C2BD82910641"
+    },
+    {
+        "Path":  "src\\game\\network\\NetworkManager.java",
+        "SHA256":  "A9E9A7BB642BF72817781079A8C8DA76DDBC556C19F516F4F0DCF153556D81C5"
+    },
+    {
+        "Path":  "src\\game\\view\\AiMoveDelay.java",
+        "SHA256":  "689DB49D563B4A5A5C4F041A2D3EAF68DDE0C939832278D552DD93DB0D500E2A"
+    },
+    {
+        "Path":  "src\\game\\view\\AppSettings.java",
+        "SHA256":  "0EEF91B2389C0ADA4C2B4FB314DD6E99F7D0CD15913F45CC547778A58EA85E3F"
+    },
+    {
+        "Path":  "src\\game\\view\\AvatarIcon.java",
+        "SHA256":  "00CBFA13505ED8AD415395E48BAA56889EC29B91BFD0F0BF928817A51DD799A6"
+    },
+    {
+        "Path":  "src\\game\\view\\BackgroundPanel.java",
+        "SHA256":  "D4802205D6EC7DE78A8F35A05D5E26931FF86F3716690182CADD815C10ADAE6D"
+    },
+    {
+        "Path":  "src\\game\\view\\BoardPanel.java",
+        "SHA256":  "9C3305CD434921F342D48C0D41881DCB96AF35E7EFE951B36593EC292780AC58"
+    },
+    {
+        "Path":  "src\\game\\view\\Lang.java",
+        "SHA256":  "B01D8A428450AB931880030F36DF294878A0156F1FC94D185581D63E8792A971"
+    },
+    {
+        "Path":  "src\\game\\view\\LocalizedDialog.java",
+        "SHA256":  "DBDA0E7BCDE980FE5CF3AF8D18B3E7D4C6B1440BD5CEC62AFE903582575C13C7"
+    },
+    {
+        "Path":  "src\\game\\view\\Logo.java",
+        "SHA256":  "BEE55CE3E6599E67A3A38209920D15649CF0B4BD1C87562A6BCBDED93E14977A"
+    },
+    {
+        "Path":  "src\\game\\view\\MainFrame.java",
+        "SHA256":  "F8E196A96593CD516C3277CC8E6D57F06CDDA0E85E255D89D253ED987AB83EBD"
+    },
+    {
+        "Path":  "src\\game\\view\\MainMenu.java",
+        "SHA256":  "06F619AA77AD58F9B45D3DA6E56B6C5EF5B394B8520584A4CEBC91CB1C9159EC"
+    },
+    {
+        "Path":  "src\\game\\view\\NetworkDialog.java",
+        "SHA256":  "A5692368402B5DEC27211D425083C056C5246B2529E39B8B12B98430C8E5C51C"
+    },
+    {
+        "Path":  "src\\game\\view\\PieceBadgeIcon.java",
+        "SHA256":  "015516D537ECBA56C3A72523F1EBFC2DF8C8F7DA2551EA62D4B1EE9D08295FCC"
+    },
+    {
+        "Path":  "src\\game\\view\\PlayerCard.java",
+        "SHA256":  "9ED7C27CCFF41B3C3FE23BE64C557C93769AEDE769B1AD456C2CE777D5A87864"
+    },
+    {
+        "Path":  "src\\game\\view\\PlayerProfile.java",
+        "SHA256":  "E4866419A86186AF44D108F4C74E3EA3E33437CF0DE5B636554763D33F1417DF"
+    },
+    {
+        "Path":  "src\\game\\view\\ProfileDialog.java",
+        "SHA256":  "F6D9DBF200D7BF703A42701EDABFEBF220F8337F61C159709E49FAE39D58BEA0"
+    },
+    {
+        "Path":  "src\\game\\view\\ProfileEditor.java",
+        "SHA256":  "278840CFE0CCE58CDF0EF0B275164C3DAAA3E1929F1D5741D2DD218D1CFC73CA"
+    },
+    {
+        "Path":  "src\\game\\view\\ResourceImages.java",
+        "SHA256":  "74199FF8CB34440B17869B97103C8B240953A41791FDECC2FDA5EEA8374581C3"
+    },
+    {
+        "Path":  "src\\game\\view\\RulesDialog.java",
+        "SHA256":  "B117106DA2C325A1D2D4905A4FBF6A1FD601E8656CD598CFF568C98084970E19"
+    },
+    {
+        "Path":  "src\\game\\view\\SettingsDialog.java",
+        "SHA256":  "54F03B91666BD5C7608B77D2C42DB7788D0EFB2739291D19EE3EFBD67D5C89D6"
+    },
+    {
+        "Path":  "src\\game\\view\\SetupDialog.java",
+        "SHA256":  "41CF1CE02D8A770B17D982FFD59301D07F64B74A92BAA26721AA98CB4A2CAE7E"
+    },
+    {
+        "Path":  "src\\game\\view\\SoundManager.java",
+        "SHA256":  "FB0911BACB6C9A00FE2C2EFBD0B44AF8DCE17A11F0FE13BA420415A6C2224481"
+    },
+    {
+        "Path":  "src\\game\\view\\SpeakerIcon.java",
+        "SHA256":  "ECDEB0AF009168FBE3F3B1EDD34A33CC353A63FEE13A9AB99AC1E2992D1E850F"
+    },
+    {
+        "Path":  "src\\game\\view\\StartScreen.java",
+        "SHA256":  "FDBE93B756CB682D751A4568DCD83F1AF2A334C8A62959AC92400C9115AE4382"
+    },
+    {
+        "Path":  "src\\game\\view\\StonePainter.java",
+        "SHA256":  "838D3F7D4086BDDD7A1C905F8E70BD4A665CE8D36E4BECA8F5A48CE53E8F60B0"
+    },
+    {
+        "Path":  "src\\game\\view\\Theme.java",
+        "SHA256":  "BE7E816D346F3ADB9B05FD05787104CA7DE4D01646C1F2DDF4C155C0C538EF77"
+    },
+    {
+        "Path":  "src\\game\\view\\ThemedButton.java",
+        "SHA256":  "4A9DD44170D60C7AAE95F51C585FA4571F010FAA5FF3076350C8C58467192868"
+    },
+    {
+        "Path":  "src\\game\\view\\TwoPlayerSetupValidation.java",
+        "SHA256":  "DF7837738895D1CACC7833D885B445DB4027671357206E90F2399B741FA12EAE"
+    },
+    {
+        "Path":  "src\\game\\view\\UiIcon.java",
+        "SHA256":  "1A0B06EAE23E984706F357D7B63DC7D73CBA28EC0255AA43FF418FF17C2910FD"
+    },
+    {
+        "Path":  "resources\\README.md",
+        "SHA256":  "6812DC830133B26DEE987AB088D6A573771B4E47FEB28332AF2F8017621AA1DF"
+    }
+]

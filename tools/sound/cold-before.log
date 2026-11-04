@@ -1,0 +1,3 @@
+COLD_START delayMs=1250 elapsedMs=1096.310 stopDelivered=false closedBeforeStop=true
+Exception in thread "main" java.lang.AssertionError: Clip closed before delayed STOP
+	at game.view.ColdStartRegressionProbe.main(ColdStartRegressionProbe.java:40)

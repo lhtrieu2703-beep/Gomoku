@@ -15,6 +15,47 @@ import java.util.List;
  *  - toggle() và langBtnLabel()/langBtnTooltip() đã bị XÓA (không còn caller sau khi btnLang → langCombo).
  */
 public class Lang {
+    public static final String BRAND = "GOMOKU";
+    private static String text(String vi,String en,String pt) { return switch(current) { case VI -> vi; case EN -> en; case PT -> pt; }; }
+    public static String titleHint() { return text("Nhấn để bắt đầu","Click or press any key to start","Clique ou pressione uma tecla para começar"); }
+    public static String profile() { return text("Hồ sơ","Profile","Perfil"); }
+    public static String namePlaceholder() { return text("Nhập tên của bạn","Enter your name","Digite seu nome"); }
+    public static String done() { return text("Xong","Done","Concluir"); }
+    public static String cancel() { return text("Hủy","Cancel","Cancelar"); }
+    public static String settings() { return text("Cài đặt","Settings","Configurações"); }
+    public static String duplicatePlayerNames() { return text("Tên hai người chơi phải khác nhau.","Player names must be different.","Os nomes dos jogadores devem ser diferentes."); }
+    public static String resetScore() { return text("Đặt lại tỉ số","Reset score","Zerar placar"); }
+    public static String confirmResetScore() { return text("Đặt lại tỉ số về 0?","Reset the score to zero?","Zerar o placar?"); }
+    public static String rulesTitle() { return text("Luật chơi","Rules","Regras"); }
+    public static String close() { return text("Đóng","Close","Fechar"); }
+    public static String clearName() { return text("Xóa tên","Clear name","Limpar nome"); }
+    public static String avatarLabel(int index) { return text("Ảnh đại diện ","Avatar ","Imagem de perfil ")+index; }
+    public static String characterCount(int count) { return count+"/"+AppSettings.MAX_PLAYER_NAME_LENGTH; }
+    public static String difficultyName(game.ai.MinimaxAI.Difficulty difficulty) { return switch(difficulty) { case EASY -> easy(); case MEDIUM -> medium(); case HARD -> hard(); }; }
+    public static String computerName(game.ai.MinimaxAI.Difficulty difficulty) { return text("Máy","Computer","Computador")+" ("+difficultyName(difficulty)+")"; }
+    public static String opponentName() { return text("Đối thủ","Opponent","Adversário"); }
+    public static String pieceName(game.model.Piece piece) { return piece==game.model.Piece.X?text("Quân Đen","Black","Preto"):text("Quân Trắng","White","Branco"); }
+    public static String ruleExample(boolean win) { return win?text("Thắng","Win","Vitória"):text("Không thắng (bị chặn hai đầu)","No win (both ends blocked)","Sem vitória (as duas extremidades bloqueadas)"); }
+    public static String rules(String key) {
+        return switch(key) {
+            case "rules.l1" -> rulesLine(1); case "rules.l2" -> rulesLine(2); case "rules.l3" -> rulesLine(3);
+            case "rules.l4" -> rulesLine(4); case "rules.l5" -> rulesLine(5); case "rules.l6" -> rulesLine(6);
+            case "rules.winExample" -> ruleExample(true); case "rules.noWinExample" -> ruleExample(false);
+            default -> throw new IllegalArgumentException("Unknown rule key: "+key);
+        };
+    }
+    public static String rulesLine(int index) {
+        String[][] lines={
+            {"Bàn cờ 15×15. Hai người luân phiên đặt quân vào ô trống; Quân Đen đi trước.","15×15 board. Players take turns placing a stone on an empty cell; Black goes first.","Tabuleiro 15×15. Os jogadores alternam colocando uma peça numa casa vazia; as Pretas começam."},
+            {"Thắng khi có từ 5 quân cùng màu liên tiếp theo hàng ngang, hàng dọc hoặc đường chéo. Dãy 6 quân trở lên cũng thắng.","You win with 5 or more stones of your colour in a row (horizontal, vertical or diagonal). Rows of 6 or more also win.","Vence quem formar 5 ou mais peças da sua cor em linha (horizontal, vertical ou diagonal). Linhas de 6 ou mais também vencem."},
+            {"Nếu dãy bị quân đối thủ chặn sát cả hai đầu thì KHÔNG tính thắng. Chặn một đầu, hoặc một đầu sát mép bàn, vẫn thắng.","If the opponent blocks BOTH ends of the row, it does NOT count as a win. One blocked end, or one end at the board edge, still wins.","Se o adversário bloquear AMBAS as extremidades da linha, NÃO conta como vitória. Com uma extremidade bloqueada, ou uma extremidade na borda do tabuleiro, ainda vence."},
+            {"Bàn đầy mà chưa ai thắng thì hòa.","If the board is full and nobody has won, the game is a draw.","Se o tabuleiro ficar cheio sem vencedor, o jogo termina empatado."},
+            {"Không có luật cấm tay (3-3, 4-4) và không giới hạn thời gian mỗi nước.","There are no forbidden moves (3-3, 4-4) and no time limit per move.","Não há jogadas proibidas (3-3, 4-4) nem limite de tempo por jogada."},
+            {"Đi lại: chế độ 2 người rút 1 nước; khi chơi với máy sẽ rút cả nước của máy. Chế độ LAN không có đi lại.","Undo: in 2-player mode it takes back 1 move; against the computer it also takes back the computer's move. Undo is not available in LAN mode.","Desfazer: no modo de 2 jogadores desfaz 1 jogada; contra o computador desfaz também a jogada do computador. Não está disponível no modo LAN."}
+        };
+        if(index<1||index>6) throw new IllegalArgumentException("rule index");
+        return lines[index-1][current.ordinal()];
+    }
     public enum Language { VI, EN, PT }
 
     private static Language current = Language.VI;
@@ -41,6 +82,91 @@ public class Lang {
     public static Language get() { return current; }
 
     public static boolean isVI() { return current == Language.VI; }
+
+    public static String startTitle() {
+        return switch (current) {
+            case VI -> "Cờ Gomoku";
+            case EN -> "Gomoku Game";
+            case PT -> "Jogo Gomoku";
+        };
+    }
+
+    public static String startSubtitle() {
+        return switch (current) {
+            case VI -> "Nhập tên để bắt đầu ván cờ.";
+            case EN -> "Enter your name to start playing.";
+            case PT -> "Digite seu nome para começar a jogar.";
+        };
+    }
+
+    public static String playerNameLabel() {
+        return switch (current) {
+            case VI -> "Tên người chơi";
+            case EN -> "Player name";
+            case PT -> "Nome do jogador";
+        };
+    }
+
+    public static String playerNameHint() {
+        return switch (current) {
+            case VI -> "Tối đa 16 ký tự";
+            case EN -> "Up to 16 characters";
+            case PT -> "Até 16 caracteres";
+        };
+    }
+
+    public static String defaultPlayerName() {
+        return switch (current) {
+            case VI -> "Người chơi 1";
+            case EN -> "Player 1";
+            case PT -> "Jogador 1";
+        };
+    }
+
+    public static String defaultPlayerTwo() {
+        return switch (current) {
+            case VI -> "Người chơi 2";
+            case EN -> "Player 2";
+            case PT -> "Jogador 2";
+        };
+    }
+
+    public static String startGame() {
+        return switch (current) {
+            case VI -> "Bắt đầu";
+            case EN -> "Start";
+            case PT -> "Começar";
+        };
+    }
+
+    public static String languageLabel() {
+        return switch (current) {
+            case VI -> "Ngôn ngữ";
+            case EN -> "Language";
+            case PT -> "Idioma";
+        };
+    }
+
+    public static String backToMenu() {
+        return switch (current) {
+            case VI -> "Về menu";
+            case EN -> "Back to menu";
+            case PT -> "Voltar ao menu";
+        };
+    }
+
+    public static String achievementsTooltip() {
+        return switch (current) {
+            case VI -> "Thành tích";
+            case EN -> "Score summary";
+            case PT -> "Resultados";
+        };
+    }
+
+    public static String scoreSummary(String name, int winCount, int lossCount, int drawCount) {
+        return playerNameLabel() + ": " + name + "\n\n" + wins() + ": " + winCount
+                + "\n" + losses() + ": " + lossCount + "\n" + draws() + ": " + drawCount;
+    }
 
     // =========================================================================
     // Tên ngôn ngữ hiển thị trong dropdown (hiện bằng chính ngôn ngữ đó)
@@ -126,25 +252,25 @@ public class Lang {
     // =========================================================================
     public static String pvp() {
         return switch (current) {
-            case VI -> "Người vs Người";
-            case EN -> "Human vs Human";
-            case PT -> "Humano vs Humano";
+            case VI -> "2 người cùng máy";
+            case EN -> "2 Players, Same Computer";
+            case PT -> "2 jogadores no mesmo computador";
         };
     }
 
     public static String pvAI() {
         return switch (current) {
-            case VI -> "Người vs Máy";
-            case EN -> "Human vs AI";
-            case PT -> "Humano vs IA";
+            case VI -> "Chơi với máy";
+            case EN -> "Play vs Computer";
+            case PT -> "Jogar contra o computador";
         };
     }
 
     public static String online() {
         return switch (current) {
-            case VI -> "Chơi Online (LAN)";
-            case EN -> "Online (LAN)";
-            case PT -> "Online (LAN)";
+            case VI -> "Chơi LAN";
+            case EN -> "Play LAN";
+            case PT -> "Jogar em rede (LAN)";
         };
     }
 
@@ -234,22 +360,6 @@ public class Lang {
             case VI -> "Lượt: Máy (Quân Trắng)";
             case EN -> "Turn: AI (White)";
             case PT -> "Vez: IA (Branco)";
-        };
-    }
-
-    public static String p1Turn() {
-        return switch (current) {
-            case VI -> "Lượt: Người chơi 1 (Quân Đen)";
-            case EN -> "Turn: Player 1 (Black)";
-            case PT -> "Vez: Jogador 1 (Preto)";
-        };
-    }
-
-    public static String p2Turn() {
-        return switch (current) {
-            case VI -> "Lượt: Người chơi 2 (Quân Trắng)";
-            case EN -> "Turn: Player 2 (White)";
-            case PT -> "Vez: Jogador 2 (Branco)";
         };
     }
 

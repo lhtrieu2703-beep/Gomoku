@@ -1,0 +1,119 @@
+TIME_ASIA_SAIGON: 2026-11-03T12:59:39.443820+07:00
+PHASE: product fixed; two fixtures wired; all old names/bodies/assertions unchanged.
+COMMAND: "C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot\bin\java.EXE" -version
+STDOUT:
+
+STDERR:
+openjdk version "25.0.3" 2026-04-21 LTS
+OpenJDK Runtime Environment Microsoft-13877124 (build 25.0.3+9-LTS)
+OpenJDK 64-Bit Server VM Microsoft-13877124 (build 25.0.3+9-LTS, mixed mode, sharing)
+
+EXIT_CODE: 0
+COMMAND: "C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot\bin\javac.EXE" -encoding UTF-8 -d tools\score-undo\old-classes src\game\AIBenchmarkTest.java src\game\ConsoleTest.java src\game\FullGomokuTestSuite.java src\game\Main.java src\game\RuleAndDrawTest.java src\game\ai\HeuristicEvaluator.java src\game\ai\MinimaxAI.java src\game\ai\Move.java src\game\model\Board.java src\game\model\Piece.java src\game\model\ScoreTracker.java src\game\network\NetworkManager.java src\game\view\AiMoveDelay.java src\game\view\AppSettings.java src\game\view\AvatarIcon.java src\game\view\BackgroundPanel.java src\game\view\BoardPanel.java src\game\view\Lang.java src\game\view\LocalizedDialog.java src\game\view\Logo.java src\game\view\MainFrame.java src\game\view\MainMenu.java src\game\view\NetworkDialog.java src\game\view\PieceBadgeIcon.java src\game\view\PlayerCard.java src\game\view\PlayerProfile.java src\game\view\ProfileDialog.java src\game\view\ProfileEditor.java src\game\view\ResourceImages.java src\game\view\RulesDialog.java src\game\view\SettingsDialog.java src\game\view\SetupDialog.java src\game\view\SoundManager.java src\game\view\SpeakerIcon.java src\game\view\StartScreen.java src\game\view\StonePainter.java src\game\view\Theme.java src\game\view\ThemedButton.java src\game\view\TwoPlayerSetupValidation.java src\game\view\UiIcon.java
+STDOUT:
+
+STDERR:
+
+EXIT_CODE: 0
+COMMAND: "C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot\bin\javac.EXE" -encoding UTF-8 -cp lib/*;tools\score-undo\old-classes -d tools\score-undo\old-test-classes test\game\AiMoveDelayTest.java test\game\BoardDisplayProbe.java test\game\BoardVisibilityTest.java test\game\BoardWinTest.java test\game\F1ProtocolTest.java test\game\F2MoveOrderTest.java test\game\F3HeuristicTest.java test\game\F4LayoutTest.java test\game\I18nSourceScanTest.java test\game\LangPurityTest.java test\game\MemoryPreferences.java test\game\NetworkStabilityTest.java test\game\P1RegressionTest.java test\game\P2LifecycleTest.java test\game\PlayerPieceBadgeTest.java test\game\PreferencesIsolation.java test\game\SoundResourceTest.java test\game\Task4bFlowTest.java test\game\Task4bFoundationTest.java test\game\Task4bGameplayTest.java test\game\Task4bPresentationTest.java test\game\Task4LayoutTest.java test\game\Task4LifecycleTest.java test\game\Task4PreferencesTest.java test\game\Task4StartScreenTest.java test\game\TwoPlayerSetupDialogTest.java test\game\TwoPlayerSetupValidationTest.java test\game\UILangSoundTest.java test\game\UndoParityTest.java test\game\UndoScoreTest.java test\game\ai\AITacticsTest.java test\game\ai\HeuristicOrderingTest.java test\game\ai\MinimaxEasyContractTest.java test\game\model\BoardModelContractTest.java test\game\model\ScoreTrackerContractTest.java test\game\network\NetworkMessageTest.java
+STDOUT:
+
+STDERR:
+
+EXIT_CODE: 0
+COMMAND: "C:\Program Files\Microsoft\jdk-25.0.3.9-hotspot\bin\java.EXE" -Djava.awt.headless=true -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -jar lib/junit-platform-console-standalone-1.10.2.jar execute --class-path tools\score-undo\old-test-classes;tools\score-undo\old-classes --select-class game.UndoScoreTest --select-class game.UndoParityTest --select-method game.Task4bGameplayTest#resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain --reports-dir tools\score-undo\old-xml --details tree --disable-banner --disable-ansi-colors
+STDOUT:
+╷
+├─ JUnit Jupiter ✔
+│  ├─ UndoScoreTest ✔
+│  │  ├─ U01: AI thắng, ghi nhận thành tích 0-1 (Thắng: 0, Thua: 1, Hòa: 0) ✔
+│  │  ├─ U02: Undo xong, thành tích vẫn 0-1, isGameOver = false ✘ Thành tích AI thắng VẪN PHẢI LÀ 1 (không bị xóa) ==> expected: <1> but was: <0>
+│  │  ├─ 6e: PvP undo 1 nước, PvAI undo tối đa 2 nước, Online cấm Undo (canUndo = false) ✔
+│  │  ├─ U04 / 6a: Undo khi chưa có nước đi không lỗi, không đổi gì, canUndo = false ✔
+│  │  ├─ U08: Race condition AI - token cũ bị vô hiệu hóa khi resetGame hoặc undoMove ✔
+│  │  ├─ 8 & 9 (End-to-End): AI thắng (0-1) -> Undo -> người chơi thắng cùng ván -> điểm ... ✘ Điểm thua vẫn là 1 ==> expected: <1> but was: <0>
+│  │  ├─ U06 / 6d: Reset/ván mới tạo gameId mới, kết quả ván mới được ghi, dữ liệu cũ giữ... ✔
+│  │  ├─ U05 / 6b: Undo nhiều lần liên tiếp đến hết lịch sử, bàn cờ và lượt khôi phục đún... ✔
+│  │  ├─ 7: Online - Gói MOVE đến khi isGameOver = true phải bị bỏ qua ✔
+│  │  ├─ U07: Kết thúc bằng hòa rồi Undo: thành tích hòa không bị xóa, không ghi trùng ✔
+│  │  └─ U03: Chơi tiếp rồi kết thúc lần nữa trong cùng ván: không ghi trùng điểm ✔
+│  ├─ UndoParityTest ✔
+│  │  ├─ P2: X(7,7), undoMove(): size 0, lượt X ✔
+│  │  ├─ P5: Kiểm tra số quân trên bàn luân phiên đúng sau Undo ở P1 ✔
+│  │  ├─ P1: PV_AI, X thắng ở nước thứ 9, Undo chỉ rút đúng 1 nước của X ✘ Điểm thắng của người chơi không đổi ==> expected: <1> but was: <0>
+│  │  ├─ P3: X(7,7) O(0,0) (AI vừa đi), undoMove(): size 0, lượt X ✔
+│  │  ├─ P1b: Tiếp P1, người chơi đi lại (7,11): ván kết thúc lần 2, điểm vẫn không đổi ✔
+│  │  └─ P4: Hòa ở nước thứ 225 (nước cuối là của X), Undo chỉ rút 1 nước của X ✘ Điểm hòa giữ nguyên ==> expected: <1> but was: <0>
+│  └─ Task4bGameplayTest ✔
+│     └─ resettingNumbersDoesNotAllowUndoToRecordAnOldResultAgain() ✔
+├─ JUnit Vintage ✔
+└─ JUnit Platform Suite ✔
+
+Failures (4):
+  JUnit Jupiter:UndoScoreTest:U02: Undo xong, thành tích vẫn 0-1, isGameOver = false
+    MethodSource [className = 'game.UndoScoreTest', methodName = 'testU02_UndoAfterAiWin_ScoreUnchanged_GameOverFalse', methodParameterTypes = '']
+    => org.opentest4j.AssertionFailedError: Thành tích AI thắng VẪN PHẢI LÀ 1 (không bị xóa) ==> expected: <1> but was: <0>
+       org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+       org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+       org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+       org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+       org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+       game.UndoScoreTest.testU02_UndoAfterAiWin_ScoreUnchanged_GameOverFalse(UndoScoreTest.java:119)
+       java.base/java.lang.reflect.Method.invoke(Method.java:565)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+  JUnit Jupiter:UndoScoreTest:8 & 9 (End-to-End): AI thắng (0-1) -> Undo -> người chơi thắng cùng ván -> điểm vẫn 0-1, bàn cờ và lượt đúng
+    MethodSource [className = 'game.UndoScoreTest', methodName = 'test8_And_9_EndToEnd_AiWin_Undo_PlayerWin_ScoreStays01', methodParameterTypes = '']
+    => org.opentest4j.AssertionFailedError: Điểm thua vẫn là 1 ==> expected: <1> but was: <0>
+       org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+       org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+       org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+       org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+       org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+       game.UndoScoreTest.test8_And_9_EndToEnd_AiWin_Undo_PlayerWin_ScoreStays01(UndoScoreTest.java:378)
+       java.base/java.lang.reflect.Method.invoke(Method.java:565)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+  JUnit Jupiter:UndoParityTest:P1: PV_AI, X thắng ở nước thứ 9, Undo chỉ rút đúng 1 nước của X
+    MethodSource [className = 'game.UndoParityTest', methodName = 'testP1_XWin_UndoOneMove', methodParameterTypes = '']
+    => org.opentest4j.AssertionFailedError: Điểm thắng của người chơi không đổi ==> expected: <1> but was: <0>
+       org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+       org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+       org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+       org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+       org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+       game.UndoParityTest.testP1_XWin_UndoOneMove(UndoParityTest.java:111)
+       java.base/java.lang.reflect.Method.invoke(Method.java:565)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+  JUnit Jupiter:UndoParityTest:P4: Hòa ở nước thứ 225 (nước cuối là của X), Undo chỉ rút 1 nước của X
+    MethodSource [className = 'game.UndoParityTest', methodName = 'testP4_DrawAtMove225_UndoOneMove', methodParameterTypes = '']
+    => org.opentest4j.AssertionFailedError: Điểm hòa giữ nguyên ==> expected: <1> but was: <0>
+       org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+       org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+       org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+       org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+       org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+       game.UndoParityTest.testP4_DrawAtMove225_UndoOneMove(UndoParityTest.java:220)
+       java.base/java.lang.reflect.Method.invoke(Method.java:565)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+       java.base/java.util.ArrayList.forEach(ArrayList.java:1604)
+
+Test run finished after 285 ms
+[         6 containers found      ]
+[         0 containers skipped    ]
+[         6 containers started    ]
+[         0 containers aborted    ]
+[         6 containers successful ]
+[         0 containers failed     ]
+[        18 tests found           ]
+[         0 tests skipped         ]
+[        18 tests started         ]
+[         0 tests aborted         ]
+[        14 tests successful      ]
+[         4 tests failed          ]
+
+
+STDERR:
+
+EXIT_CODE: 1

@@ -12,6 +12,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.LongSupplier;
 
 /**
  * Bàn cờ Gomoku kiểu cổ điển:
@@ -26,17 +28,13 @@ public class BoardPanel extends JPanel {
     public static final int OFFSET = 32;
 
     // Màu bàn cờ gỗ
-    private static final Color BOARD_COLOR      = new Color(220, 170, 90);
-    private static final Color BOARD_DARK       = new Color(195, 145, 65);
-    private static final Color LINE_COLOR       = new Color(140, 90, 35);
-    private static final Color STAR_COLOR       = new Color(90, 50, 10);
+    private static final Color BOARD_COLOR      = Theme.BOARD_FACE;
+    private static final Color BOARD_DARK       = Theme.BOARD_EDGE;
+    private static final Color LINE_COLOR       = Theme.GRID;
+    private static final Color STAR_COLOR       = Theme.STAR;
 
     // Màu quân cờ
-    private static final Color BLACK_STONE      = new Color(28, 28, 28);
-    private static final Color BLACK_HIGHLIGHT  = new Color(80, 80, 80);
-    private static final Color WHITE_STONE      = new Color(250, 250, 248);
-    private static final Color WHITE_BORDER     = new Color(160, 155, 145);
-    private static final Color LAST_MARKER      = new Color(230, 60, 60);
+    private static final Color LAST_MARKER      = Theme.MOVE_MARKER;
 
     private static final int STONE_RADIUS = CELL_SIZE / 2 - 3;
 
@@ -65,6 +63,10 @@ public class BoardPanel extends JPanel {
     private volatile int gameId = 1; // also captured when a network callback is queued
     private SwingWorker<Move, Void> aiWorker = null;
     private int aiExecutionToken = 0;
+    private final int minimumAiMoveDelayMs;
+    private final LongSupplier nanoClock;
+    private Timer aiMoveTimer;
+    private long aiTurnStartedNanos;
 
     private final List<Move> moveHistory = new ArrayList<>();
     private GameMode gameMode = GameMode.PV_AI;
@@ -83,6 +85,7 @@ public class BoardPanel extends JPanel {
         default void onGameOver(int gameId, String message, Piece winner) {
             onGameOver(message, winner);
         }
+        default void onGameReopened(int gameId) {}
         void onAiStatsUpdated(long timeMs, long nodes, long prunings);
         void onHistoryChanged(boolean canUndo);
     }
@@ -91,12 +94,26 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     public BoardPanel(Board board) {
+        this(board,AiMoveDelay.DEFAULT_MINIMUM_MS);
+    }
+
+    public BoardPanel(Board board,int minimumAiMoveDelayMs) {
+        this(board,minimumAiMoveDelayMs,System::nanoTime);
+    }
+
+    /** Injectable monotonic clock lets tests advance the deadline without real waits. */
+    public BoardPanel(Board board,int minimumAiMoveDelayMs,LongSupplier nanoClock) {
+        if(minimumAiMoveDelayMs<0) throw new IllegalArgumentException("Delay must be nonnegative");
+        this.minimumAiMoveDelayMs=minimumAiMoveDelayMs;
+        this.nanoClock=java.util.Objects.requireNonNull(nanoClock);
         this.board = board;
         this.ai    = new MinimaxAI(Piece.O, MinimaxAI.Difficulty.MEDIUM);
 
         int panelSize = OFFSET * 2 + (Board.SIZE - 1) * CELL_SIZE;
         setPreferredSize(new Dimension(panelSize, panelSize));
-        setBackground(new Color(200, 155, 75));
+        // Painting uses fixed coordinates; GridBag must not collapse this to JPanel's 10x10 minimum.
+        setMinimumSize(new Dimension(panelSize, panelSize));
+        setBackground(Theme.BOARD);
 
         // Click chuột
         addMouseListener(new MouseAdapter() {
@@ -108,7 +125,7 @@ public class BoardPanel extends JPanel {
         addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                if (isGameOver || isAiThinking) { clearHover(); return; }
+                if (!isEnabled() || isGameOver || isAiThinking) { clearHover(); return; }
                 // Ở chế độ Online, nếu chưa đến lượt của mình thì không cho hover
                 if (gameMode == GameMode.ONLINE && currentTurn != myPiece) { clearHover(); return; }
 
@@ -140,12 +157,20 @@ public class BoardPanel extends JPanel {
 
     public GameMode getGameMode() { return gameMode; }
 
-    public void setAiDifficulty(MinimaxAI.Difficulty d) { ai.setDifficulty(d); }
+    public void setAiDifficulty(MinimaxAI.Difficulty d) {
+        if(ai.getDifficulty()==d) return;
+        ai.setDifficulty(d);
+        if(gameMode==GameMode.PV_AI&&isAiThinking) {
+            long started=aiTurnStartedNanos;
+            cancelAiComputation();
+            triggerAI(started);
+        }
+    }
 
     public boolean canUndo() {
         // Trong chế độ Online không cho phép Undo 1 phía
         if (gameMode == GameMode.ONLINE) return false;
-        return !isAiThinking && !moveHistory.isEmpty();
+        return (!isAiThinking || aiMoveTimer!=null) && !moveHistory.isEmpty();
     }
 
     public void setupOnlineGame(NetworkManager nm, boolean isHost) {
@@ -192,11 +217,7 @@ public class BoardPanel extends JPanel {
     // =========================================================================
     public void resetGame() {
         gameId++;
-        aiExecutionToken++;
-        if (aiWorker != null && !aiWorker.isDone()) {
-            aiWorker.cancel(true);
-            aiWorker = null;
-        }
+        cancelAiComputation();
         board.reset();
         moveHistory.clear();
         currentTurn = Piece.X;
@@ -216,13 +237,8 @@ public class BoardPanel extends JPanel {
     public void undoMove() {
         if (!canUndo()) return;
 
-        aiExecutionToken++;
-        if (aiWorker != null && !aiWorker.isDone()) {
-            aiWorker.cancel(true);
-            aiWorker = null;
-        }
-        isAiThinking = false;
-        setCursor(Cursor.getDefaultCursor());
+        boolean wasGameOver = isGameOver;
+        cancelAiComputation();
 
         if (gameMode == GameMode.PVP) {
             Move m = moveHistory.remove(moveHistory.size() - 1);
@@ -253,8 +269,10 @@ public class BoardPanel extends JPanel {
 
         hoverRow = hoverCol = -1;
 
-        SoundManager.playPlacePieceSound();
+        final int undoGameId = gameId;
+        SoundManager.playPlacePieceSound(() -> undoGameId == gameId && isEnabled());
         if (stateListener != null) {
+            if (wasGameOver) stateListener.onGameReopened(gameId);
             stateListener.onTurnChanged(currentTurn, false);
             stateListener.onHistoryChanged(canUndo());
         }
@@ -263,18 +281,19 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     public boolean playMove(int row, int col) {
-        if (isGameOver || isAiThinking || restartWaiting) return false;
+        if (!isEnabled() || isGameOver || isAiThinking || restartWaiting) return false;
 
         // Ở chế độ Online: Không được đánh nếu chưa đến lượt của mình
         if (gameMode == GameMode.ONLINE && currentTurn != myPiece) return false;
 
         if (!board.isValidMove(row, col)) return false;
 
+        long moveStartedNanos=gameMode==GameMode.PV_AI?nanoClock.getAsLong():0;
         executeMove(row, col, currentTurn, true);
 
         // Kích hoạt AI nếu chơi với máy
         if (!isGameOver && gameMode == GameMode.PV_AI && currentTurn == Piece.O) {
-            triggerAI();
+            triggerAI(moveStartedNanos);
         }
         return true;
     }
@@ -296,7 +315,7 @@ public class BoardPanel extends JPanel {
         final int receivedGameId = gameId;
         Runnable apply = () -> {
             Piece wirePiece = ply % 2 == 1 ? Piece.X : Piece.O;
-            if (receivedGameId != gameId || gameMode != GameMode.ONLINE
+            if (!isEnabled() || receivedGameId != gameId || gameMode != GameMode.ONLINE
                     || !java.util.Objects.equals(roundId, networkRoundId)
                     || ply != board.getMoveCount() + 1 || wirePiece != myPiece.opposite()
                     || isGameOver || restartWaiting || currentTurn != wirePiece) {
@@ -314,10 +333,22 @@ public class BoardPanel extends JPanel {
     /** Stop background work when its owning window is disposed. */
     public void cancelAiComputation() {
         aiExecutionToken++;
+        if(aiMoveTimer!=null) aiMoveTimer.stop();
+        aiMoveTimer=null;
         if (aiWorker != null) aiWorker.cancel(true);
         aiWorker = null;
         isAiThinking = false;
         setCursor(Cursor.getDefaultCursor());
+    }
+
+    /** Leave the game card without retaining online identity or background work. */
+    public void resetForMenu() {
+        setEnabled(false);
+        cancelAiComputation();
+        networkManager = null;
+        networkRoundId = null;
+        myPiece = Piece.X;
+        resetGame();
     }
 
     private void executeMove(int row, int col, Piece piece) {
@@ -334,13 +365,14 @@ public class BoardPanel extends JPanel {
         if (publishOnline && gameMode == GameMode.ONLINE && networkManager != null)
             networkManager.sendMove(networkRoundId, board.getMoveCount(), row, col);
 
-        SoundManager.playPlacePieceSound();
+        final int moveGameId = gameId;
+        SoundManager.playPlacePieceSound(() -> moveGameId == gameId && isEnabled());
 
         if (board.checkWin(row, col)) {
             isGameOver = true;
             winner = piece;
             final int resultGameId = gameId;
-            SoundManager.playVictorySound(() -> resultGameId == gameId);
+            SoundManager.playVictorySound(() -> resultGameId == gameId && isEnabled());
             repaint();
             if (stateListener != null) {
                 String msg = buildWinMessage(piece);
@@ -386,7 +418,8 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    private void triggerAI() {
+    private void triggerAI(long startedNanos) {
+        aiTurnStartedNanos=startedNanos;
         isAiThinking = true;
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         if (stateListener != null) { stateListener.onTurnChanged(currentTurn, true); stateListener.onHistoryChanged(false); }
@@ -405,15 +438,15 @@ public class BoardPanel extends JPanel {
             @Override protected Move doInBackground() { return searchAi.findBestMove(snap); }
             @Override protected void done() {
                 try {
-                    if (isCancelled() || token != aiExecutionToken || capturedGameId != gameId || capturedMoveCount != moveHistory.size()) {
+                    if (isCancelled() || !isCurrentAiTurn(token,capturedGameId,capturedMoveCount)) {
                         return;
                     }
                     Move best = get();
-                    isAiThinking = false;
-                    setCursor(Cursor.getDefaultCursor());
                     if (stateListener != null)
                         stateListener.onAiStatsUpdated(searchAi.getExecutionTimeMs(), searchAi.getNodesEvaluated(), searchAi.getPruningCount());
-                    if (best != null && !isGameOver) executeMove(best.row, best.col, Piece.O);
+                    if(!isCurrentAiTurn(token,capturedGameId,capturedMoveCount)) return;
+                    if(best!=null) scheduleAiMove(best,token,capturedGameId,capturedMoveCount,startedNanos);
+                    else { isAiThinking=false;setCursor(Cursor.getDefaultCursor()); }
                 } catch (Exception ex) {
                     if (token == aiExecutionToken) {
                         isAiThinking = false;
@@ -423,6 +456,38 @@ public class BoardPanel extends JPanel {
             }
         };
         aiWorker.execute();
+    }
+
+    private boolean isCurrentAiTurn(int token,int capturedGameId,int capturedMoveCount) {
+        return token==aiExecutionToken&&capturedGameId==gameId&&capturedMoveCount==moveHistory.size()
+                &&gameMode==GameMode.PV_AI&&isEnabled()&&!isGameOver&&isAiThinking&&currentTurn==Piece.O;
+    }
+
+    private int remainingAiDelay(long startedNanos) {
+        long elapsed=TimeUnit.NANOSECONDS.toMillis(Math.max(0,nanoClock.getAsLong()-startedNanos));
+        return AiMoveDelay.remainingMillis(minimumAiMoveDelayMs,elapsed);
+    }
+
+    private void scheduleAiMove(Move best,int token,int capturedGameId,int capturedMoveCount,long startedNanos) {
+        int remaining=remainingAiDelay(startedNanos);
+        if(remaining==0) { applyAiMove(best);return; }
+        Timer timer=new Timer(remaining,null);timer.setRepeats(false);
+        timer.addActionListener(event -> {
+            timer.stop();
+            // A stopped timer event can already be queued; never touch a newer turn's timer.
+            if(!isCurrentAiTurn(token,capturedGameId,capturedMoveCount)) return;
+            int stillRemaining=remainingAiDelay(startedNanos);
+            if(stillRemaining>0) { timer.setInitialDelay(stillRemaining);timer.restart();return; }
+            aiMoveTimer=null;
+            applyAiMove(best);
+        });
+        aiMoveTimer=timer;timer.start();
+        if(stateListener!=null) stateListener.onHistoryChanged(canUndo());
+    }
+
+    private void applyAiMove(Move best) {
+        isAiThinking=false;setCursor(Cursor.getDefaultCursor());
+        executeMove(best.row,best.col,Piece.O);
     }
 
     // =========================================================================
@@ -448,7 +513,7 @@ public class BoardPanel extends JPanel {
         int x0 = OFFSET - 8, y0 = OFFSET - 8;
         int bw = boardPx + 16, bh = boardPx + 16;
 
-        g2.setColor(new Color(0, 0, 0, 40));
+        g2.setColor(Theme.SHADOW);
         g2.fillRoundRect(x0 + 4, y0 + 4, bw, bh, 10, 10);
 
         g2.setColor(BOARD_COLOR);
@@ -517,21 +582,6 @@ public class BoardPanel extends JPanel {
         int cy = OFFSET + row * CELL_SIZE;
         int r  = STONE_RADIUS;
 
-        if (piece == Piece.X) {
-            g2.setColor(BLACK_STONE);
-            g2.fillOval(cx - r, cy - r, r * 2, r * 2);
-            g2.setColor(BLACK_HIGHLIGHT);
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.drawArc(cx - r + 3, cy - r + 3, r, r, 45, 120);
-        } else {
-            g2.setColor(WHITE_STONE);
-            g2.fillOval(cx - r, cy - r, r * 2, r * 2);
-            g2.setColor(WHITE_BORDER);
-            g2.setStroke(new BasicStroke(1.5f));
-            g2.drawOval(cx - r, cy - r, r * 2, r * 2);
-            g2.setColor(new Color(230, 230, 230, 180));
-            g2.setStroke(new BasicStroke(2.0f));
-            g2.drawArc(cx - r + 4, cy - r + 4, r, r, 50, 100);
-        }
+        StonePainter.paint(g2, cx, cy, r, piece);
     }
 }

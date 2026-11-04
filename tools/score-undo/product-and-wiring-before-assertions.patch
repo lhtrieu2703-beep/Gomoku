@@ -1,0 +1,151 @@
+diff --git a/src/game/model/ScoreTracker.java b/src/game/model/ScoreTracker.java
+index 39af501..4fdefac 100644
+--- a/src/game/model/ScoreTracker.java
++++ b/src/game/model/ScoreTracker.java
+@@ -1,18 +1,18 @@
+ package game.model;
+ 
+-import java.util.HashSet;
+-import java.util.Set;
++import java.util.HashMap;
++import java.util.Map;
+ 
+ /**
+  * Quản lý thành tích ván đấu (Thắng / Thua / Hòa), độc lập hoàn toàn khỏi GUI Swing.
+- * Đảm bảo mỗi ván (định danh bởi gameId) chỉ được ghi nhận kết quả ĐẦU TIÊN duy nhất một lần.
+- * Undo hay các hành động trong cùng ván không làm thay đổi hay ghi đè thành tích đã ghi.
++ * Mỗi gameId chỉ có một kết quả có hiệu lực; mở lại ván bằng Undo thu hồi kết quả đó.
+  */
+ public class ScoreTracker {
+     private int humanWins = 0;
+     private int aiWins = 0;
+     private int draws = 0;
+-    private final Set<Integer> recordedGameIds = new HashSet<>();
++    private enum Result { HUMAN, AI, DRAW, CLEARED }
++    private final Map<Integer, Result> recordedResults = new HashMap<>();
+ 
+     public ScoreTracker() {}
+ 
+@@ -24,10 +24,11 @@ public class ScoreTracker {
+      * @return true nếu kết quả được ghi nhận mới, false nếu gameId này đã được ghi nhận trước đó.
+      */
+     public boolean recordResult(int gameId, Piece winner, Piece humanPiece) {
+-        if (recordedGameIds.contains(gameId)) {
++        if (recordedResults.containsKey(gameId)) {
+             return false;
+         }
+-        recordedGameIds.add(gameId);
++        recordedResults.put(gameId, winner == Piece.NONE ? Result.DRAW
++                : winner == humanPiece ? Result.HUMAN : Result.AI);
+ 
+         if (winner == Piece.NONE) {
+             draws++;
+@@ -46,6 +47,19 @@ public class ScoreTracker {
+         return recordResult(gameId, winner, Piece.X);
+     }
+ 
++    /** Remove an effective result so the reopened game can finish again. */
++    public boolean revokeResult(int gameId) {
++        Result result = recordedResults.remove(gameId);
++        if (result == null) return false;
++        switch (result) {
++            case HUMAN -> humanWins--;
++            case AI -> aiWins--;
++            case DRAW -> draws--;
++            case CLEARED -> { } // resetScores already removed this result from the totals.
++        }
++        return true;
++    }
++
+     /**
+      * Chuẩn bị cho ván mới (tuân thủ giao thức yêu cầu).
+      */
+@@ -54,7 +68,7 @@ public class ScoreTracker {
+     }
+ 
+     public boolean isGameRecorded(int gameId) {
+-        return recordedGameIds.contains(gameId);
++        return recordedResults.containsKey(gameId);
+     }
+ 
+     public int getHumanWins() {
+@@ -73,6 +87,7 @@ public class ScoreTracker {
+         humanWins = 0;
+         aiWins = 0;
+         draws = 0;
++        recordedResults.replaceAll((id, result) -> Result.CLEARED);
+         // Reset the displayed totals only. Undo/replay in an already recorded game
+         // must still not record a second result after the user resets the score.
+     }
+diff --git a/src/game/view/BoardPanel.java b/src/game/view/BoardPanel.java
+index 35937dd..7aff370 100644
+--- a/src/game/view/BoardPanel.java
++++ b/src/game/view/BoardPanel.java
+@@ -85,6 +85,7 @@ public class BoardPanel extends JPanel {
+         default void onGameOver(int gameId, String message, Piece winner) {
+             onGameOver(message, winner);
+         }
++        default void onGameReopened(int gameId) {}
+         void onAiStatsUpdated(long timeMs, long nodes, long prunings);
+         void onHistoryChanged(boolean canUndo);
+     }
+@@ -236,6 +237,7 @@ public class BoardPanel extends JPanel {
+     public void undoMove() {
+         if (!canUndo()) return;
+ 
++        boolean wasGameOver = isGameOver;
+         cancelAiComputation();
+ 
+         if (gameMode == GameMode.PVP) {
+@@ -270,6 +272,7 @@ public class BoardPanel extends JPanel {
+         final int undoGameId = gameId;
+         SoundManager.playPlacePieceSound(() -> undoGameId == gameId && isEnabled());
+         if (stateListener != null) {
++            if (wasGameOver) stateListener.onGameReopened(gameId);
+             stateListener.onTurnChanged(currentTurn, false);
+             stateListener.onHistoryChanged(canUndo());
+         }
+diff --git a/src/game/view/MainFrame.java b/src/game/view/MainFrame.java
+index 2a58fa8..8f60956 100644
+--- a/src/game/view/MainFrame.java
++++ b/src/game/view/MainFrame.java
+@@ -79,6 +79,11 @@ public class MainFrame extends JFrame {
+         btnNewGame.addActionListener(e -> newGame()); rulesButton.addActionListener(e -> showRules()); settingsButton.addActionListener(e -> showSettings());
+         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
+             public void onTurnChanged(Piece turn,boolean thinking) { refreshGameStatus(); }
++            public void onGameReopened(int gameId) {
++                if(!isGameActive() || gameId!=boardPanel.getGameId() || boardPanel.isGameOver()
++                        || boardPanel.getGameMode()==BoardPanel.GameMode.ONLINE) return;
++                scoreTracker.revokeResult(gameId); refreshGameStatus();
++            }
+             public void onGameOver(String message,Piece winner) { onGameOver(boardPanel.getGameId(),message,winner); }
+             public void onGameOver(int gameId,String message,Piece winner) {
+                 if(!isGameActive() || gameId!=boardPanel.getGameId() || !boardPanel.isGameOver()) return;
+diff --git a/test/game/UndoParityTest.java b/test/game/UndoParityTest.java
+index 38dbd59..0114a40 100644
+--- a/test/game/UndoParityTest.java
++++ b/test/game/UndoParityTest.java
+@@ -42,6 +42,9 @@ public class UndoParityTest {
+         tracker = new ScoreTracker();
+ 
+         panel.setGameStateListener(new BoardPanel.GameStateListener() {
++            @Override
++            public void onGameReopened(int gameId) { tracker.revokeResult(gameId); }
++
+             @Override
+             public void onTurnChanged(Piece currentTurn, boolean isAiThinking) {}
+ 
+diff --git a/test/game/UndoScoreTest.java b/test/game/UndoScoreTest.java
+index c560b70..b194d97 100644
+--- a/test/game/UndoScoreTest.java
++++ b/test/game/UndoScoreTest.java
+@@ -42,6 +42,9 @@ public class UndoScoreTest {
+ 
+         // Gắn listener kết nối BoardPanel với ScoreTracker giống MainFrame
+         panel.setGameStateListener(new BoardPanel.GameStateListener() {
++            @Override
++            public void onGameReopened(int gameId) { tracker.revokeResult(gameId); }
++
+             @Override
+             public void onTurnChanged(Piece currentTurn, boolean isAiThinking) {}
+ 

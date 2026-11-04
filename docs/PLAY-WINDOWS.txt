@@ -1,0 +1,34 @@
+GOMOKU - HUONG DAN CHOI THU
+==========================
+
+Danh cho Windows 10 (1903 tro len) / Windows 11, 64-bit.
+Java da duoc dong goi kem.
+Khong can cai Java, JDK hoac phan mem lap trinh.
+
+1. Tai file Gomoku-Windows-x64.zip ve may.
+2. Nhan chuot phai vao file ZIP, chon Extract All / Giai nen tat ca.
+3. Mo thu muc Gomoku da giai nen, nhap dup Gomoku.exe.
+
+Giu nguyen Gomoku.exe va cac thu muc app, runtime trong cung thu muc.
+Khong tach rieng file EXE va khong chay truc tiep tu trong file ZIP.
+
+CHOI OFFLINE
+- Chon choi voi may (AI) hoac hai nguoi tren cung mot may.
+- Nut Van Moi nam o thanh cong cu phia duoi ban co.
+- Van Moi xoa ban co va giu ti so. Dong thong bao ket qua truoc khi bam.
+- So tran thang hien tren hai the nguoi choi, so tran hoa hien o giua.
+
+CHOI HAI MAY QUA LAN
+- Ca hai may cung chay ban game nay va ket noi cung mang Wi-Fi/LAN.
+- Mot nguoi chon choi mang va tao phong (Host), cong mac dinh 8888.
+- Nguoi con lai nhap IP may tao phong, cung cong 8888, roi vao phong (Join).
+- Dia chi 127.0.0.1 chi dung de thu hai cua so game tren cung mot may.
+- Neu Windows Firewall hoi, cho phep game ket noi tren mang rieng (Private).
+- Hai mang Internet khac nhau can thiet lap ket noi rieng; ban nay khong
+  cung cap may chu ghep tran hay link choi truc tiep tren trinh duyet.
+
+NEU GAP LOI
+- Kiem tra da giai nen day du va con ca thu muc app lan runtime.
+- Gui anh loi, phien ban Windows va cac buoc dan den loi cho nguoi gui game.
+
+Java runtime di kem co thong tin giay phep tai runtime/legal.

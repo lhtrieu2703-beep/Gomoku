@@ -1,0 +1,70 @@
+{
+  "checked_at_asia_saigon": "2026-11-03T10:59:57.924327+07:00",
+  "capture_jvm_launches": 1,
+  "images_captured": 7,
+  "images_unavailable": 0,
+  "uncaught_errors": 0,
+  "desktop_physical_px": [
+    1920,
+    1080
+  ],
+  "java_screen_logical_px": [
+    1536,
+    864
+  ],
+  "scale": [
+    1.25,
+    1.25
+  ],
+  "toolkit_dpi": 120,
+  "default_frame_logical_px": [
+    774,
+    795
+  ],
+  "content_logical_px": [
+    760,
+    758
+  ],
+  "source_and_resource_files_unchanged": 41,
+  "final_pngs_viewed_individually": true,
+  "gui_rerun_after_margin_crop": false,
+  "final_crop_java_source_compiled_only": true,
+  "observed_ui_note": "AI card name is ellipsized by the unchanged product UI; all 8 stones/grid/buttons visible.",
+  "files": [
+    {
+      "file": "01_title.png",
+      "width": 951,
+      "height": 986
+    },
+    {
+      "file": "02_menu.png",
+      "width": 951,
+      "height": 986
+    },
+    {
+      "file": "03_setup_dialog.png",
+      "width": 294,
+      "height": 213
+    },
+    {
+      "file": "04_board_playing.png",
+      "width": 951,
+      "height": 986
+    },
+    {
+      "file": "05_settings.png",
+      "width": 320,
+      "height": 351
+    },
+    {
+      "file": "06_rules.png",
+      "width": 799,
+      "height": 698
+    },
+    {
+      "file": "07_lan_dialog.png",
+      "width": 646,
+      "height": 331
+    }
+  ]
+}

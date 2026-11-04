@@ -5,6 +5,7 @@ import javax.sound.sampled.*;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class SoundResourceTest {
@@ -12,6 +13,27 @@ class SoundResourceTest {
     @Test void closesClipWhenOpenFails() throws Exception { verify("open"); }
     @Test void closesClipWhenStartFails() throws Exception { verify("start"); }
     @Test void staleResultClosesClipWithoutStarting() throws Exception { verify("stale"); }
+
+    @Test void queuedPieceSoundChecksGameValidityBeforeOpeningAnyAudioDevice() throws Exception {
+        boolean sound = SoundManager.isSoundEnabled();
+        var field = SoundManager.class.getDeclaredField("PLAYBACK"); field.setAccessible(true);
+        ThreadPoolExecutor playback = (ThreadPoolExecutor) field.get(null);
+        CountDownLatch occupied = new CountDownLatch(2), release = new CountDownLatch(1), checked = new CountDownLatch(1);
+        AtomicBoolean current = new AtomicBoolean(true), observedCurrent = new AtomicBoolean(true);
+        try {
+            for (int i = 0; i < 2; i++) playback.execute(() -> {
+                occupied.countDown();
+                try { release.await(); } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            });
+            assertTrue(occupied.await(3, TimeUnit.SECONDS));
+            SoundManager.setSoundEnabled(true);
+            SoundManager.playPlacePieceSound(() -> {
+                observedCurrent.set(current.get()); checked.countDown(); return current.get();
+            });
+            current.set(false); release.countDown();
+            assertTrue(checked.await(3, TimeUnit.SECONDS)); assertFalse(observedCurrent.get());
+        } finally { release.countDown(); SoundManager.setSoundEnabled(sound); }
+    }
 
     private void verify(String scenario) throws Exception {
         AtomicBoolean closed = new AtomicBoolean();

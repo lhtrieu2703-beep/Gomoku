@@ -40,8 +40,9 @@ class P1RegressionTest {
     @EnumSource(BoardPanel.GameMode.class)
     void languageChangePreservesActiveGame(BoardPanel.GameMode mode) throws Exception {
         SwingUtilities.invokeAndWait(() -> {
-            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
+            MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()),0);
             try {
+                frame.startGame();
                 BoardPanel panel = frame.getBoardPanel();
                 if (mode == BoardPanel.GameMode.ONLINE) panel.setupOnlineGame(null, true);
                 else panel.setGameMode(mode);
@@ -62,10 +63,12 @@ class P1RegressionTest {
                     assertEquals(7, panel.getLastMoveCol());
                     assertFalse(panel.isGameOver());
                     assertEquals(1, frame.getScoreTracker().getHumanWins());
-                    assertEquals(Lang.mode(), frame.getLblMode().getText());
+                    assertEquals(Lang.pvAI(), frame.getMainMenu().getAiButton().getText());
                     assertEquals(mode == BoardPanel.GameMode.ONLINE ? Lang.onlineOpponentTurn()
-                            : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : Lang.p2Turn(),
+                            : mode == BoardPanel.GameMode.PV_AI ? Lang.aiThinking() : "",
                             statusText(frame));
+                    assertEquals(Lang.pieceName(Piece.X),frame.getLeftPlayerCard().getPieceBadge().getAccessibleContext().getAccessibleName());
+                    assertEquals(Lang.pieceName(Piece.O),frame.getRightPlayerCard().getPieceBadge().getAccessibleContext().getAccessibleName());
                 }
             } finally {
                 frame.getBoardPanel().resetGame(); // cancel a possible AI worker
@@ -80,6 +83,7 @@ class P1RegressionTest {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
             try {
+                frame.startGame();
                 BoardPanel panel = frame.getBoardPanel();
                 panel.setGameMode(BoardPanel.GameMode.PVP);
                 panel.setGameStateListener(null); // suppress the modal result popup in this test
@@ -263,15 +267,7 @@ class P1RegressionTest {
         });
     }
 
-    private static String statusText(MainFrame frame) {
-        try {
-            var field = MainFrame.class.getDeclaredField("turnLabel");
-            field.setAccessible(true);
-            return ((JLabel) field.get(frame)).getText();
-        } catch (ReflectiveOperationException e) {
-            throw new AssertionError(e);
-        }
-    }
+    private static String statusText(MainFrame frame) { return frame.getStatusText(); }
 
     private static final class MemoryPreferences extends AbstractPreferences {
         private final Map<String, String> values = new HashMap<>();

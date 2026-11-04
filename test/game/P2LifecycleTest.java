@@ -34,11 +34,11 @@ class P2LifecycleTest {
             MainFrame disposed = new MainFrame(new AppSettings(new MemoryPreferences()));
             MainFrame active = new MainFrame(new AppSettings(new MemoryPreferences()));
             try {
-                String before = disposed.getLblMode().getText();
+                String before = disposed.getMainMenu().getAiButton().getText();
                 disposed.dispose();
                 Lang.set(Lang.get() == Lang.Language.EN ? Lang.Language.PT : Lang.Language.EN);
-                assertEquals(before, disposed.getLblMode().getText());
-                assertEquals(Lang.mode(), active.getLblMode().getText());
+                assertEquals(before, disposed.getMainMenu().getAiButton().getText());
+                assertEquals(Lang.pvAI(), active.getMainMenu().getAiButton().getText());
             } finally { disposed.dispose(); active.dispose(); }
         });
     }
@@ -47,6 +47,7 @@ class P2LifecycleTest {
         MainFrame[] frame = new MainFrame[1];
         SwingUtilities.invokeAndWait(() -> {
             frame[0] = new MainFrame(new AppSettings(new MemoryPreferences()));
+            frame[0].startGame();
             BoardPanel panel = frame[0].getBoardPanel();
             assertTrue(panel.playMove(7, 7));
             assertTrue(panel.isAiThinking());
@@ -104,7 +105,8 @@ class P2LifecycleTest {
         SwingUtilities.invokeAndWait(() -> {
             MainFrame frame = new MainFrame(new AppSettings(new MemoryPreferences()));
             try {
-                frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.PVP);
+                frame.startGame();
+                frame.beginGame(BoardPanel.GameMode.PVP, game.ai.MinimaxAI.Difficulty.MEDIUM);
                 BoardPanel panel = frame.getBoardPanel();
                 assertTrue(panel.playMove(7, 7));
                 int id = panel.getGameId();
@@ -112,8 +114,8 @@ class P2LifecycleTest {
                     NetworkDialog dialog = field(frame, "networkDialog");
                     dialog.dispatchEvent(new WindowEvent(dialog, WindowEvent.WINDOW_CLOSING));
                 });
-                frame.getModeCombo().setSelectedItem(BoardPanel.GameMode.ONLINE);
-                assertEquals(BoardPanel.GameMode.PVP, frame.getModeCombo().getSelectedItem());
+                frame.openNetworkDialog();
+                assertEquals(BoardPanel.GameMode.PVP, frame.getSelectedMode());
                 assertEquals(BoardPanel.GameMode.PVP, panel.getGameMode());
                 assertEquals(id, panel.getGameId());
                 assertEquals(1, panel.getMoveHistory().size());

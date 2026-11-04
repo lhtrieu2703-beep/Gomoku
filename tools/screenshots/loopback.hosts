@@ -1,0 +1,4 @@
+# Used only by the screenshot JVM via -Djdk.net.hosts.file.
+# No machine-hostname mapping: NetworkManager.getLocalIP uses its existing 127.0.0.1 fallback.
+127.0.0.1 localhost
+::1 localhost
