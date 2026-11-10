@@ -2,6 +2,7 @@ package game.view;
 import javax.swing.*;
 import java.awt.*;
 public final class MainMenu extends BackgroundPanel {
+    private static final Color PLAY_BUTTON_BACKDROP = new Color(0, 0, 0, 51);
     private final ThemedButton profile=new ThemedButton("",ThemedButton.Style.SECONDARY),pvp=new ThemedButton("",ThemedButton.Style.SECONDARY),ai=new ThemedButton("",ThemedButton.Style.PRIMARY),lan=new ThemedButton("",ThemedButton.Style.SECONDARY);
     private final JButton rules=iconButton(UiIcon.Kind.BOOK),settings=iconButton(UiIcon.Kind.MENU);
     private final Logo logo=new Logo();
@@ -25,6 +26,18 @@ public final class MainMenu extends BackgroundPanel {
         int w=getWidth(),h=getHeight(); profile.setBounds(20,18,330,54); settings.setBounds(w-60,24,40,40); rules.setBounds(w-108,24,40,40);
         logo.setBounds(50,(int)(h*.12),w-100,(int)(h*.20)); int bw=Math.min(510,w-80),x=(w-bw)/2,y=(int)(h*.40);
         ai.setBounds(x,y,bw,80); pvp.setBounds(x,y+100,bw,68); lan.setBounds(x,y+188,bw,68);
+    }
+    @Override protected void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+        if (!hasImage()) return;
+        Rectangle controls = ai.getBounds().union(lan.getBounds());
+        if (controls.isEmpty()) return;
+        controls.grow(14, 12);
+        Graphics2D g = (Graphics2D) graphics.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setColor(PLAY_BUTTON_BACKDROP);
+        g.fillRoundRect(controls.x, controls.y, controls.width, controls.height, 28, 28);
+        g.dispose();
     }
     @Override protected void paintChildren(Graphics g) { super.paintChildren(g); new UiIcon(UiIcon.Kind.PENCIL,18).paintIcon(this,g,profile.getX()+profile.getWidth()-28,profile.getY()+18); }
     public JButton getProfileButton() { return profile; } public JButton getAiButton() { return ai; }
