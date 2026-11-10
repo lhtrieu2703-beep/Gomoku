@@ -7,6 +7,7 @@ import java.awt.image.BufferedImage;
 /** Cached cover image in device pixels, with a resource-free wood fallback. */
 public class BackgroundPanel extends JPanel {
     public static final String RESOURCE = "/images/background.png";
+    private static final int VIGNETTE_STRENGTH = 150;
     private final BufferedImage source;
     private BufferedImage cache;
     public BackgroundPanel() { this(ResourceImages.load(RESOURCE)); }
@@ -30,7 +31,14 @@ public class BackgroundPanel extends JPanel {
                 cg.setRenderingHint(RenderingHints.KEY_INTERPOLATION,RenderingHints.VALUE_INTERPOLATION_BICUBIC);
                 double scale = Math.max((double)dw/source.getWidth(),(double)dh/source.getHeight());
                 int sw=(int)Math.ceil(source.getWidth()*scale), sh=(int)Math.ceil(source.getHeight()*scale);
-                cg.drawImage(source,(dw-sw)/2,(dh-sh)/2,sw,sh,null); cg.dispose();
+                cg.drawImage(source,(dw-sw)/2,(dh-sh)/2,sw,sh,null);
+                float radius = (float) Math.hypot(dw / 2f, dh / 2f);
+                Color clear = new Color(0, 0, 0, 0);
+                Color corner = new Color(0, 0, 0, VIGNETTE_STRENGTH);
+                cg.setPaint(new RadialGradientPaint(dw / 2f, dh / 2f, radius,
+                        new float[]{0f, 0.5f, 1f}, new Color[]{clear, clear, corner}));
+                cg.fillRect(0, 0, dw, dh);
+                cg.dispose();
             }
             g.drawImage(cache,0,0,w,h,null);
         }

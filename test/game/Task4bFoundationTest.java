@@ -29,11 +29,28 @@ class Task4bFoundationTest {
         assertDoesNotThrow(() -> fallback.paint(g)); assertFalse(fallback.hasImage());
         assertNotEquals(image.getRGB(0,0),image.getRGB(199,99));
         for(int index=0;index<8;index++) new AvatarIcon(index,"João",40).paintIcon(fallback,g,index*20,20);
-        BackgroundPanel cover=new BackgroundPanel(new BufferedImage(80,200,BufferedImage.TYPE_INT_RGB)); cover.setSize(200,100);
+        var source = new BufferedImage(80, 200, BufferedImage.TYPE_INT_RGB);
+        Graphics2D sourceGraphics = source.createGraphics();
+        sourceGraphics.setColor(Color.WHITE);
+        sourceGraphics.fillRect(0, 0, source.getWidth(), source.getHeight());
+        sourceGraphics.dispose();
+        BackgroundPanel cover = new BackgroundPanel(source);
+        cover.setSize(200, 100);
         for(double scale:new double[]{1.25,1.5}) {
             Graphics2D scaled=(Graphics2D)g.create(); scaled.scale(scale,scale); cover.paint(scaled);
             assertEquals((int)(200*scale),cover.getCachedImage().getWidth());
-            var cache=cover.getCachedImage(); cover.paint(scaled); assertSame(cache,cover.getCachedImage()); scaled.dispose();
+            var cache = cover.getCachedImage();
+            int right = cache.getWidth() - 1;
+            int bottom = cache.getHeight() - 1;
+            assertEquals(Color.WHITE.getRGB(), cache.getRGB(right / 2, bottom / 2));
+            for (int x : new int[]{0, right}) {
+                for (int y : new int[]{0, bottom}) {
+                    assertTrue(new Color(cache.getRGB(x, y)).getRed() < 150, "Vignette darkens each corner");
+                }
+            }
+            cover.paint(scaled);
+            assertSame(cache, cover.getCachedImage());
+            scaled.dispose();
         }
         g.dispose();
     }
