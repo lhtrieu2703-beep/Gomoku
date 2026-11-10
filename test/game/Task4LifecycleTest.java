@@ -199,7 +199,7 @@ class Task4LifecycleTest {
             panel.playMove(7, 4); assertTrue(panel.isGameOver()); assertTrue(panel.canUndo());
             JButton undo = P2LifecycleTest.field(frame, "btnUndo"); assertTrue(undo.isEnabled()); undo.doClick();
             assertFalse(panel.isGameOver()); assertEquals(8, panel.getMoveHistory().size());
-            assertEquals(1, frame.getScoreTracker().getHumanWins());
+            assertEquals(0, frame.getScoreTracker().getHumanWins());
         });
     }
 
