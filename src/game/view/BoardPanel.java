@@ -9,6 +9,7 @@ import game.network.NetworkManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,7 +36,10 @@ public class BoardPanel extends JPanel {
 
     // Màu quân cờ
     private static final Color LAST_MARKER      = Theme.MOVE_MARKER;
-    private static final Color WINNING_RING    = new Color(0xFFE27A);
+    private static final Color WIN_HIGHLIGHT_COLOR = new Color(0xE53935);
+    private static final Color WIN_HIGHLIGHT_OUTLINE_COLOR = new Color(255, 255, 255, 128);
+    private static final float WIN_HIGHLIGHT_WIDTH = 3f;
+    private static final float WIN_HIGHLIGHT_OUTLINE_WIDTH = 1.5f;
 
     private static final int STONE_RADIUS = CELL_SIZE / 2 - 3;
 
@@ -589,17 +593,21 @@ public class BoardPanel extends JPanel {
         if (winningLine.isEmpty()) return;
         Graphics2D g = (Graphics2D) graphics.create();
         int diameter = 2 * STONE_RADIUS;
-        BasicStroke outline = new BasicStroke(5f);
-        BasicStroke ring = new BasicStroke(2.5f);
+        float outlineRadius = STONE_RADIUS + (WIN_HIGHLIGHT_WIDTH + WIN_HIGHLIGHT_OUTLINE_WIDTH) / 2f;
+        Ellipse2D.Float outlineShape = new Ellipse2D.Float();
+        BasicStroke outline = new BasicStroke(WIN_HIGHLIGHT_OUTLINE_WIDTH);
+        BasicStroke ring = new BasicStroke(WIN_HIGHLIGHT_WIDTH);
         for (Board.Cell cell : winningLine) {
-            int x = OFFSET + cell.col() * CELL_SIZE - STONE_RADIUS;
-            int y = OFFSET + cell.row() * CELL_SIZE - STONE_RADIUS;
-            g.setColor(Theme.DARK);
+            int centerX = OFFSET + cell.col() * CELL_SIZE;
+            int centerY = OFFSET + cell.row() * CELL_SIZE;
+            outlineShape.setFrame(centerX - outlineRadius, centerY - outlineRadius,
+                    2 * outlineRadius, 2 * outlineRadius);
+            g.setColor(WIN_HIGHLIGHT_OUTLINE_COLOR);
             g.setStroke(outline);
-            g.drawOval(x, y, diameter, diameter);
-            g.setColor(WINNING_RING);
+            g.draw(outlineShape);
+            g.setColor(WIN_HIGHLIGHT_COLOR);
             g.setStroke(ring);
-            g.drawOval(x, y, diameter, diameter);
+            g.drawOval(centerX - STONE_RADIUS, centerY - STONE_RADIUS, diameter, diameter);
         }
         g.dispose();
     }
