@@ -17,6 +17,7 @@ public class MainFrame extends JFrame {
     private final ScoreTracker scoreTracker=new ScoreTracker();
     private final CardLayout screenLayout=new CardLayout();
     private final JPanel screenCards=new JPanel(screenLayout),gameCard=new JPanel(new BorderLayout());
+    private final JPanel boardArea = new JPanel(new GridBagLayout());
     private final StartScreen startScreen;
     private final MainMenu mainMenu;
     private PlayerProfile profile,secondProfile=new PlayerProfile("",0);
@@ -69,7 +70,7 @@ public class MainFrame extends JFrame {
         gameCard.setBackground(Theme.DARK); gameCard.add(header,BorderLayout.NORTH);
         // BoardPanel paints and hit-tests the same fixed 596x596 coordinates.
         // Keep that preferred size and centre the panel instead of stretching it to 760px.
-        JPanel boardArea=new JPanel(new GridBagLayout()); boardArea.setBackground(Theme.BOARD); boardArea.add(boardPanel);
+        boardArea.setBackground(boardPanel.getBoardTheme().surround()); boardArea.add(boardPanel);
         gameCard.add(boardArea,BorderLayout.CENTER);
         JPanel toolbar=new JPanel(new BorderLayout()); toolbar.setBorder(BorderFactory.createEmptyBorder(6,16,6,12)); toolbar.setBackground(Theme.DARK);
         JPanel actions=new JPanel(new FlowLayout(FlowLayout.LEFT,6,0)); actions.setOpaque(false);
@@ -134,6 +135,14 @@ public class MainFrame extends JFrame {
     public void updateProfile(PlayerProfile value) { profile=value; appSettings.saveProfile(value); updateLanguage(); }
     public void setSecondProfile(PlayerProfile value) { secondProfile=value; refreshGameStatus(); }
     public void selectLanguage(Lang.Language value) { if(value!=Lang.get()) Lang.set(value); appSettings.saveLang(value); }
+    public void selectBoardTheme(BoardTheme theme) {
+        boardPanel.setBoardTheme(theme);
+        boardArea.setBackground(theme.surround());
+    }
+    public void selectPieceStyle(PieceStyle style) {
+        boardPanel.setPieceStyle(style);
+        refreshGameStatus();
+    }
     public void toggleSound() { SoundManager.setSoundEnabled(!SoundManager.isSoundEnabled()); appSettings.saveSound(SoundManager.isSoundEnabled()); }
     public void resetSessionScores() { scoreTracker.resetScores(); refreshGameStatus(); }
     public void showProfile() { if(!disposed) new ProfileDialog(this).setVisible(true); }
@@ -193,8 +202,9 @@ public class MainFrame extends JFrame {
         Piece active=boardPanel.isGameOver()?boardPanel.getWinner():boardPanel.getCurrentTurn();
         String opponent=mode==BoardPanel.GameMode.PV_AI?Lang.computerName(selectedDifficulty):mode==BoardPanel.GameMode.ONLINE?Lang.opponentName():secondProfile.displayName(true);
         int opponentAvatar=mode==BoardPanel.GameMode.PV_AI?6:mode==BoardPanel.GameMode.ONLINE?0:secondProfile.avatarIndex();
-        leftPlayer.update(profile.displayName(),profile.avatarIndex(),scoreTracker.getHumanWins(),active!=Piece.NONE&&active==local,local);
-        rightPlayer.update(opponent,opponentAvatar,scoreTracker.getAiWins(),active!=Piece.NONE&&active!=local,local.opposite());
+        PieceStyle style = boardPanel.getPieceStyle();
+        leftPlayer.update(profile.displayName(),profile.avatarIndex(),scoreTracker.getHumanWins(),active!=Piece.NONE&&active==local,local,style);
+        rightPlayer.update(opponent,opponentAvatar,scoreTracker.getAiWins(),active!=Piece.NONE&&active!=local,local.opposite(),style);
     }
     @Override public void dispose() {
         disposed=true; screenEpoch++; if(startScreen!=null) startScreen.setActive(false); boardPanel.setEnabled(false);

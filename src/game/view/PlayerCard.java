@@ -18,11 +18,12 @@ public final class PlayerCard extends JPanel {
         text.setOpaque(false); text.add(nameRow); text.add(wins);
         add(avatar,BorderLayout.WEST); add(text);
     }
-    public void update(String fullName,int index,int count,boolean highlighted,Piece piece) {
+    public void update(String fullName,int index,int count,boolean highlighted,Piece piece,PieceStyle style) {
         this.fullName=fullName; this.highlighted=highlighted;
         avatar.setIcon(new AvatarIcon(index,fullName,48)); wins.setText(Lang.wins()+": "+count); name.setToolTipText(fullName);
-        pieceBadge.setIcon(new PieceBadgeIcon(piece)); pieceBadge.setToolTipText(Lang.pieceName(piece));
-        pieceBadge.getAccessibleContext().setAccessibleName(Lang.pieceName(piece));
+        String pieceName = Lang.pieceName(piece, style);
+        pieceBadge.setIcon(new PieceBadgeIcon(piece, style)); pieceBadge.setToolTipText(pieceName);
+        pieceBadge.getAccessibleContext().setAccessibleName(pieceName);
         revalidate(); repaint();
     }
     @Override public void doLayout() {
