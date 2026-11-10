@@ -20,7 +20,9 @@ class Task4StartScreenTest {
             MainFrame f=frame(Lang.Language.VI);
             try {
                 Container cards=f.getStartScreen().getParent(); assertEquals(3,cards.getComponentCount());
-                assertEquals(MainFrame.Screen.TITLE,f.getScreen()); assertTrue(f.getStartScreen().isHintTimerRunning());
+                assertEquals(MainFrame.Screen.TITLE,f.getScreen()); assertFalse(f.getStartScreen().isHintTimerRunning());
+                f.setVisible(true);
+                assertTrue(f.getStartScreen().isHintTimerRunning());
                 Dimension size=f.getSize(); f.getStartScreen().advance(); assertEquals(MainFrame.Screen.MENU,f.getScreen());
                 assertFalse(f.getStartScreen().isHintTimerRunning());
                 SwingUtilities.invokeLater(() -> { SetupDialog d=(SetupDialog)java.util.Arrays.stream(f.getOwnedWindows()).filter(w -> w instanceof SetupDialog).findFirst().orElseThrow(); d.getStartButton().doClick(); });
