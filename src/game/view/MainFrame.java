@@ -52,6 +52,7 @@ public class MainFrame extends JFrame {
         appSettings=settings; Lang.set(settings.loadLang()); SoundManager.setSoundEnabled(settings.loadSound()); profile=settings.loadProfile();
         setTitle(Lang.startTitle()); setDefaultCloseOperation(DISPOSE_ON_CLOSE); setResizable(false);
         startScreen=new StartScreen(this::showMenu);
+        addWindowStateListener(event -> startScreen.refreshAnimationState());
         mainMenu=new MainMenu(this::showProfile,() -> showSetup(true),() -> showSetup(false),this::openNetworkDialog,this::showRules,this::showSettings);
         boardPanel.setEnabled(false); initNetworkManager();
         JPanel header=new JPanel(new GridBagLayout()); header.setBackground(Theme.DARK);
