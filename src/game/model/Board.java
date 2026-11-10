@@ -1,16 +1,22 @@
 package game.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Quản lý dữ liệu và luật chơi của Bàn cờ Caro 15x15.
  */
 public class Board {
     public static final int SIZE = 15;
     public static final int WIN_COUNT = 5;
+    private static final int[][] WIN_DIRECTIONS = {{0, 1}, {1, 0}, {1, 1}, {1, -1}};
 
     public enum WinRule {
         RULE_A, // Chính xác 5 quân liên tiếp (không tính 6+)
         RULE_B  // Từ 5 quân trở lên (5, 6, 7...)
     }
+
+    public record Cell(int row, int col) {}
 
     private final Piece[][] grid;
     private int moveCount;
@@ -127,20 +133,23 @@ public class Board {
      * Kiểm tra nước đi tại (lastRow, lastCol) có tạo thành thế thắng theo RULE cụ thể hay không.
      */
     public boolean checkWin(int lastRow, int lastCol, WinRule rule) {
+        return scanWinningLine(lastRow, lastCol, rule, null);
+    }
+
+    /** Returns the whole first winning run through the last move, in scan order. */
+    public List<Cell> findWinningLine(int lastRow, int lastCol) {
+        List<Cell> cells = new ArrayList<>(WIN_COUNT);
+        return scanWinningLine(lastRow, lastCol, winRule, cells) ? List.copyOf(cells) : List.of();
+    }
+
+    private boolean scanWinningLine(int lastRow, int lastCol, WinRule rule, List<Cell> cells) {
         if (!isInBounds(lastRow, lastCol)) return false;
         Piece target = grid[lastRow][lastCol];
         if (target == Piece.NONE) return false;
         Piece opp = target.opposite();
 
-        // 4 hướng: Ngang, Dọc, Chéo chính '\', Chéo phụ '/'
-        int[][] directions = {
-            {0, 1},   // Ngang: Trái - Phải
-            {1, 0},   // Dọc: Trên - Dưới
-            {1, 1},   // Chéo chính: Tây Bắc - Đông Nam
-            {1, -1}   // Chéo phụ: Đông Bắc - Tây Nam
-        };
-
-        for (int[] dir : directions) {
+        // Ngang, dọc, chéo chính, chéo phụ.
+        for (int[] dir : WIN_DIRECTIONS) {
             int dr = dir[0];
             int dc = dir[1];
 
@@ -173,11 +182,17 @@ public class Board {
             // Kiểm tra điều kiện độ dài theo từng RULE
             boolean lengthValid = (rule == WinRule.RULE_A) ? (consecutive == WIN_COUNT) : (consecutive >= WIN_COUNT);
 
-            if (lengthValid) {
-                // Chỉ khi bị chặn CẢ HAI ĐẦU bởi quân đối thủ mới KHÔNG THẮNG
-                if (!(blockedForward && blockedBackward)) {
-                    return true;
+            if (lengthValid && !(blockedForward && blockedBackward)) {
+                if (cells != null) {
+                    int row = lastRow - dr * backwardCount;
+                    int col = lastCol - dc * backwardCount;
+                    for (int i = 0; i < consecutive; i++) {
+                        cells.add(new Cell(row, col));
+                        row += dr;
+                        col += dc;
+                    }
                 }
+                return true;
             }
         }
         return false;

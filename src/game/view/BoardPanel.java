@@ -35,6 +35,7 @@ public class BoardPanel extends JPanel {
 
     // Màu quân cờ
     private static final Color LAST_MARKER      = Theme.MOVE_MARKER;
+    private static final Color WINNING_RING    = new Color(0xFFE27A);
 
     private static final int STONE_RADIUS = CELL_SIZE / 2 - 3;
 
@@ -56,6 +57,7 @@ public class BoardPanel extends JPanel {
     private Piece currentTurn = Piece.X;
     private boolean isGameOver = false;
     private Piece winner = Piece.NONE;
+    private List<Board.Cell> winningLine = List.of();
     private boolean isAiThinking = false;
     private int lastMoveRow = -1, lastMoveCol = -1;
     private int hoverRow = -1, hoverCol = -1;
@@ -205,6 +207,7 @@ public class BoardPanel extends JPanel {
     public int getGameId() { return gameId; }
     public boolean isGameOver() { return isGameOver; }
     public Piece getWinner() { return winner; }
+    public List<Board.Cell> getWinningLine() { return winningLine; }
     public String getGameOverMessage() {
         if (!isGameOver) return null;
         return winner == Piece.NONE ? Lang.drawGame() : buildWinMessage(winner);
@@ -223,6 +226,7 @@ public class BoardPanel extends JPanel {
         currentTurn = Piece.X;
         isGameOver = isAiThinking = false;
         winner = Piece.NONE;
+        winningLine = List.of();
         restartWaiting = false;
         lastMoveRow = lastMoveCol = hoverRow = hoverCol = -1;
         setCursor(Cursor.getDefaultCursor());
@@ -261,6 +265,7 @@ public class BoardPanel extends JPanel {
             currentTurn = Piece.X;
         }
         winner = Piece.NONE;
+        winningLine = List.of();
 
         if (!moveHistory.isEmpty()) {
             Move prev = moveHistory.get(moveHistory.size() - 1);
@@ -371,6 +376,7 @@ public class BoardPanel extends JPanel {
         if (board.checkWin(row, col)) {
             isGameOver = true;
             winner = piece;
+            winningLine = board.findWinningLine(row, col);
             final int resultGameId = gameId;
             SoundManager.playVictorySound(() -> resultGameId == gameId && isEnabled());
             repaint();
@@ -384,6 +390,7 @@ public class BoardPanel extends JPanel {
         if (board.isFull()) {
             isGameOver = true;
             winner = Piece.NONE;
+            winningLine = List.of();
             repaint();
             if (stateListener != null) {
                 int resultGameId = gameId;
@@ -506,6 +513,7 @@ public class BoardPanel extends JPanel {
         drawStarPoints(g2);
         drawHover(g2);
         drawStones(g2);
+        drawWinningLine(g2);
     }
 
     private void drawBoard(Graphics2D g2) {
@@ -575,6 +583,25 @@ public class BoardPanel extends JPanel {
                 }
             }
         }
+    }
+
+    private void drawWinningLine(Graphics2D graphics) {
+        if (winningLine.isEmpty()) return;
+        Graphics2D g = (Graphics2D) graphics.create();
+        int diameter = 2 * STONE_RADIUS;
+        BasicStroke outline = new BasicStroke(5f);
+        BasicStroke ring = new BasicStroke(2.5f);
+        for (Board.Cell cell : winningLine) {
+            int x = OFFSET + cell.col() * CELL_SIZE - STONE_RADIUS;
+            int y = OFFSET + cell.row() * CELL_SIZE - STONE_RADIUS;
+            g.setColor(Theme.DARK);
+            g.setStroke(outline);
+            g.drawOval(x, y, diameter, diameter);
+            g.setColor(WINNING_RING);
+            g.setStroke(ring);
+            g.drawOval(x, y, diameter, diameter);
+        }
+        g.dispose();
     }
 
     private void drawSingleStone(Graphics2D g2, int row, int col, Piece piece) {
