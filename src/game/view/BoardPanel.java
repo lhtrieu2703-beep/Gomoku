@@ -9,6 +9,7 @@ import game.network.NetworkManager;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.Ellipse2D;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -35,6 +36,10 @@ public class BoardPanel extends JPanel {
 
     // Màu quân cờ
     private static final Color LAST_MARKER      = Theme.MOVE_MARKER;
+    private static final Color WIN_HIGHLIGHT_COLOR = new Color(0xE53935);
+    private static final Color WIN_HIGHLIGHT_OUTLINE_COLOR = new Color(255, 255, 255, 128);
+    private static final float WIN_HIGHLIGHT_WIDTH = 3f;
+    private static final float WIN_HIGHLIGHT_OUTLINE_WIDTH = 1.5f;
 
     private static final int STONE_RADIUS = CELL_SIZE / 2 - 3;
 
@@ -56,6 +61,7 @@ public class BoardPanel extends JPanel {
     private Piece currentTurn = Piece.X;
     private boolean isGameOver = false;
     private Piece winner = Piece.NONE;
+    private List<Board.Cell> winningLine = List.of();
     private boolean isAiThinking = false;
     private int lastMoveRow = -1, lastMoveCol = -1;
     private int hoverRow = -1, hoverCol = -1;
@@ -205,6 +211,7 @@ public class BoardPanel extends JPanel {
     public int getGameId() { return gameId; }
     public boolean isGameOver() { return isGameOver; }
     public Piece getWinner() { return winner; }
+    public List<Board.Cell> getWinningLine() { return winningLine; }
     public String getGameOverMessage() {
         if (!isGameOver) return null;
         return winner == Piece.NONE ? Lang.drawGame() : buildWinMessage(winner);
@@ -223,6 +230,7 @@ public class BoardPanel extends JPanel {
         currentTurn = Piece.X;
         isGameOver = isAiThinking = false;
         winner = Piece.NONE;
+        winningLine = List.of();
         restartWaiting = false;
         lastMoveRow = lastMoveCol = hoverRow = hoverCol = -1;
         setCursor(Cursor.getDefaultCursor());
@@ -261,6 +269,7 @@ public class BoardPanel extends JPanel {
             currentTurn = Piece.X;
         }
         winner = Piece.NONE;
+        winningLine = List.of();
 
         if (!moveHistory.isEmpty()) {
             Move prev = moveHistory.get(moveHistory.size() - 1);
@@ -371,6 +380,7 @@ public class BoardPanel extends JPanel {
         if (board.checkWin(row, col)) {
             isGameOver = true;
             winner = piece;
+            winningLine = board.findWinningLine(row, col);
             final int resultGameId = gameId;
             SoundManager.playVictorySound(() -> resultGameId == gameId && isEnabled());
             repaint();
@@ -384,6 +394,7 @@ public class BoardPanel extends JPanel {
         if (board.isFull()) {
             isGameOver = true;
             winner = Piece.NONE;
+            winningLine = List.of();
             repaint();
             if (stateListener != null) {
                 int resultGameId = gameId;
@@ -506,6 +517,7 @@ public class BoardPanel extends JPanel {
         drawStarPoints(g2);
         drawHover(g2);
         drawStones(g2);
+        drawWinningLine(g2);
     }
 
     private void drawBoard(Graphics2D g2) {
@@ -575,6 +587,29 @@ public class BoardPanel extends JPanel {
                 }
             }
         }
+    }
+
+    private void drawWinningLine(Graphics2D graphics) {
+        if (winningLine.isEmpty()) return;
+        Graphics2D g = (Graphics2D) graphics.create();
+        int diameter = 2 * STONE_RADIUS;
+        float outlineRadius = STONE_RADIUS + (WIN_HIGHLIGHT_WIDTH + WIN_HIGHLIGHT_OUTLINE_WIDTH) / 2f;
+        Ellipse2D.Float outlineShape = new Ellipse2D.Float();
+        BasicStroke outline = new BasicStroke(WIN_HIGHLIGHT_OUTLINE_WIDTH);
+        BasicStroke ring = new BasicStroke(WIN_HIGHLIGHT_WIDTH);
+        for (Board.Cell cell : winningLine) {
+            int centerX = OFFSET + cell.col() * CELL_SIZE;
+            int centerY = OFFSET + cell.row() * CELL_SIZE;
+            outlineShape.setFrame(centerX - outlineRadius, centerY - outlineRadius,
+                    2 * outlineRadius, 2 * outlineRadius);
+            g.setColor(WIN_HIGHLIGHT_OUTLINE_COLOR);
+            g.setStroke(outline);
+            g.draw(outlineShape);
+            g.setColor(WIN_HIGHLIGHT_COLOR);
+            g.setStroke(ring);
+            g.drawOval(centerX - STONE_RADIUS, centerY - STONE_RADIUS, diameter, diameter);
+        }
+        g.dispose();
     }
 
     private void drawSingleStone(Graphics2D g2, int row, int col, Piece piece) {
