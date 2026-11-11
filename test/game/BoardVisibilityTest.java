@@ -12,13 +12,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class BoardVisibilityTest {
     @ParameterizedTest @ValueSource(strings={"1.0","1.5"})
     void realModalGameFlowPaintsGridAndStoneInChildJvm(String scale) throws Exception {
-        Path folder=Path.of("bin_test","board-visibility", "scale-"+scale).toAbsolutePath();
+        Path workingDirectory=Path.of("").toAbsolutePath().normalize();
+        Path folder=Path.of("bin_test","board-visibility", "scale-"+scale);
         Files.createDirectories(folder);Path log=folder.resolve("probe.txt");
-        String classpath=Path.of(BoardDisplayProbe.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                +File.pathSeparator+Path.of(BoardPanel.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        // The Windows launcher can decode argv using Cp1252; keep Unicode parent paths out of argv.
+        String classpath=workingDirectory.relativize(Path.of(BoardDisplayProbe.class.getProtectionDomain().getCodeSource().getLocation().toURI()).normalize())
+                +File.pathSeparator+workingDirectory.relativize(Path.of(BoardPanel.class.getProtectionDomain().getCodeSource().getLocation().toURI()).normalize());
         Process child=new ProcessBuilder(Path.of(System.getProperty("java.home"),"bin","java.exe").toString(),
                 "-Dsun.java2d.uiScale="+scale,"-Dstdout.encoding=UTF-8","-cp",classpath,
-                "game.BoardDisplayProbe",folder.toString()).redirectErrorStream(true).redirectOutput(log.toFile()).start();
+                "game.BoardDisplayProbe",folder.toString()).directory(workingDirectory.toFile())
+                .redirectErrorStream(true).redirectOutput(log.toFile()).start();
         boolean finished=child.waitFor(45,TimeUnit.SECONDS);
         if(!finished) { child.destroyForcibly(); child.waitFor(5,TimeUnit.SECONDS); }
         String evidence=Files.readString(log);
