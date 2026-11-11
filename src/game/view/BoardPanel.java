@@ -28,12 +28,6 @@ public class BoardPanel extends JPanel {
     public static final int CELL_SIZE = 38;
     public static final int OFFSET = 32;
 
-    // Màu bàn cờ gỗ
-    private static final Color BOARD_COLOR      = Theme.BOARD_FACE;
-    private static final Color BOARD_DARK       = Theme.BOARD_EDGE;
-    private static final Color LINE_COLOR       = Theme.GRID;
-    private static final Color STAR_COLOR       = Theme.STAR;
-
     // Màu quân cờ
     private static final Color LAST_MARKER      = Theme.MOVE_MARKER;
     private static final Color WIN_HIGHLIGHT_COLOR = new Color(0xE53935);
@@ -58,6 +52,8 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     private final Board board;
+    private BoardTheme boardTheme = BoardTheme.WARM_WOOD;
+    private PieceStyle pieceStyle = PieceStyle.CLASSIC;
     private Piece currentTurn = Piece.X;
     private boolean isGameOver = false;
     private Piece winner = Piece.NONE;
@@ -119,7 +115,7 @@ public class BoardPanel extends JPanel {
         setPreferredSize(new Dimension(panelSize, panelSize));
         // Painting uses fixed coordinates; GridBag must not collapse this to JPanel's 10x10 minimum.
         setMinimumSize(new Dimension(panelSize, panelSize));
-        setBackground(Theme.BOARD);
+        setBackground(boardTheme.surround());
 
         // Click chuột
         addMouseListener(new MouseAdapter() {
@@ -212,6 +208,19 @@ public class BoardPanel extends JPanel {
     public boolean isGameOver() { return isGameOver; }
     public Piece getWinner() { return winner; }
     public List<Board.Cell> getWinningLine() { return winningLine; }
+    public BoardTheme getBoardTheme() { return boardTheme; }
+    public PieceStyle getPieceStyle() { return pieceStyle; }
+
+    void setBoardTheme(BoardTheme theme) {
+        boardTheme = java.util.Objects.requireNonNull(theme);
+        setBackground(theme.surround());
+        repaint();
+    }
+
+    void setPieceStyle(PieceStyle style) {
+        pieceStyle = java.util.Objects.requireNonNull(style);
+        repaint();
+    }
     public String getGameOverMessage() {
         if (!isGameOver) return null;
         return winner == Piece.NONE ? Lang.drawGame() : buildWinMessage(winner);
@@ -528,16 +537,16 @@ public class BoardPanel extends JPanel {
         g2.setColor(Theme.SHADOW);
         g2.fillRoundRect(x0 + 4, y0 + 4, bw, bh, 10, 10);
 
-        g2.setColor(BOARD_COLOR);
+        g2.setPaint(boardTheme.surface(y0, bh));
         g2.fillRoundRect(x0, y0, bw, bh, 10, 10);
 
-        g2.setColor(BOARD_DARK);
+        g2.setColor(boardTheme.edge());
         g2.setStroke(new BasicStroke(2.5f));
         g2.drawRoundRect(x0, y0, bw, bh, 10, 10);
     }
 
     private void drawGrid(Graphics2D g2) {
-        g2.setColor(LINE_COLOR);
+        g2.setColor(boardTheme.grid());
         g2.setStroke(new BasicStroke(1.2f));
         int end = (Board.SIZE - 1) * CELL_SIZE;
 
@@ -553,7 +562,7 @@ public class BoardPanel extends JPanel {
     }
 
     private void drawStarPoints(Graphics2D g2) {
-        g2.setColor(STAR_COLOR);
+        g2.setColor(boardTheme.star());
         int[] pts = {3, 7, 11};
         for (int r : pts) {
             for (int c : pts) {
@@ -617,6 +626,6 @@ public class BoardPanel extends JPanel {
         int cy = OFFSET + row * CELL_SIZE;
         int r  = STONE_RADIUS;
 
-        StonePainter.paint(g2, cx, cy, r, piece);
+        StonePainter.paint(g2, cx, cy, r, piece, pieceStyle);
     }
 }

@@ -23,6 +23,23 @@ public class Lang {
     public static String done() { return text("Xong","Done","Concluir"); }
     public static String cancel() { return text("Hủy","Cancel","Cancelar"); }
     public static String settings() { return text("Cài đặt","Settings","Configurações"); }
+    public static String appearance() { return text("Giao diện", "Appearance", "Aparência"); }
+    public static String boardThemeLabel() { return text("Bàn cờ", "Board", "Tabuleiro"); }
+    public static String pieceStyleLabel() { return text("Quân cờ", "Stones", "Peças"); }
+    public static String boardThemeName(BoardTheme theme) {
+        return switch (theme) {
+            case WARM_WOOD -> text("Gỗ ấm", "Warm wood", "Madeira quente");
+            case CHARCOAL_STONE -> text("Đá xám than", "Charcoal stone", "Pedra cinza");
+            case DARK_JADE -> text("Xanh ngọc đậm", "Dark jade", "Jade escuro");
+        };
+    }
+    public static String pieceStyleName(PieceStyle style) {
+        return switch (style) {
+            case CLASSIC -> text("Cổ điển đen/trắng", "Classic black/white", "Clássico preto/branco");
+            case GLASS -> text("Bóng kính", "Glossy glass", "Vidro brilhante");
+            case METALLIC -> text("Vàng/Bạc", "Gold/Silver", "Ouro/Prata");
+        };
+    }
     public static String duplicatePlayerNames() { return text("Tên hai người chơi phải khác nhau.","Player names must be different.","Os nomes dos jogadores devem ser diferentes."); }
     public static String resetScore() { return text("Đặt lại tỉ số","Reset score","Zerar placar"); }
     public static String confirmResetScore() { return text("Đặt lại tỉ số về 0?","Reset the score to zero?","Zerar o placar?"); }
@@ -35,6 +52,12 @@ public class Lang {
     public static String computerName(game.ai.MinimaxAI.Difficulty difficulty) { return text("Máy","Computer","Computador")+" ("+difficultyName(difficulty)+")"; }
     public static String opponentName() { return text("Đối thủ","Opponent","Adversário"); }
     public static String pieceName(game.model.Piece piece) { return piece==game.model.Piece.X?text("Quân Đen","Black","Preto"):text("Quân Trắng","White","Branco"); }
+    public static String pieceName(game.model.Piece piece, PieceStyle style) {
+        if (style != PieceStyle.METALLIC) return pieceName(piece);
+        return piece == game.model.Piece.X
+                ? text("Quân Vàng (Đen)", "Gold (Black)", "Ouro (Preto)")
+                : text("Quân Bạc (Trắng)", "Silver (White)", "Prata (Branco)");
+    }
     public static String ruleExample(boolean win) { return win?text("Thắng","Win","Vitória"):text("Không thắng (bị chặn hai đầu)","No win (both ends blocked)","Sem vitória (as duas extremidades bloqueadas)"); }
     public static String rules(String key) {
         return switch(key) {
