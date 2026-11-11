@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.LongSupplier;
+import java.util.function.Function;
 
 /**
  * Bàn cờ Gomoku kiểu cổ điển:
@@ -58,6 +59,10 @@ public class BoardPanel extends JPanel {
     private boolean isGameOver = false;
     private Piece winner = Piece.NONE;
     private List<Board.Cell> winningLine = List.of();
+    private final EndGameOverlay resultOverlay = new EndGameOverlay();
+    private final JButton showResultButton = new ThemedButton("", ThemedButton.Style.SECONDARY);
+    private boolean resultAvailable;
+    private Function<Piece, String> winnerNameProvider;
     private boolean isAiThinking = false;
     private int lastMoveRow = -1, lastMoveCol = -1;
     private int hoverRow = -1, hoverCol = -1;
@@ -116,6 +121,17 @@ public class BoardPanel extends JPanel {
         // Painting uses fixed coordinates; GridBag must not collapse this to JPanel's 10x10 minimum.
         setMinimumSize(new Dimension(panelSize, panelSize));
         setBackground(boardTheme.surround());
+        setLayout(null);
+        add(resultOverlay); add(showResultButton); showResultButton.setVisible(false);
+        resultOverlay.getViewBoardButton().addActionListener(event -> {
+            resultOverlay.setVisible(false); showResultButton.setVisible(resultAvailable);
+            doLayout(); repaint(); showResultButton.requestFocusInWindow();
+        });
+        showResultButton.addActionListener(event -> {
+            if (!resultAvailable || !isGameOver) return;
+            showResultButton.setVisible(false); resultOverlay.setVisible(true);
+            resultOverlay.getViewBoardButton().requestFocusInWindow(); repaint();
+        });
 
         // Click chuột
         addMouseListener(new MouseAdapter() {
@@ -210,6 +226,38 @@ public class BoardPanel extends JPanel {
     public List<Board.Cell> getWinningLine() { return winningLine; }
     public BoardTheme getBoardTheme() { return boardTheme; }
     public PieceStyle getPieceStyle() { return pieceStyle; }
+    public EndGameOverlay getResultOverlay() { return resultOverlay; }
+    public JButton getShowResultButton() { return showResultButton; }
+
+    void setWinnerNameProvider(Function<Piece, String> provider) { winnerNameProvider = provider; }
+    void setResultActions(Runnable newGame, Runnable menu) {
+        resultOverlay.getNewGameButton().addActionListener(event -> newGame.run());
+        resultOverlay.getMenuButton().addActionListener(event -> menu.run());
+    }
+    void showResult(String name, int firstWins, int secondWins, int draws) {
+        resultAvailable = true;
+        updateResult(name, firstWins, secondWins, draws);
+        showResultButton.setVisible(false); resultOverlay.setVisible(true);
+        doLayout(); repaint();
+    }
+    void updateResult(String name, int firstWins, int secondWins, int draws) {
+        if (!resultAvailable) return;
+        resultOverlay.update(name, winner, pieceStyle, firstWins, secondWins, draws);
+        showResultButton.setText(Lang.showResult());
+        doLayout(); repaint();
+    }
+    void clearResult() {
+        resultAvailable = false;
+        resultOverlay.setVisible(false); showResultButton.setVisible(false); repaint();
+    }
+    @Override public void doLayout() {
+        if (!resultAvailable) return;
+        Dimension size = getWidth() > 0 ? getSize() : getPreferredSize();
+        Rectangle bounds = EndGameOverlay.boundsFor(winningLine, size);
+        resultOverlay.setBounds(bounds); resultOverlay.doLayout();
+        Dimension button = showResultButton.getPreferredSize();
+        showResultButton.setBounds(bounds.x + bounds.width - button.width, bounds.y, button.width, 36);
+    }
 
     void setBoardTheme(BoardTheme theme) {
         boardTheme = java.util.Objects.requireNonNull(theme);
@@ -223,7 +271,7 @@ public class BoardPanel extends JPanel {
     }
     public String getGameOverMessage() {
         if (!isGameOver) return null;
-        return winner == Piece.NONE ? Lang.drawGame() : buildWinMessage(winner);
+        return winner == Piece.NONE ? Lang.drawResult() : buildWinMessage(winner);
     }
     public boolean isAiThinking() { return isAiThinking; }
     public int getLastMoveRow() { return lastMoveRow; }
@@ -232,6 +280,7 @@ public class BoardPanel extends JPanel {
 
     // =========================================================================
     public void resetGame() {
+        clearResult();
         gameId++;
         cancelAiComputation();
         board.reset();
@@ -253,6 +302,7 @@ public class BoardPanel extends JPanel {
     // =========================================================================
     public void undoMove() {
         if (!canUndo()) return;
+        clearResult();
 
         boolean wasGameOver = isGameOver;
         cancelAiComputation();
@@ -407,7 +457,7 @@ public class BoardPanel extends JPanel {
             repaint();
             if (stateListener != null) {
                 int resultGameId = gameId;
-                stateListener.onGameOver(gameId, Lang.drawGame(), Piece.NONE);
+                stateListener.onGameOver(gameId, Lang.drawResult(), Piece.NONE);
                 if (resultGameId == gameId) stateListener.onHistoryChanged(canUndo());
             }
             return;
@@ -429,6 +479,7 @@ public class BoardPanel extends JPanel {
     }
 
     private String buildWinMessage(Piece winner) {
+        if (winnerNameProvider != null) return Lang.namedWinner(winnerNameProvider.apply(winner));
         if (gameMode == GameMode.ONLINE) {
             return (winner == myPiece) ? Lang.youWin() : Lang.youLose();
         } else if (gameMode == GameMode.PV_AI) {

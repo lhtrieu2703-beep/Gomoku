@@ -150,17 +150,15 @@ class F1ProtocolTest {
                 for (int c = 0; c < 4; c++) panel.executeMoveForTest(7, c, Piece.X);
                 NetworkManager manager = P2LifecycleTest.field(frame, "networkManager");
                 NetworkManager.NetworkListener networkListener = P2LifecycleTest.field(manager, "listener");
-                SwingUtilities.invokeLater(() -> {
-                    JDialog popup = P2LifecycleTest.field(frame, "resultDialog"); assertNotNull(popup); assertTrue(popup.isVisible());
-                    networkListener.onRoundStarted(base, next);
-                    assertFalse(popup.isDisplayable());
-                });
                 panel.executeMoveForTest(7, 4, Piece.X);
+                assertTrue(panel.getResultOverlay().isVisible());
+                networkListener.onRoundStarted(base, next);
+                assertFalse(panel.getResultOverlay().isVisible());
                 assertFalse(panel.isGameOver()); assertEquals(next, panel.getNetworkRoundId()); assertTrue(panel.getMoveHistory().isEmpty());
                 int wins = frame.getScoreTracker().getHumanWins();
                 BoardPanel.GameStateListener state = P2LifecycleTest.field(panel, "stateListener");
                 state.onGameOver(oldGameId, "stale", Piece.X);
-                assertEquals(wins, frame.getScoreTracker().getHumanWins()); assertNull(P2LifecycleTest.field(frame, "resultDialog"));
+                assertEquals(wins, frame.getScoreTracker().getHumanWins()); assertFalse(panel.getResultOverlay().isVisible());
             } finally { frame.dispose(); }
         });
     }

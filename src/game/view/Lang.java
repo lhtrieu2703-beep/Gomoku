@@ -595,6 +595,15 @@ public class Lang {
     // =========================================================================
     // Kết thúc ván
     // =========================================================================
+    public static String victory() { return text("CHIẾN THẮNG!", "WINS!", "VENCEU!"); }
+    public static String namedWinner(String name) { return name + " " + victory(); }
+    public static String drawResult() { return text("HÒA CỜ", "DRAW", "EMPATE"); }
+    public static String viewBoard() { return text("Xem bàn cờ", "View board", "Ver tabuleiro"); }
+    public static String showResult() { return text("Hiện kết quả", "Show result", "Mostrar resultado"); }
+    public static String resultScore(int first, int second, int drawn) {
+        return wins() + ": " + first + " – " + second + "    •    " + draws() + ": " + drawn;
+    }
+
     public static String youWin() {
         return switch (current) {
             case VI -> "Bạn đã CHIẾN THẮNG!";

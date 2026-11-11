@@ -33,11 +33,11 @@ class Task4bGameplayTest {
             MainFrame f=Task4StartScreenTest.frame(Lang.Language.PT);
             try {
                 f.beginGame(BoardPanel.GameMode.PVP,MinimaxAI.Difficulty.MEDIUM); BoardPanel panel=f.getBoardPanel();
-                SwingUtilities.invokeLater(() -> { JDialog result=P2LifecycleTest.field(f,"resultDialog"); assertNotNull(result); result.dispose(); });
                 if(winner==Piece.NONE) {
                     for(int r=0;r<15;r++) for(int c=0;c<15;c++) panel.executeMoveForTest(r,c,(c+(r%2==0?0:2))%4<2?Piece.X:Piece.O);
                 } else for(int c=0;c<5;c++) panel.executeMoveForTest(7,c,winner);
                 assertTrue(panel.isGameOver());
+                assertTrue(panel.getResultOverlay().isVisible());
                 assertEquals(Lang.wins()+": "+(winner==Piece.X?1:0),f.getLeftPlayerCard().getWinsLabel().getText());
                 assertEquals(Lang.wins()+": "+(winner==Piece.O?1:0),f.getRightPlayerCard().getWinsLabel().getText());
                 assertEquals(Lang.draws()+": "+(winner==Piece.NONE?1:0),f.getDrawsLabel().getText());
