@@ -28,7 +28,6 @@ public class MainFrame extends JFrame {
     private boolean disposed;
     private NetworkManager networkManager;
     private NetworkDialog networkDialog;
-    private JDialog resultDialog;
     private final Runnable languageListener=this::updateLanguage;
     private final KeyEventDispatcher titleKeys=event -> {
         if(!disposed && screen==Screen.TITLE && event.getID()==KeyEvent.KEY_PRESSED
@@ -61,6 +60,9 @@ public class MainFrame extends JFrame {
         turnText.setEditable(false); turnText.setFocusable(false); turnText.setLineWrap(true); turnText.setWrapStyleWord(true);
         turnText.setBackground(Theme.DARK); turnText.setForeground(Theme.CREAM); turnText.setFont(Theme.font(Font.PLAIN,13));
         turnText.setBorder(BorderFactory.createEmptyBorder(2,8,2,8));
+        turnText.addComponentListener(new ComponentAdapter() {
+            @Override public void componentResized(ComponentEvent event) { fitStatusText(); }
+        });
         drawsLabel.setForeground(Theme.BRASS); drawsLabel.setFont(Theme.font(Font.BOLD,13));
         JPanel middle=new JPanel(new BorderLayout(0,2)); middle.setOpaque(false); middle.add(turnText); middle.add(drawsLabel,BorderLayout.SOUTH);
         GridBagConstraints cell=new GridBagConstraints(); cell.fill=GridBagConstraints.BOTH; cell.weighty=1;
@@ -79,6 +81,8 @@ public class MainFrame extends JFrame {
         toolbar.add(actions); toolbar.add(right,BorderLayout.EAST); gameCard.add(toolbar,BorderLayout.SOUTH);
         btnBackToMenu.addActionListener(e -> returnToMenu()); btnUndo.addActionListener(e -> { if(isGameActive()) boardPanel.undoMove(); });
         btnNewGame.addActionListener(e -> newGame()); rulesButton.addActionListener(e -> showRules()); settingsButton.addActionListener(e -> showSettings());
+        boardPanel.setWinnerNameProvider(this::winnerName);
+        boardPanel.setResultActions(this::newGame, this::returnToMenu);
         boardPanel.setGameStateListener(new BoardPanel.GameStateListener() {
             public void onTurnChanged(Piece turn,boolean thinking) { refreshGameStatus(); }
             public void onGameReopened(int gameId) {
@@ -92,9 +96,7 @@ public class MainFrame extends JFrame {
                 Piece local=boardPanel.getGameMode()==BoardPanel.GameMode.ONLINE?boardPanel.getMyPiece():Piece.X;
                 boolean first=scoreTracker.recordResult(gameId,winner,local); refreshGameStatus();
                 if(!first) return;
-                closeResultDialog(); JDialog dialog=new JOptionPane(message,JOptionPane.INFORMATION_MESSAGE).createDialog(MainFrame.this,Lang.gameOverTitle());
-                resultDialog=dialog;
-                try { dialog.setVisible(true); } finally { if(resultDialog==dialog) resultDialog=null; dialog.dispose(); }
+                boardPanel.showResult(winnerName(winner), scoreTracker.getHumanWins(), scoreTracker.getAiWins(), scoreTracker.getDraws());
             }
             public void onAiStatsUpdated(long time,long nodes,long prunes) {}
             public void onHistoryChanged(boolean undo) { btnUndo.setEnabled(isGameActive()&&undo); }
@@ -113,7 +115,7 @@ public class MainFrame extends JFrame {
     public void startGame() { if(!disposed&&!isGameActive()) beginGame(selectedMode,selectedDifficulty); }
     public void beginGame(BoardPanel.GameMode mode,MinimaxAI.Difficulty difficulty) {
         if(disposed) return;
-        closeResultDialog();
+        boardPanel.clearResult();
         if(mode!=selectedMode || difficulty!=selectedDifficulty) scoreTracker.resetScores();
         selectedMode=mode; selectedDifficulty=difficulty;
         boardPanel.setGameMode(mode); boardPanel.setAiDifficulty(difficulty); boardPanel.setEnabled(true);
@@ -130,7 +132,7 @@ public class MainFrame extends JFrame {
         if(!isGameActive()) return;
         if(boardPanel.getGameMode()==BoardPanel.GameMode.ONLINE) {
             if(networkManager.requestRestart(boardPanel.getNetworkRoundId())&&!networkManager.isHost()) boardPanel.setRestartWaiting(true);
-        } else { closeResultDialog(); scoreTracker.newGame(); boardPanel.resetGame(); }
+        } else { boardPanel.clearResult(); scoreTracker.newGame(); boardPanel.resetGame(); }
     }
     public void updateProfile(PlayerProfile value) { profile=value; appSettings.saveProfile(value); updateLanguage(); }
     public void setSecondProfile(PlayerProfile value) { secondProfile=value; refreshGameStatus(); }
@@ -167,11 +169,11 @@ public class MainFrame extends JFrame {
             public void onMoveReceived(String round,int ply,int row,int col) { if(isGameActive()) boardPanel.applyOpponentMove(round,ply,row,col); }
             public void onRestartRequested() {}
             public void onRoundStarted(String base,String next) {
-                if(isGameActive()&&Objects.equals(base,boardPanel.getNetworkRoundId())) { closeResultDialog(); scoreTracker.newGame(); boardPanel.startOnlineRound(base,next); }
+                if(isGameActive()&&Objects.equals(base,boardPanel.getNetworkRoundId())) { boardPanel.clearResult(); scoreTracker.newGame(); boardPanel.startOnlineRound(base,next); }
             }
             public void onRestartWaiting(String base) { if(isGameActive()&&Objects.equals(base,boardPanel.getNetworkRoundId())) boardPanel.setRestartWaiting(true); }
             public void onOpponentDisconnected() {
-                if(isGameActive()) { closeResultDialog(); boardPanel.setRestartWaiting(false); returnToMenu();
+                if(isGameActive()) { boardPanel.clearResult(); boardPanel.setRestartWaiting(false); returnToMenu();
                     JOptionPane.showMessageDialog(MainFrame.this,Lang.opponentDisconnected(),Lang.disconnectedTitle(),JOptionPane.WARNING_MESSAGE); }
             }
             public void onError(NetworkManager.NetworkError error) { if(!disposed&&networkDialog!=null) networkDialog.onConnectionFailed(Lang.networkError(error)); }
@@ -180,9 +182,8 @@ public class MainFrame extends JFrame {
             SwingUtilities.invokeLater(() -> { if(!disposed&&epoch==screenEpoch&&(isGameActive()||networkDialog!=null)) callback.run(); });
         });
     }
-    private void closeResultDialog() { if(resultDialog!=null) { JDialog old=resultDialog; resultDialog=null; old.dispose(); } }
     private void closeOwnedDialogs() {
-        closeResultDialog(); NetworkDialog old=networkDialog; networkDialog=null; if(old!=null) old.dispose();
+        boardPanel.clearResult(); NetworkDialog old=networkDialog; networkDialog=null; if(old!=null) old.dispose();
         for(Window window:getOwnedWindows()) if(window instanceof Dialog) window.dispose();
     }
     private void updateLanguage() {
@@ -197,7 +198,7 @@ public class MainFrame extends JFrame {
         String status=boardPanel.isRestartWaiting()?Lang.restartWaiting():boardPanel.isGameOver()?boardPanel.getGameOverMessage():
             mode==BoardPanel.GameMode.ONLINE?(turn==boardPanel.getMyPiece()?Lang.onlineYourTurn():Lang.onlineOpponentTurn()):
             boardPanel.isAiThinking()?Lang.aiThinking():mode==BoardPanel.GameMode.PV_AI?(turn==Piece.X?Lang.yourTurn():Lang.aiTurn()):"";
-        statusText=status; turnText.setText(status); drawsLabel.setText(Lang.draws()+": "+scoreTracker.getDraws());
+        statusText=status; fitStatusText(); drawsLabel.setText(Lang.draws()+": "+scoreTracker.getDraws());
         Piece local=PieceBadgeIcon.pieceForCard(mode,boardPanel.getMyPiece(),true);
         Piece active=boardPanel.isGameOver()?boardPanel.getWinner():boardPanel.getCurrentTurn();
         String opponent=mode==BoardPanel.GameMode.PV_AI?Lang.computerName(selectedDifficulty):mode==BoardPanel.GameMode.ONLINE?Lang.opponentName():secondProfile.displayName(true);
@@ -205,6 +206,23 @@ public class MainFrame extends JFrame {
         PieceStyle style = boardPanel.getPieceStyle();
         leftPlayer.update(profile.displayName(),profile.avatarIndex(),scoreTracker.getHumanWins(),active!=Piece.NONE&&active==local,local,style);
         rightPlayer.update(opponent,opponentAvatar,scoreTracker.getAiWins(),active!=Piece.NONE&&active!=local,local.opposite(),style);
+        if (boardPanel.isGameOver()) boardPanel.updateResult(winnerName(boardPanel.getWinner()),
+                scoreTracker.getHumanWins(), scoreTracker.getAiWins(), scoreTracker.getDraws());
+    }
+    private String winnerName(Piece piece) {
+        if (piece == Piece.NONE) return "";
+        BoardPanel.GameMode mode = boardPanel.getGameMode();
+        if (mode == BoardPanel.GameMode.PV_AI && piece == Piece.O) return Lang.computerName(selectedDifficulty);
+        if (mode == BoardPanel.GameMode.ONLINE && piece != boardPanel.getMyPiece()) return Lang.opponentName();
+        boolean second = mode == BoardPanel.GameMode.PVP && piece == Piece.O;
+        PlayerProfile player = second ? secondProfile : profile;
+        return player.name().isEmpty() ? player.displayName(second) + " (" + Lang.pieceName(piece) + ")" : player.name();
+    }
+    private void fitStatusText() {
+        Insets padding = turnText.getInsets();
+        int width = turnText.getWidth() - padding.left - padding.right;
+        turnText.setText(width > 0 ? TextFit.lines(statusText, turnText.getFontMetrics(turnText.getFont()), width, 3) : statusText);
+        turnText.setToolTipText(statusText);
     }
     @Override public void dispose() {
         disposed=true; screenEpoch++; if(startScreen!=null) startScreen.setActive(false); boardPanel.setEnabled(false);
@@ -218,6 +236,7 @@ public class MainFrame extends JFrame {
     public String getPlayerName() { return profile.displayName(); } public BoardPanel.GameMode getSelectedMode() { return selectedMode; }
     public MinimaxAI.Difficulty getSelectedDifficulty() { return selectedDifficulty; }
     public JButton getBackToMenuButton() { return btnBackToMenu; } public JButton getUndoButton() { return btnUndo; }
+    public JButton getNewGameButton() { return btnNewGame; }
     public JButton getRulesButton() { return rulesButton; } public JButton getSettingsButton() { return settingsButton; }
     public String getStatusText() { return statusText; }
     public PlayerCard getLeftPlayerCard() { return leftPlayer; } public PlayerCard getRightPlayerCard() { return rightPlayer; }

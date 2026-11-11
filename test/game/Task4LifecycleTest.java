@@ -173,17 +173,14 @@ class Task4LifecycleTest {
             BoardPanel panel = frame.getBoardPanel(); int oldId = panel.getGameId();
             for (int c = 0; c < 4; c++) { panel.playMove(7, c); panel.playMove(0, c * 2); }
             JDialog scores = new RulesDialog(frame); scores.setModal(false); scores.setVisible(true);
-            SwingUtilities.invokeLater(() -> {
-                JDialog result = P2LifecycleTest.field(frame, "resultDialog");
-                assertNotNull(result); assertTrue(result.isVisible());
-                frame.returnToMenu(); assertFalse(result.isDisplayable()); assertFalse(scores.isDisplayable());
-                frame.startGame();
-            });
             panel.playMove(7, 4);
+            assertTrue(panel.getResultOverlay().isVisible());
+            frame.returnToMenu(); assertFalse(panel.getResultOverlay().isVisible()); assertFalse(scores.isDisplayable());
+            frame.startGame();
             assertEquals(1, frame.getScoreTracker().getHumanWins());
             BoardPanel.GameStateListener listener = P2LifecycleTest.field(panel, "stateListener");
             listener.onGameOver(oldId, "stale", Piece.O);
-            assertEquals(0, frame.getScoreTracker().getAiWins()); assertNull(P2LifecycleTest.field(frame, "resultDialog"));
+            assertEquals(0, frame.getScoreTracker().getAiWins()); assertFalse(panel.getResultOverlay().isVisible());
             assertFalse(panel.isGameOver()); assertFalse(panel.canUndo());
         });
     }
@@ -193,13 +190,12 @@ class Task4LifecycleTest {
             frame.beginGame(BoardPanel.GameMode.PVP, MinimaxAI.Difficulty.MEDIUM);
             BoardPanel panel = frame.getBoardPanel();
             for (int c = 0; c < 4; c++) { panel.playMove(7, c); panel.playMove(0, c * 2); }
-            SwingUtilities.invokeLater(() -> {
-                JDialog result = P2LifecycleTest.field(frame, "resultDialog"); result.dispose();
-            });
             panel.playMove(7, 4); assertTrue(panel.isGameOver()); assertTrue(panel.canUndo());
+            assertTrue(panel.getResultOverlay().isVisible());
             JButton undo = P2LifecycleTest.field(frame, "btnUndo"); assertTrue(undo.isEnabled()); undo.doClick();
             assertFalse(panel.isGameOver()); assertEquals(8, panel.getMoveHistory().size());
             assertEquals(0, frame.getScoreTracker().getHumanWins());
+            assertFalse(panel.getResultOverlay().isVisible()); assertTrue(panel.getWinningLine().isEmpty());
         });
     }
 

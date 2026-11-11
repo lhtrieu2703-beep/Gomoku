@@ -86,7 +86,6 @@ class P1RegressionTest {
                 frame.startGame();
                 BoardPanel panel = frame.getBoardPanel();
                 panel.setGameMode(BoardPanel.GameMode.PVP);
-                panel.setGameStateListener(null); // suppress the modal result popup in this test
                 if (winner == Piece.NONE) {
                     for (int r = 0; r < Board.SIZE; r++) {
                         for (int c = 0; c < Board.SIZE; c++) {
@@ -106,10 +105,14 @@ class P1RegressionTest {
                     assertEquals(winner, panel.getWinner());
                     assertEquals(gameId, panel.getGameId());
                     assertEquals(history, panel.getMoveHistory().size());
-                    String expected = winner == Piece.NONE ? Lang.drawGame()
+                    String expected = winner == Piece.NONE ? Lang.drawResult()
                             : winner == Piece.X ? Lang.p1Wins() : Lang.p2Wins();
                     assertEquals(expected, panel.getGameOverMessage());
                     assertEquals(expected, statusText(frame));
+                    assertTrue(panel.getResultOverlay().isVisible());
+                    assertEquals(expected, panel.getResultOverlay().getFullTitle());
+                    assertEquals(Lang.newGame(), panel.getResultOverlay().getNewGameButton().getText());
+                    assertEquals(Lang.viewBoard(), panel.getResultOverlay().getViewBoardButton().getText());
                 }
             } finally {
                 frame.dispose();
