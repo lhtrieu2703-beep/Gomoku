@@ -12,7 +12,6 @@ public final class StartScreen extends BackgroundPanel {
     private static final int FRAME_DELAY_MS = 33;
     private static final Font HINT_FONT = Theme.font(Font.PLAIN, 17);
     private static final Stroke HINT_STROKE = new BasicStroke(3f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND);
-    private static final Color[] PARTICLE_COLORS = {new Color(0xF5D58A), new Color(0xE8BC61), Theme.BRASS};
     private static final AlphaComposite[] OPACITY = new AlphaComposite[101];
 
     static {
@@ -91,7 +90,7 @@ public final class StartScreen extends BackgroundPanel {
             float y = (float) (particle.y() * height) - diameter / 2f;
             particleShape.setFrame(x, y, diameter, diameter);
             g.setComposite(OPACITY[Math.round(particle.opacity() * 100)]);
-            g.setColor(PARTICLE_COLORS[i % PARTICLE_COLORS.length]);
+            g.setColor(TitleParticles.color(i));
             g.fill(particleShape);
         }
     }
