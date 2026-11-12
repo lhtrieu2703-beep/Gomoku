@@ -26,3 +26,6 @@ dist/
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# Test output
+junit-xml/
