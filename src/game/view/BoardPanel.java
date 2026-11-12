@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.Area;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -59,6 +60,8 @@ public class BoardPanel extends JPanel {
     private boolean isGameOver = false;
     private Piece winner = Piece.NONE;
     private List<Board.Cell> winningLine = List.of();
+    private final WinWave winWave;
+    private volatile int winWaveEpoch;
     private final EndGameOverlay resultOverlay = new EndGameOverlay();
     private final JButton showResultButton = new ThemedButton("", ThemedButton.Style.SECONDARY);
     private boolean resultAvailable;
@@ -113,6 +116,7 @@ public class BoardPanel extends JPanel {
         if(minimumAiMoveDelayMs<0) throw new IllegalArgumentException("Delay must be nonnegative");
         this.minimumAiMoveDelayMs=minimumAiMoveDelayMs;
         this.nanoClock=java.util.Objects.requireNonNull(nanoClock);
+        this.winWave = new WinWave(nanoClock, this::repaint, new java.util.Random());
         this.board = board;
         this.ai    = new MinimaxAI(Piece.O, MinimaxAI.Difficulty.MEDIUM);
 
@@ -226,6 +230,38 @@ public class BoardPanel extends JPanel {
     public List<Board.Cell> getWinningLine() { return winningLine; }
     public BoardTheme getBoardTheme() { return boardTheme; }
     public PieceStyle getPieceStyle() { return pieceStyle; }
+    WinWave winWave() { return winWave; }
+
+    private void startWinAnimation() {
+        int epoch = ++winWaveEpoch;
+        int round = gameId;
+        List<Board.Cell> cells = winningLine;
+        Runnable start = () -> {
+            if (epoch == winWaveEpoch && round == gameId && isEnabled() && isGameOver && winningLine.equals(cells))
+                winWave.start(cells);
+        };
+        if (SwingUtilities.isEventDispatchThread()) start.run();
+        // Legacy model tests call this Swing view off EDT without a display.
+        // Only marshal a visual start for an actually showing board in that case.
+        else if (isShowing()) SwingUtilities.invokeLater(start);
+    }
+
+    void stopWinAnimation() {
+        int epoch = ++winWaveEpoch;
+        if (winWave == null) return; // JPanel construction may call setEnabled.
+        Runnable stop = () -> { if (epoch == winWaveEpoch) winWave.stop(); };
+        if (SwingUtilities.isEventDispatchThread()) stop.run();
+        else SwingUtilities.invokeLater(stop);
+    }
+
+    @Override public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        if (!enabled) stopWinAnimation();
+    }
+
+    @Override public void removeNotify() {
+        stopWinAnimation(); super.removeNotify();
+    }
     public EndGameOverlay getResultOverlay() { return resultOverlay; }
     public JButton getShowResultButton() { return showResultButton; }
 
@@ -247,6 +283,7 @@ public class BoardPanel extends JPanel {
         doLayout(); repaint();
     }
     void clearResult() {
+        stopWinAnimation();
         resultAvailable = false;
         resultOverlay.setVisible(false); showResultButton.setVisible(false); repaint();
     }
@@ -440,6 +477,7 @@ public class BoardPanel extends JPanel {
             isGameOver = true;
             winner = piece;
             winningLine = board.findWinningLine(row, col);
+            startWinAnimation();
             final int resultGameId = gameId;
             SoundManager.playVictorySound(() -> resultGameId == gameId && isEnabled());
             repaint();
@@ -577,7 +615,20 @@ public class BoardPanel extends JPanel {
         drawStarPoints(g2);
         drawHover(g2);
         drawStones(g2);
+        drawWinAnimation(g2);
         drawWinningLine(g2);
+    }
+
+    private void drawWinAnimation(Graphics2D graphics) {
+        if (!winWave.isActive()) return;
+        Graphics2D g = (Graphics2D) graphics.create();
+        try {
+            Area clip = new Area(new Rectangle(0, 0, getWidth(), getHeight()));
+            if (resultOverlay.isVisible()) clip.subtract(new Area(resultOverlay.getBounds()));
+            if (showResultButton.isVisible()) clip.subtract(new Area(showResultButton.getBounds()));
+            g.clip(clip);
+            winWave.paint(g, getWidth(), getHeight());
+        } finally { g.dispose(); }
     }
 
     private void drawBoard(Graphics2D g2) {

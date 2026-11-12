@@ -1,11 +1,16 @@
 package game.view;
 
 import java.util.Random;
+import java.awt.Color;
 
 /** Title-only particle state in normalized screen coordinates. */
 final class TitleParticles {
     private static final int COUNT = 36;
     private static final double FULL_TURN = 2 * Math.PI;
+    private static final Color[] COLORS = {new Color(0xF5D58A), new Color(0xE8BC61), Theme.BRASS};
+
+    static Color color(int index) { return COLORS[index % COLORS.length]; }
+    static Particle burst(Random random, double x, double y) { return new Particle(random, x, y); }
 
     private final Random random;
     private final Particle[] particles = new Particle[COUNT];
@@ -38,6 +43,7 @@ final class TitleParticles {
         private final double drift, rise, twinkle;
         private final int diameter;
         private float opacity;
+        private double age, lifetime, burstVx, burstVy;
 
         private Particle(Random random) {
             x = random.nextDouble();
@@ -48,6 +54,29 @@ final class TitleParticles {
             twinkle = 1.2 + random.nextDouble() * 1.8;
             diameter = random.nextInt(4) + 1;
             updateOpacity();
+        }
+
+        /** Finite one-shot motion; title construction/advance/respawn stay unchanged. */
+        private Particle(Random random, double originX, double originY) {
+            this(random);
+            x = originX; y = originY;
+            burstVx = (random.nextDouble() - 0.5) * 0.36;
+            burstVy = -(0.10 + random.nextDouble() * 0.17);
+            lifetime = 1.35 + random.nextDouble() * 0.80;
+            opacity = 0;
+        }
+
+        boolean advanceBurst(double seconds) {
+            age += seconds;
+            if (age >= lifetime) { opacity = 0; return false; }
+            double gravity = 0.18;
+            x += burstVx * seconds;
+            y += burstVy * seconds + gravity * seconds * seconds / 2;
+            burstVy += gravity * seconds;
+            phase = (phase + twinkle * seconds) % FULL_TURN;
+            updateOpacity();
+            opacity = (float) Math.max(0, opacity * Math.min(1, age / 0.07) * (1 - age / lifetime));
+            return true;
         }
 
         private void updateOpacity() {

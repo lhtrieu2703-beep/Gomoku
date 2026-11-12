@@ -130,6 +130,7 @@ public class MainFrame extends JFrame {
     }
     private void newGame() {
         if(!isGameActive()) return;
+        boardPanel.stopWinAnimation();
         if(boardPanel.getGameMode()==BoardPanel.GameMode.ONLINE) {
             if(networkManager.requestRestart(boardPanel.getNetworkRoundId())&&!networkManager.isHost()) boardPanel.setRestartWaiting(true);
         } else { boardPanel.clearResult(); scoreTracker.newGame(); boardPanel.resetGame(); }
