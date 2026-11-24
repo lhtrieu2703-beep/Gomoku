@@ -165,7 +165,7 @@ public final class AIAlphaBetaAblation {
             case "--revision" -> revision = args[++i];
             default -> throw new IllegalArgumentException("Unknown argument: " + args[i]);
         }
-        if (!List.of("search-only", "full").contains(mode) || measurements < 1 || warmups < 0 || timeoutMs < 1)
+        if (!List.of("search-only", "full").contains(mode) || measurements < 1 || warmups < 0 || timeoutMs < 1 || timeoutMs > 30_000)
             throw new IllegalArgumentException("Invalid mode/count/timeout");
         List<Position> positions = corpus();
         if (!selected.isEmpty()) {
@@ -205,6 +205,7 @@ public final class AIAlphaBetaAblation {
         });
         long wallStart = System.nanoTime();
         boolean timedOut = false;
+        boolean completed = false;
         try (BufferedWriter writer = Files.newBufferedWriter(output.resolve("ablation-raw.csv"), StandardCharsets.UTF_8, StandardOpenOption.CREATE_NEW)) {
             writer.write("position,level,depth,mode,pruning,phase,repetition,elapsed_ms,minimax_nodes,alpha_beta_prunes,best_row,best_col,root_value,status\n");
             outer: for (Position p : positions) for (MinimaxAI.Difficulty level : List.of(MinimaxAI.Difficulty.MEDIUM, MinimaxAI.Difficulty.HARD)) {
@@ -223,10 +224,11 @@ public final class AIAlphaBetaAblation {
                 }
                 System.out.println("ABLATION " + mode + " " + p.id + " " + level.name() + ": " + warmups + " warmups + " + measurements + " measurements per variant");
             }
+            completed = !timedOut;
         } finally {
             watchdog.shutdownNow();
             Files.writeString(output.resolve("environment.md"), "\n- Measurement loop wall seconds: " + number((System.nanoTime() - wallStart) / 1e9)
-                    + "\n- Run status: " + (timedOut ? "timeout (incomplete)" : "completed") + "\n", StandardCharsets.UTF_8, StandardOpenOption.APPEND);
+                    + "\n- Run status: " + (timedOut ? "timeout (incomplete)" : completed ? "completed" : "failed (incomplete)") + "\n", StandardCharsets.UTF_8, StandardOpenOption.APPEND);
         }
         if (timedOut) System.exit(2);
     }

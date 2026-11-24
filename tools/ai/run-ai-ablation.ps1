@@ -38,7 +38,7 @@ try {
 $ablationSummary = Join-Path $PSScriptRoot 'summarize-ai-ablation.py'
 if (Test-Path -LiteralPath $ablationSummary) {
     & python $ablationSummary --output-dir $OutputDirectory
-    if ($LASTEXITCODE -ne 0) { throw 'Ablation validation/summary reported an anomaly; inspect its report' }
+    if ($LASTEXITCODE -ne 0 -and $ablationExit -ne 2) { throw 'Ablation validation/summary reported an anomaly; inspect its report' }
 }
 Write-Output "Results: $OutputDirectory"
 Write-Output "Build copy: $ablationTempRoot"
