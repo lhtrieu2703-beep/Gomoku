@@ -40,6 +40,10 @@ public class MinimaxAI {
     private long nodesEvaluated;
     private long pruningCount;
     private long executionTimeMs;
+    private Integer lastRootValue;
+
+    /** Measurement only: rootValue is absent when no root search was performed. */
+    public record SearchMeasurement(Move move, Integer rootValue, long minimaxNodes, long pruningCount) {}
 
     public MinimaxAI(Piece aiPiece, Difficulty difficulty) {
         this.aiPiece = aiPiece;
@@ -75,6 +79,38 @@ public class MinimaxAI {
         return executionTimeMs;
     }
 
+    /** Measurement only; this is not the candidate ordering score in Move.score. */
+    public Integer getLastRootValue() {
+        return lastRootValue;
+    }
+
+    /**
+     * Chỉ phục vụ đo: run the same root Minimax search without tactical shortcuts.
+     * Empty/no-candidate boards return a null move/value and zero nodes. EASY is
+     * excluded because its production path does not use recursive Minimax.
+     * The pruning configuration is restored even on cancellation.
+     */
+    public SearchMeasurement searchOnlyForMeasurement(Board board, Difficulty level, boolean pruningEnabled) {
+        Objects.requireNonNull(board);
+        Objects.requireNonNull(level);
+        if (level == Difficulty.EASY) throw new IllegalArgumentException("EASY does not run Minimax");
+        checkCancelled();
+        boolean previousPruning = this.pruningEnabled;
+        this.pruningEnabled = pruningEnabled;
+        long startTime = System.currentTimeMillis();
+        nodesEvaluated = 0;
+        pruningCount = 0;
+        lastRootValue = null;
+        try {
+            List<Move> candidates = getCandidateMoves(board, aiPiece, true);
+            Move move = candidates.isEmpty() ? null : searchRoot(board, level, candidates);
+            return new SearchMeasurement(move, lastRootValue, nodesEvaluated, pruningCount);
+        } finally {
+            executionTimeMs = System.currentTimeMillis() - startTime;
+            this.pruningEnabled = previousPruning;
+        }
+    }
+
     /**
      * Tìm nước đi tối ưu nhất theo từng cấp độ khó.
      */
@@ -84,6 +120,7 @@ public class MinimaxAI {
         long startTime = System.currentTimeMillis();
         nodesEvaluated = 0;
         pruningCount = 0;
+        lastRootValue = null;
 
         // Nếu bàn cờ trống, đánh vào ô trung tâm (7, 7)
         if (board.getMoveCount() == 0) {
@@ -211,6 +248,12 @@ public class MinimaxAI {
         // =====================================================================
         // 3. THUẬT TOÁN MINIMAX + ALPHA-BETA PRUNING
         // =====================================================================
+        Move bestMove = searchRoot(board, level, candidateMoves);
+        executionTimeMs = System.currentTimeMillis() - startTime;
+        return bestMove;
+    }
+
+    private Move searchRoot(Board board, Difficulty level, List<Move> candidateMoves) {
         Move bestMove = null;
         int bestValue = Integer.MIN_VALUE;
         int alpha = Integer.MIN_VALUE;
@@ -246,7 +289,7 @@ public class MinimaxAI {
             }
         }
 
-        executionTimeMs = System.currentTimeMillis() - startTime;
+        lastRootValue = bestValue;
         return (bestMove != null) ? bestMove : candidateMoves.get(0);
     }
 
