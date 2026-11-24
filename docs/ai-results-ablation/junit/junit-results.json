@@ -1,0 +1,15 @@
+{
+  "timestamp_asia_saigon": "2026-11-24T11:59:27.7485248+07:00",
+  "revision": "472e533003fda9682a51cf2ae2c1ce0a42226a78 (working tree changes in src/test/tools/ai)",
+  "exit_code": 0,
+  "scope": "Full recursive build.ps1; JUnit --scan-class-path; no exclusions; sequential; headless=false; external copy",
+  "working_copy": "C:\\Users\\Acer\\AppData\\Local\\Temp\\gomoku-ablation-junit-71d793e196064cc8918b03cf00fec7ef",
+  "counts": {
+    "found": 550,
+    "skipped": 0,
+    "started": 550,
+    "aborted": 0,
+    "successful": 550,
+    "failed": 0
+  }
+}
