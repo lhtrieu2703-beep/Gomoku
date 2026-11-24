@@ -35,10 +35,15 @@ public class MinimaxAI {
     private volatile Difficulty difficulty;
     private final Piece aiPiece;
     private final Random random = new Random();
+    private boolean pruningEnabled = true;
 
     private long nodesEvaluated;
     private long pruningCount;
     private long executionTimeMs;
+    private Integer lastRootValue;
+
+    /** Measurement only: rootValue is absent when no root search was performed. */
+    public record SearchMeasurement(Move move, Integer rootValue, long minimaxNodes, long pruningCount) {}
 
     public MinimaxAI(Piece aiPiece, Difficulty difficulty) {
         this.aiPiece = aiPiece;
@@ -53,6 +58,15 @@ public class MinimaxAI {
         return difficulty;
     }
 
+    /** Measurement/test option. Normal game instances keep Alpha-Beta enabled. */
+    public void setPruningEnabled(boolean pruningEnabled) {
+        this.pruningEnabled = pruningEnabled;
+    }
+
+    public boolean isPruningEnabled() {
+        return pruningEnabled;
+    }
+
     public long getNodesEvaluated() {
         return nodesEvaluated;
     }
@@ -65,6 +79,38 @@ public class MinimaxAI {
         return executionTimeMs;
     }
 
+    /** Measurement only; this is not the candidate ordering score in Move.score. */
+    public Integer getLastRootValue() {
+        return lastRootValue;
+    }
+
+    /**
+     * Chỉ phục vụ đo: run the same root Minimax search without tactical shortcuts.
+     * Empty/no-candidate boards return a null move/value and zero nodes. EASY is
+     * excluded because its production path does not use recursive Minimax.
+     * The pruning configuration is restored even on cancellation.
+     */
+    public SearchMeasurement searchOnlyForMeasurement(Board board, Difficulty level, boolean pruningEnabled) {
+        Objects.requireNonNull(board);
+        Objects.requireNonNull(level);
+        if (level == Difficulty.EASY) throw new IllegalArgumentException("EASY does not run Minimax");
+        checkCancelled();
+        boolean previousPruning = this.pruningEnabled;
+        this.pruningEnabled = pruningEnabled;
+        long startTime = System.currentTimeMillis();
+        nodesEvaluated = 0;
+        pruningCount = 0;
+        lastRootValue = null;
+        try {
+            List<Move> candidates = getCandidateMoves(board, aiPiece, true);
+            Move move = candidates.isEmpty() ? null : searchRoot(board, level, candidates);
+            return new SearchMeasurement(move, lastRootValue, nodesEvaluated, pruningCount);
+        } finally {
+            executionTimeMs = System.currentTimeMillis() - startTime;
+            this.pruningEnabled = previousPruning;
+        }
+    }
+
     /**
      * Tìm nước đi tối ưu nhất theo từng cấp độ khó.
      */
@@ -74,6 +120,7 @@ public class MinimaxAI {
         long startTime = System.currentTimeMillis();
         nodesEvaluated = 0;
         pruningCount = 0;
+        lastRootValue = null;
 
         // Nếu bàn cờ trống, đánh vào ô trung tâm (7, 7)
         if (board.getMoveCount() == 0) {
@@ -201,6 +248,12 @@ public class MinimaxAI {
         // =====================================================================
         // 3. THUẬT TOÁN MINIMAX + ALPHA-BETA PRUNING
         // =====================================================================
+        Move bestMove = searchRoot(board, level, candidateMoves);
+        executionTimeMs = System.currentTimeMillis() - startTime;
+        return bestMove;
+    }
+
+    private Move searchRoot(Board board, Difficulty level, List<Move> candidateMoves) {
         Move bestMove = null;
         int bestValue = Integer.MIN_VALUE;
         int alpha = Integer.MIN_VALUE;
@@ -230,13 +283,13 @@ public class MinimaxAI {
             }
 
             alpha = Math.max(alpha, bestValue);
-            if (beta <= alpha) {
+            if (pruningEnabled && beta <= alpha) {
                 pruningCount++;
                 break;
             }
         }
 
-        executionTimeMs = System.currentTimeMillis() - startTime;
+        lastRootValue = bestValue;
         return (bestMove != null) ? bestMove : candidateMoves.get(0);
     }
 
@@ -275,7 +328,7 @@ public class MinimaxAI {
 
                 maxEval = Math.max(maxEval, eval);
                 alpha = Math.max(alpha, eval);
-                if (beta <= alpha) {
+                if (pruningEnabled && beta <= alpha) {
                     pruningCount++;
                     break;
                 }
@@ -299,7 +352,7 @@ public class MinimaxAI {
 
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(beta, eval);
-                if (beta <= alpha) {
+                if (pruningEnabled && beta <= alpha) {
                     pruningCount++;
                     break;
                 }

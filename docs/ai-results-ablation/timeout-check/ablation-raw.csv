@@ -1,0 +1,2 @@
+position,level,depth,mode,pruning,phase,repetition,elapsed_ms,minimax_nodes,alpha_beta_prunes,best_row,best_col,root_value,status
+opening-1,MEDIUM,2,search-only,on,measure,1,2.332100,0,0,,,,timeout
