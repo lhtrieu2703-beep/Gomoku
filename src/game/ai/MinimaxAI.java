@@ -35,6 +35,7 @@ public class MinimaxAI {
     private volatile Difficulty difficulty;
     private final Piece aiPiece;
     private final Random random = new Random();
+    private boolean pruningEnabled = true;
 
     private long nodesEvaluated;
     private long pruningCount;
@@ -51,6 +52,15 @@ public class MinimaxAI {
 
     public Difficulty getDifficulty() {
         return difficulty;
+    }
+
+    /** Measurement/test option. Normal game instances keep Alpha-Beta enabled. */
+    public void setPruningEnabled(boolean pruningEnabled) {
+        this.pruningEnabled = pruningEnabled;
+    }
+
+    public boolean isPruningEnabled() {
+        return pruningEnabled;
     }
 
     public long getNodesEvaluated() {
@@ -230,7 +240,7 @@ public class MinimaxAI {
             }
 
             alpha = Math.max(alpha, bestValue);
-            if (beta <= alpha) {
+            if (pruningEnabled && beta <= alpha) {
                 pruningCount++;
                 break;
             }
@@ -275,7 +285,7 @@ public class MinimaxAI {
 
                 maxEval = Math.max(maxEval, eval);
                 alpha = Math.max(alpha, eval);
-                if (beta <= alpha) {
+                if (pruningEnabled && beta <= alpha) {
                     pruningCount++;
                     break;
                 }
@@ -299,7 +309,7 @@ public class MinimaxAI {
 
                 minEval = Math.min(minEval, eval);
                 beta = Math.min(beta, eval);
-                if (beta <= alpha) {
+                if (pruningEnabled && beta <= alpha) {
                     pruningCount++;
                     break;
                 }
