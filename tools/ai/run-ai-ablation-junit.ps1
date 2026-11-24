@@ -52,7 +52,7 @@ $ablationTestEnvironment = @(
     '- Existing render tests write only inside the temporary copy; historical evidence in the repository is untouched.',
     '- JUnit Platform Console 1.10.2 / Jupiter 5.10.2 from bundled lib.',
     '- This is a NEW execution milestone; do not add its counts to the 531 runs from 12/11/2026.',
-    '- Command (inside the copy): java ' + ($ablationTestArgs -join ' '),
+    ('- Command (inside the copy): java ' + (($ablationTestArgs | ForEach-Object { '"' + $_ + '"' }) -join ' ')),
     "- Exit code: $ablationTestExit"
 )
 $ablationTestEnvironment | Set-Content -LiteralPath (Join-Path $OutputDirectory 'junit-environment.md') -Encoding utf8

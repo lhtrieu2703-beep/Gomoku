@@ -162,6 +162,8 @@ def summarize(output):
                     f"| {number(median(row[5] for row in samples))} | {number(reduction)} |")
 
     measured_mismatches = sum(key[2] == "measure" for key, _, _ in mismatches)
+    if mismatches:
+        anomalies.append(f"Có {len(mismatches)} cặp khác nước/giá trị; xem chi tiết khác nhau.")
     text += ["", "## Kiểm tra tính đúng đắn", "",
              f"- Đã so sánh {comparisons} cặp lượt đo ON/OFF; {measured_mismatches} cặp khác nhau "
              f"(khác nước: {move_differences}; khác root_value: {value_differences}).",
@@ -189,7 +191,9 @@ def summarize(output):
              "không phải Minimax duyệt toàn bộ ô hợp lệ của Gomoku.",
              "- search-only bỏ các shortcut chiến thuật và dùng cùng kernel gốc; nước của nó có thể khác full. "
              "Các thế late-40/60/100 là tập con tổng hợp, không đại diện mọi tàn cuộc thực tế."]
-    if zero_groups:
+    if not totals:
+        text += ["- Không có nhóm đo hoàn tất để kết luận về số nút bằng 0; xem trạng thái timeout/lỗi bên dưới."]
+    elif zero_groups:
         text += [f"- Các nhóm có minimax_nodes=0: {'; '.join(zero_groups)}."]
         if mode == "full":
             text += ["- Ở full, các nhóm 0 nút đã trả về từ tiền xử lý chiến thuật; các bàn corpus đều không trống và còn ứng viên."]
